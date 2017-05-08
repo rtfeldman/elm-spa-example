@@ -80,7 +80,7 @@ decoderWithBody =
 baseArticleDecoder : Decoder (a -> Article a)
 baseArticleDecoder =
     decode Article
-        |> required "description" Decode.string
+        |> required "description" (Decode.map (Maybe.withDefault "") (Decode.nullable Decode.string))
         |> required "slug" (Decode.map Slug Decode.string)
         |> required "title" Decode.string
         |> required "tagList" (Decode.list Decode.string)

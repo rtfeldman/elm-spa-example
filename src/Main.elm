@@ -161,7 +161,7 @@ viewPage session isLoading page =
 
 
 -- SUBSCRIPTIONS --
--- Note: we aren't currently doing any subscriptions, but I thought it would
+-- Note: we aren't currently doing any page subscriptions, but I thought it would
 -- be a good idea to put this in here as an example. If I were actually
 -- maintaining this in production, I wouldn't bother until I needed this!
 

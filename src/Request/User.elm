@@ -52,7 +52,7 @@ register { username, email, password } =
                 |> Http.jsonBody
     in
         Decode.field "user" User.decoder
-            |> Http.post (apiUrl "/register") body
+            |> Http.post (apiUrl "/users") body
 
 
 edit :

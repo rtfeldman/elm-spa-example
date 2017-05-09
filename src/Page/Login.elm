@@ -187,7 +187,8 @@ validate =
 
 errorsDecoder : Decoder (List String)
 errorsDecoder =
-    decode (\email username password -> List.concat [ email, username, password ])
+        decode (\emailOrPassword email username password -> List.concat [ emailOrPassword, email, username, password ])
+        |> optionalError "email or password"
         |> optionalError "email"
         |> optionalError "username"
         |> optionalError "password"

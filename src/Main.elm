@@ -284,6 +284,9 @@ setRoute maybeRoute model =
             Just Route.Home ->
                 transition HomeLoaded (Home.init model.session)
 
+            Just Route.Root ->
+                model => Route.modifyUrl Route.Home
+
             Just Route.Login ->
                 { model | pageState = Loaded (Login Login.initialModel) } => Cmd.none
 

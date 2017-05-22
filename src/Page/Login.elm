@@ -52,26 +52,28 @@ view session model =
                             [ text "Need an account?" ]
                         ]
                     , Form.viewErrors model.errors
-                    , viewForm
+                    , viewForm model
                     ]
                 ]
             ]
         ]
 
 
-viewForm : Html Msg
-viewForm =
+viewForm : Model -> Html Msg
+viewForm model =
     Html.form [ onSubmit SubmitForm ]
         [ Form.input
             [ class "form-control-lg"
             , placeholder "Email"
             , onInput SetEmail
+            , value model.email
             ]
             []
         , Form.password
             [ class "form-control-lg"
             , placeholder "Password"
             , onInput SetPassword
+            , value model.password
             ]
             []
         , button [ class "btn btn-lg btn-primary pull-xs-right" ]

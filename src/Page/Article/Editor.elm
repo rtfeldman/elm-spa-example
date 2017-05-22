@@ -1,7 +1,7 @@
 module Page.Article.Editor exposing (view, update, Model, Msg, initNew, initEdit)
 
 import Html exposing (..)
-import Html.Attributes exposing (class, href, id, placeholder, attribute, disabled, type_, defaultValue)
+import Html.Attributes exposing (class, href, id, placeholder, attribute, disabled, type_, defaultValue, value)
 import Html.Events exposing (onSubmit, onInput)
 import Request.Article
 import Views.Page as Page
@@ -27,6 +27,7 @@ type alias Model =
     , body : String
     , description : String
     , tags : List String
+    , unparsedTags : String
     }
 
 
@@ -38,6 +39,7 @@ initNew =
     , body = ""
     , description = ""
     , tags = []
+    , unparsedTags = ""
     }
 
 
@@ -59,6 +61,7 @@ initEdit session slug =
                     , body = Article.bodyToMarkdownString article.body
                     , description = article.description
                     , tags = article.tags
+                    , unparsedTags = (String.join " " article.tags)
                     }
                 )
 
@@ -100,12 +103,14 @@ viewForm model =
                     , placeholder "Article Title"
                     , onInput SetTitle
                     , defaultValue model.title
+                    , value model.title
                     ]
                     []
                 , Form.input
                     [ placeholder "What's this article about?"
                     , onInput SetDescription
                     , defaultValue model.description
+                    , value model.description
                     ]
                     []
                 , Form.textarea
@@ -113,12 +118,14 @@ viewForm model =
                     , attribute "rows" "8"
                     , onInput SetBody
                     , defaultValue model.body
+                    , value model.body
                     ]
                     []
                 , Form.input
                     [ placeholder "Enter tags"
                     , onInput SetTags
                     , defaultValue (String.join " " model.tags)
+                    , value model.unparsedTags
                     ]
                     []
                 , button [ class "btn btn-lg pull-xs-right btn-primary" ]
@@ -170,7 +177,7 @@ update user msg model =
             { model | description = description } => Cmd.none
 
         SetTags tags ->
-            { model | tags = tagsFromString tags } => Cmd.none
+            { model | tags = tagsFromString tags, unparsedTags = tags } => Cmd.none
 
         SetBody body ->
             { model | body = body } => Cmd.none

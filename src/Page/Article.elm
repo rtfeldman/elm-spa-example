@@ -4,7 +4,7 @@ module Page.Article exposing (view, update, Model, Msg, init)
 -}
 
 import Html exposing (..)
-import Html.Attributes exposing (class, href, id, placeholder, attribute, disabled)
+import Html.Attributes exposing (class, href, id, placeholder, attribute, disabled, value)
 import Html.Events exposing (onInput, onClick, onSubmit)
 import Request.Article
 import Request.Article.Comments
@@ -103,7 +103,7 @@ view session model =
                     ]
                 , div [ class "row" ]
                     [ div [ class "col-xs-12 col-md-8 offset-md-2" ] <|
-                        viewAddComment postingDisabled session.user
+                        viewAddComment postingDisabled session.user model
                             :: List.map (viewComment session.user) model.comments
                     ]
                 ]
@@ -133,8 +133,8 @@ viewBanner errors article author maybeUser =
             ]
 
 
-viewAddComment : Bool -> Maybe User -> Html Msg
-viewAddComment postingDisabled maybeUser =
+viewAddComment : Bool -> Maybe User -> Model -> Html Msg
+viewAddComment postingDisabled maybeUser model =
     case maybeUser of
         Nothing ->
             p []
@@ -152,6 +152,7 @@ viewAddComment postingDisabled maybeUser =
                         , placeholder "Write a comment..."
                         , attribute "rows" "3"
                         , onInput SetCommentText
+                        , value model.commentText
                         ]
                         []
                     ]

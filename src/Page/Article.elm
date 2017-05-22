@@ -103,7 +103,7 @@ view session model =
                     ]
                 , div [ class "row" ]
                     [ div [ class "col-xs-12 col-md-8 offset-md-2" ] <|
-                        viewAddComment postingDisabled session.user model
+                        viewAddComment postingDisabled model.commentText session.user
                             :: List.map (viewComment session.user) model.comments
                     ]
                 ]
@@ -133,8 +133,8 @@ viewBanner errors article author maybeUser =
             ]
 
 
-viewAddComment : Bool -> Maybe User -> Model -> Html Msg
-viewAddComment postingDisabled maybeUser model =
+viewAddComment : Bool -> String -> Maybe User -> Html Msg
+viewAddComment postingDisabled commentText maybeUser =
     case maybeUser of
         Nothing ->
             p []
@@ -151,8 +151,8 @@ viewAddComment postingDisabled maybeUser model =
                         [ class "form-control"
                         , placeholder "Write a comment..."
                         , attribute "rows" "3"
+                        , value commentText
                         , onInput SetCommentText
-                        , value model.commentText
                         ]
                         []
                     ]
@@ -322,6 +322,7 @@ update session msg model =
                 { model
                     | commentInFlight = False
                     , comments = comment :: model.comments
+                    , commentText = ""
                 }
                     => Cmd.none
 

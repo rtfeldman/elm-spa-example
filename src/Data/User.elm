@@ -47,7 +47,7 @@ encode user =
         , "bio" => EncodeExtra.maybe Encode.string user.bio
         , "image" => UserPhoto.encode user.image
         , "createdAt" => Encode.string user.createdAt
-        , "updatedAt" => Encode.string user.createdAt
+        , "updatedAt" => Encode.string user.updatedAt
         ]
 
 

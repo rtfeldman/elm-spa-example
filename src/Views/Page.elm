@@ -3,14 +3,11 @@ module Views.Page exposing (frame, ActivePage(..), bodyId)
 {-| The frame around a typical page - that is, the header and footer.
 -}
 
-import Route exposing (Route)
-import Route exposing (Route)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Route exposing (Route)
 import Data.User as User exposing (User, Username)
 import Data.UserPhoto as UserPhoto exposing (UserPhoto)
-import Html
 import Html.Lazy exposing (lazy2)
 import Views.Spinner exposing (spinner)
 import Util exposing ((=>))

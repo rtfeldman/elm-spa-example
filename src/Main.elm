@@ -13,19 +13,13 @@ import Page.NotFound as NotFound
 import Page.Article.Editor as Editor
 import Page.Errored as Errored exposing (PageLoadError)
 import Views.Page as Page exposing (ActivePage)
-import Data.User as User exposing (User)
 import Json.Decode as Decode exposing (Value)
-import Navigation
 import Task
 import Util exposing ((=>))
-import Route exposing (Route)
-import Json.Decode as Decode
 import Data.User as User exposing (User, Username)
 import Data.Article exposing (Slug)
 import Data.Session as Session exposing (Session)
 import Html exposing (..)
-import Route exposing (Route)
-import Html
 
 
 -- WARNING: this whole file will become unnecessary and go away in Elm 0.19,

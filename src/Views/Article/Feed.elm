@@ -18,9 +18,9 @@ import Html.Attributes exposing (class, href, src, id, placeholder, attribute, c
 import Html.Events exposing (onClick)
 import Data.Article as Article exposing (Article, Tag)
 import Data.Article.Feed exposing (Feed)
-import Data.Session as Session exposing (Session)
-import Data.AuthToken as AuthToken exposing (AuthToken)
-import Data.User as User exposing (Username)
+import Data.Session exposing (Session)
+import Data.AuthToken exposing (AuthToken)
+import Data.User exposing (Username)
 import Views.Page exposing (bodyId)
 import Views.Article
 import Views.Spinner exposing (spinner)

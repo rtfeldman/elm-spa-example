@@ -1,7 +1,7 @@
 module Data.Article.Comment exposing (Comment, CommentId, decoder, idToString, commentIdDecoder)
 
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline as Pipeline exposing (decode, required, custom)
+import Json.Decode.Pipeline exposing (decode, required)
 import Json.Decode.Extra
 import Date exposing (Date)
 import Data.Article.Author as Author exposing (Author)

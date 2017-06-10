@@ -18,7 +18,7 @@ import Task
 import Util exposing ((=>))
 import Data.User as User exposing (User, Username)
 import Data.Article exposing (Slug)
-import Data.Session as Session exposing (Session)
+import Data.Session exposing (Session)
 import Html exposing (..)
 
 

@@ -6,13 +6,13 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Views.Form as Form
 import Json.Decode as Decode exposing (field, decodeString, string, Decoder)
-import Json.Decode.Pipeline as Pipeline exposing (optional, decode)
-import Data.Session as Session exposing (Session)
+import Json.Decode.Pipeline exposing (optional, decode)
+import Data.Session exposing (Session)
 import Validate exposing (ifBlank)
 import Request.User exposing (storeSession)
 import Http
 import Util exposing ((=>))
-import Data.User as User exposing (User)
+import Data.User exposing (User)
 
 
 -- MODEL --

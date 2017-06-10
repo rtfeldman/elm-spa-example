@@ -6,12 +6,12 @@ module Page.Home exposing (view, update, Model, Msg, init)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, placeholder, attribute, classList)
 import Html.Events exposing (onClick)
-import Data.Session as Session exposing (Session)
+import Data.Session exposing (Session)
 import Data.Article as Article exposing (Tag)
 import Request.Article
 import Views.Page as Page
 import Views.Article.Feed as Feed exposing (FeedSource, yourFeed, globalFeed, tagFeed)
-import Page.Errored as Errored exposing (PageLoadError, pageLoadError)
+import Page.Errored exposing (PageLoadError, pageLoadError)
 import SelectList exposing (SelectList)
 import Task exposing (Task)
 import Http

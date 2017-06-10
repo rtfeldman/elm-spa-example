@@ -16,7 +16,7 @@ module Request.Article
 
 import Http
 import Data.Article.Feed as Feed exposing (Feed)
-import Data.AuthToken as AuthToken exposing (AuthToken, withAuthorization)
+import Data.AuthToken exposing (AuthToken, withAuthorization)
 import Data.Article as Article exposing (slugToString, Article, Tag, Body)
 import Data.User as User exposing (Username)
 import Json.Decode as Decode

@@ -1,7 +1,7 @@
 module Request.Profile exposing (get, toggleFollow)
 
 import Http
-import Data.AuthToken as AuthToken exposing (AuthToken, withAuthorization)
+import Data.AuthToken exposing (AuthToken, withAuthorization)
 import Data.Profile as Profile exposing (Profile)
 import Data.User as User exposing (Username)
 import HttpBuilder exposing (withExpect, withQueryParams, RequestBuilder)

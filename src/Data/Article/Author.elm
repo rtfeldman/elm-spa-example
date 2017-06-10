@@ -1,7 +1,7 @@
 module Data.Article.Author exposing (Author, decoder)
 
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline as Pipeline exposing (decode, required, custom)
+import Json.Decode.Pipeline exposing (decode, required)
 import Data.UserPhoto as UserPhoto exposing (UserPhoto)
 import Data.User as User exposing (Username)
 

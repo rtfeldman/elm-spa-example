@@ -15,11 +15,11 @@ import Views.Author
 import Views.Errors
 import Views.User.Follow as Follow
 import Views.Article.Favorite as Favorite
-import Page.Errored as Errored exposing (PageLoadError, pageLoadError)
+import Page.Errored exposing (PageLoadError, pageLoadError)
 import Data.Session as Session exposing (Session)
 import Data.Article as Article exposing (Article, Body)
-import Data.Article.Author as Author exposing (Author)
-import Data.Article.Comment as Comment exposing (Comment, CommentId)
+import Data.Article.Author exposing (Author)
+import Data.Article.Comment exposing (Comment, CommentId)
 import Data.UserPhoto as UserPhoto
 import Data.User as User exposing (User)
 import Date exposing (Date)

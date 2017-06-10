@@ -5,9 +5,9 @@ import Html.Attributes exposing (class, placeholder, type_, defaultValue, attrib
 import Html.Events exposing (onInput, onSubmit)
 import Views.Form as Form
 import Json.Decode as Decode exposing (field, list, decodeString, string, Decoder)
-import Json.Decode.Pipeline as Pipeline exposing (optional, decode)
+import Json.Decode.Pipeline exposing (optional, decode)
 import Validate exposing (..)
-import Data.Session as Session exposing (Session)
+import Data.Session exposing (Session)
 import Data.UserPhoto as UserPhoto
 import Request.User exposing (storeSession)
 import Route

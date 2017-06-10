@@ -1,7 +1,7 @@
 module Request.Article.Comments exposing (post, list, delete)
 
 import Http
-import Data.AuthToken as AuthToken exposing (AuthToken, withAuthorization)
+import Data.AuthToken exposing (AuthToken, withAuthorization)
 import Data.Article as Article exposing (slugToString, Article, Tag)
 import Data.Article.Comment as Comment exposing (Comment, CommentId)
 import Json.Decode as Decode

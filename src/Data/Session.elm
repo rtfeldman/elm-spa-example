@@ -1,6 +1,6 @@
 module Data.Session exposing (Session, attempt)
 
-import Data.User as User exposing (User)
+import Data.User exposing (User)
 import Data.AuthToken exposing (AuthToken)
 import Util exposing ((=>))
 

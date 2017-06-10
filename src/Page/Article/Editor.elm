@@ -7,9 +7,9 @@ import Request.Article
 import Views.Page as Page
 import Views.Form as Form
 import Validate exposing (ifBlank)
-import Page.Errored as Errored exposing (PageLoadError, pageLoadError)
-import Data.Session as Session exposing (Session)
-import Data.User as User exposing (User)
+import Page.Errored exposing (PageLoadError, pageLoadError)
+import Data.Session exposing (Session)
+import Data.User exposing (User)
 import Data.Article as Article exposing (Article, Body)
 import Route
 import Task exposing (Task)

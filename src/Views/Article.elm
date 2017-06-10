@@ -6,7 +6,7 @@ module Views.Article exposing (view, viewTimestamp)
 import Route exposing (Route)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, src, id, placeholder, attribute, classList)
-import Data.Article as Article exposing (Article)
+import Data.Article exposing (Article)
 import Data.UserPhoto as UserPhoto exposing (UserPhoto)
 import Date.Format
 import Views.Author

@@ -5,7 +5,7 @@ module Views.Article.Favorite exposing (button)
 
 import Html exposing (Html, Attribute, i, text)
 import Html.Attributes exposing (class)
-import Data.Article as Article exposing (Article)
+import Data.Article exposing (Article)
 import Util exposing ((=>), onClickStopPropagation)
 
 

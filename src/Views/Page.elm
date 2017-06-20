@@ -3,12 +3,20 @@ module Views.Page exposing (ActivePage(..), bodyId, frame)
 {-| The frame around a typical page - that is, the header and footer.
 -}
 
+import Color
 import Data.User as User exposing (User, Username)
 import Data.UserPhoto as UserPhoto exposing (UserPhoto)
+import Element exposing (el, row)
+import Element.Attributes exposing (alignBottom, alignLeft, justify, paddingXY, spacing, spacingXY, verticalCenter)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Lazy exposing (lazy2)
 import Route exposing (Route)
+import Style exposing (..)
+import Style.Border as Border
+import Style.Color as Color
+import Style.Font as Font
+import Style.Transition as Transition
 import Util exposing ((=>))
 import Views.Spinner exposing (spinner)
 
@@ -85,13 +93,50 @@ viewSignIn page user =
 
 viewFooter : Html msg
 viewFooter =
-    footer []
-        [ div [ class "container" ]
-            [ a [ class "logo-font", href "/" ] [ text "conduit" ]
-            , span [ class "attribution" ]
-                [ text "An interactive learning project from "
-                , a [ href "https://thinkster.io" ] [ text "Thinkster" ]
-                , text ". Code & design licensed under MIT."
+    Element.root stylesheet <|
+        row Footer
+            [ verticalCenter, spacing 10, paddingXY 77.5 21 ]
+            [ Element.link "/" <|
+                el Logo [] (Element.text "conduit")
+            , Element.textLayout Attribution
+                []
+                [ el None [ alignLeft ] (Element.text "An interactive learning project from ")
+                , Element.link "https://thinkster.io" <|
+                    el Link [ alignLeft ] (Element.text "Thinkster")
+                , el None [ alignLeft ] (Element.text ". Code & design licensed under MIT.")
+                ]
+            ]
+
+
+type Styles
+    = None
+    | Footer
+    | Logo
+    | Attribution
+    | Link
+
+
+stylesheet : StyleSheet Styles variation
+stylesheet =
+    Style.stylesheet
+        [ Style.style None []
+        , Style.style Logo
+            [ Color.text (Color.rgb 92 184 92)
+            , Font.typeface [ "Titillium Web", "sans-serif" ]
+            , Font.size 16
+            ]
+        , Style.style Footer
+            [ Color.background (Color.rgb 243 243 243)
+            , Font.typeface [ "Source Sans Pro", "sans-serif" ]
+            , Font.size 12
+            ]
+        , Style.style Attribution
+            [ Color.text (Color.rgb 187 187 187) ]
+        , Style.style Link
+            [ Color.text (Color.rgb 92 184 92)
+            , cursor "pointer"
+            , hover
+                [ Color.text (Color.rgb 61 139 61)
                 ]
             ]
         ]

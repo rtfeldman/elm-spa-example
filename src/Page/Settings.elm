@@ -1,19 +1,19 @@
-module Page.Settings exposing (view, update, Model, Msg, init, ExternalMsg(..))
+module Page.Settings exposing (ExternalMsg(..), Model, Msg, init, update, view)
 
-import Html exposing (Html, div, h1, text, fieldset, input, textarea, button)
-import Html.Attributes exposing (class, placeholder, type_, defaultValue, attribute)
-import Html.Events exposing (onInput, onSubmit)
-import Views.Form as Form
-import Json.Decode as Decode exposing (field, list, decodeString, string, Decoder)
-import Json.Decode.Pipeline as Pipeline exposing (optional, decode)
-import Validate exposing (..)
 import Data.Session as Session exposing (Session)
+import Data.User as User exposing (User)
 import Data.UserPhoto as UserPhoto
+import Html exposing (Html, button, div, fieldset, h1, input, text, textarea)
+import Html.Attributes exposing (attribute, class, defaultValue, placeholder, type_)
+import Html.Events exposing (onInput, onSubmit)
+import Http
+import Json.Decode as Decode exposing (Decoder, decodeString, field, list, string)
+import Json.Decode.Pipeline as Pipeline exposing (decode, optional)
 import Request.User exposing (storeSession)
 import Route
-import Http
 import Util exposing ((=>), pair)
-import Data.User as User exposing (User)
+import Validate exposing (..)
+import Views.Form as Form
 
 
 -- MODEL --
@@ -160,9 +160,9 @@ update session msg model =
                     else
                         Just passwordStr
             in
-                { model | password = password }
-                    => Cmd.none
-                    => NoOp
+            { model | password = password }
+                => Cmd.none
+                => NoOp
 
         SetBio bio ->
             { model | bio = bio }
@@ -177,9 +177,9 @@ update session msg model =
                     else
                         Just imageStr
             in
-                { model | image = image }
-                    => Cmd.none
-                    => NoOp
+            { model | image = image }
+                => Cmd.none
+                => NoOp
 
         SaveCompleted (Err error) ->
             let
@@ -197,9 +197,9 @@ update session msg model =
                     errorMessages
                         |> List.map (\errorMessage -> Form => errorMessage)
             in
-                { model | errors = errors }
-                    => Cmd.none
-                    => NoOp
+            { model | errors = errors }
+                => Cmd.none
+                => NoOp
 
         SaveCompleted (Ok user) ->
             model
@@ -246,4 +246,4 @@ optionalError fieldName =
         errorToString errorMessage =
             String.join " " [ fieldName, errorMessage ]
     in
-        optional fieldName (list (Decode.map errorToString string)) []
+    optional fieldName (list (Decode.map errorToString string)) []

@@ -1,8 +1,8 @@
-module Util exposing ((=>), pair, onClickStopPropagation, viewIf, appendErrors)
+module Util exposing ((=>), appendErrors, onClickStopPropagation, pair, viewIf)
 
-import Json.Decode as Decode
-import Html.Events exposing (onWithOptions, defaultOptions)
 import Html exposing (Attribute, Html)
+import Html.Events exposing (defaultOptions, onWithOptions)
+import Json.Decode as Decode
 
 
 (=>) : a -> b -> ( a, b )

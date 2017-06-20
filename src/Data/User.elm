@@ -1,14 +1,14 @@
-module Data.User exposing (User, Username, decoder, encode, usernameToString, usernameParser, usernameToHtml, usernameDecoder)
+module Data.User exposing (User, Username, decoder, encode, usernameDecoder, usernameParser, usernameToHtml, usernameToString)
 
+import Data.AuthToken as AuthToken exposing (AuthToken)
+import Data.UserPhoto as UserPhoto exposing (UserPhoto)
+import Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as Pipeline exposing (decode, required)
 import Json.Encode as Encode exposing (Value)
 import Json.Encode.Extra as EncodeExtra
-import Data.AuthToken as AuthToken exposing (AuthToken)
-import Data.UserPhoto as UserPhoto exposing (UserPhoto)
 import UrlParser
 import Util exposing ((=>))
-import Html exposing (Html)
 
 
 type alias User =

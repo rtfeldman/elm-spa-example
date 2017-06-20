@@ -1,21 +1,21 @@
-module Page.Home exposing (view, update, Model, Msg, init)
+module Page.Home exposing (Model, Msg, init, update, view)
 
 {-| The homepage. You can get here via either the / or /#/ routes.
 -}
 
-import Html exposing (..)
-import Html.Attributes exposing (class, href, id, placeholder, attribute, classList)
-import Html.Events exposing (onClick)
-import Data.Session as Session exposing (Session)
 import Data.Article as Article exposing (Tag)
-import Request.Article
-import Views.Page as Page
-import Views.Article.Feed as Feed exposing (FeedSource, yourFeed, globalFeed, tagFeed)
+import Data.Session as Session exposing (Session)
+import Html exposing (..)
+import Html.Attributes exposing (attribute, class, classList, href, id, placeholder)
+import Html.Events exposing (onClick)
+import Http
 import Page.Errored as Errored exposing (PageLoadError, pageLoadError)
+import Request.Article
 import SelectList exposing (SelectList)
 import Task exposing (Task)
-import Http
 import Util exposing ((=>), onClickStopPropagation)
+import Views.Article.Feed as Feed exposing (FeedSource, globalFeed, tagFeed, yourFeed)
+import Views.Page as Page
 
 
 -- MODEL --
@@ -46,8 +46,8 @@ init session =
         handleLoadError _ =
             pageLoadError Page.Home "Homepage is currently unavailable."
     in
-        Task.map2 Model loadTags loadSources
-            |> Task.mapError handleLoadError
+    Task.map2 Model loadTags loadSources
+        |> Task.mapError handleLoadError
 
 
 
@@ -121,11 +121,11 @@ update session msg model =
                 ( newFeed, subCmd ) =
                     Feed.update session subMsg model.feed
             in
-                { model | feed = newFeed } => Cmd.map FeedMsg subCmd
+            { model | feed = newFeed } => Cmd.map FeedMsg subCmd
 
         SelectTag tagName ->
             let
                 subCmd =
                     Feed.selectTag (Maybe.map .token session.user) tagName
             in
-                model => Cmd.map FeedMsg subCmd
+            model => Cmd.map FeedMsg subCmd

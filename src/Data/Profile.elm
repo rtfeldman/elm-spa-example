@@ -1,9 +1,9 @@
 module Data.Profile exposing (Profile, decoder)
 
+import Data.User as User exposing (Username)
+import Data.UserPhoto as UserPhoto exposing (UserPhoto)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as Pipeline exposing (decode, required)
-import Data.UserPhoto as UserPhoto exposing (UserPhoto)
-import Data.User as User exposing (Username)
 
 
 type alias Profile =

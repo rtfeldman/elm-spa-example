@@ -1,29 +1,29 @@
 module Request.Article
     exposing
-        ( get
-        , list
-        , feed
-        , delete
-        , tags
+        ( FeedConfig
+        , ListConfig
         , create
-        , update
         , defaultFeedConfig
         , defaultListConfig
+        , delete
+        , feed
+        , get
+        , list
+        , tags
         , toggleFavorite
-        , ListConfig
-        , FeedConfig
+        , update
         )
 
-import Http
+import Data.Article as Article exposing (Article, Body, Tag, slugToString)
 import Data.Article.Feed as Feed exposing (Feed)
 import Data.AuthToken as AuthToken exposing (AuthToken, withAuthorization)
-import Data.Article as Article exposing (slugToString, Article, Tag, Body)
 import Data.User as User exposing (Username)
+import Http
+import HttpBuilder exposing (RequestBuilder, withBody, withExpect, withQueryParams)
 import Json.Decode as Decode
 import Json.Encode as Encode
-import HttpBuilder exposing (withExpect, withQueryParams, RequestBuilder, withBody)
-import Util exposing ((=>))
 import Request.Helpers exposing (apiUrl)
+import Util exposing ((=>))
 
 
 -- SINGLE --
@@ -37,11 +37,11 @@ get maybeToken slug =
                 |> Decode.field "article"
                 |> Http.expectJson
     in
-        apiUrl ("/articles/" ++ Article.slugToString slug)
-            |> HttpBuilder.get
-            |> HttpBuilder.withExpect expect
-            |> withAuthorization maybeToken
-            |> HttpBuilder.toRequest
+    apiUrl ("/articles/" ++ Article.slugToString slug)
+        |> HttpBuilder.get
+        |> HttpBuilder.withExpect expect
+        |> withAuthorization maybeToken
+        |> HttpBuilder.toRequest
 
 
 
@@ -153,12 +153,12 @@ buildFavorite builderFromUrl slug token =
                 |> Decode.field "article"
                 |> Http.expectJson
     in
-        [ apiUrl "/articles", slugToString slug, "favorite" ]
-            |> String.join "/"
-            |> builderFromUrl
-            |> withAuthorization (Just token)
-            |> withExpect expect
-            |> HttpBuilder.toRequest
+    [ apiUrl "/articles", slugToString slug, "favorite" ]
+        |> String.join "/"
+        |> builderFromUrl
+        |> withAuthorization (Just token)
+        |> withExpect expect
+        |> HttpBuilder.toRequest
 
 
 
@@ -202,12 +202,12 @@ create config token =
             Encode.object [ "article" => article ]
                 |> Http.jsonBody
     in
-        apiUrl "/articles"
-            |> HttpBuilder.post
-            |> withAuthorization (Just token)
-            |> withBody body
-            |> withExpect expect
-            |> HttpBuilder.toRequest
+    apiUrl "/articles"
+        |> HttpBuilder.post
+        |> withAuthorization (Just token)
+        |> withBody body
+        |> withExpect expect
+        |> HttpBuilder.toRequest
 
 
 update : Article.Slug -> EditConfig record -> AuthToken -> Http.Request (Article Body)
@@ -229,12 +229,12 @@ update slug config token =
             Encode.object [ "article" => article ]
                 |> Http.jsonBody
     in
-        apiUrl ("/articles/" ++ slugToString slug)
-            |> HttpBuilder.put
-            |> withAuthorization (Just token)
-            |> withBody body
-            |> withExpect expect
-            |> HttpBuilder.toRequest
+    apiUrl ("/articles/" ++ slugToString slug)
+        |> HttpBuilder.put
+        |> withAuthorization (Just token)
+        |> withBody body
+        |> withExpect expect
+        |> HttpBuilder.toRequest
 
 
 

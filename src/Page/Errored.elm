@@ -1,4 +1,4 @@
-module Page.Errored exposing (view, pageLoadError, PageLoadError)
+module Page.Errored exposing (PageLoadError, pageLoadError, view)
 
 {-| The page that renders when there was an error trying to load another page,
 for example a Page Not Found error.
@@ -8,9 +8,9 @@ of a giant walrus exploding the golden gate bridge with laser beams. Pew pew!
 
 -}
 
-import Html exposing (Html, main_, h1, div, img, text, p)
-import Html.Attributes exposing (class, tabindex, id, alt)
 import Data.Session as Session exposing (Session)
+import Html exposing (Html, div, h1, img, main_, p, text)
+import Html.Attributes exposing (alt, class, id, tabindex)
 import Views.Page as Page exposing (ActivePage)
 
 

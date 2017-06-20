@@ -1,15 +1,15 @@
-module Request.User exposing (login, register, edit, storeSession)
+module Request.User exposing (edit, login, register, storeSession)
 
-import Http
-import Ports
-import Data.User as User exposing (User)
 import Data.AuthToken as AuthToken exposing (AuthToken, withAuthorization)
+import Data.User as User exposing (User)
+import Http
+import HttpBuilder exposing (RequestBuilder, withExpect, withQueryParams)
+import Json.Decode as Decode
 import Json.Encode as Encode
 import Json.Encode.Extra as EncodeExtra
-import Json.Decode as Decode
-import Util exposing ((=>))
-import HttpBuilder exposing (withExpect, withQueryParams, RequestBuilder)
+import Ports
 import Request.Helpers exposing (apiUrl)
+import Util exposing ((=>))
 
 
 storeSession : User -> Cmd msg
@@ -33,8 +33,8 @@ login { email, password } =
             Encode.object [ "user" => user ]
                 |> Http.jsonBody
     in
-        Decode.field "user" User.decoder
-            |> Http.post (apiUrl "/users/login") body
+    Decode.field "user" User.decoder
+        |> Http.post (apiUrl "/users/login") body
 
 
 register : { r | username : String, email : String, password : String } -> Http.Request User
@@ -51,8 +51,8 @@ register { username, email, password } =
             Encode.object [ "user" => user ]
                 |> Http.jsonBody
     in
-        Decode.field "user" User.decoder
-            |> Http.post (apiUrl "/users") body
+    Decode.field "user" User.decoder
+        |> Http.post (apiUrl "/users") body
 
 
 edit :
@@ -87,9 +87,9 @@ edit { username, email, bio, password, image } maybeToken =
                 |> Decode.field "user"
                 |> Http.expectJson
     in
-        apiUrl "/user"
-            |> HttpBuilder.put
-            |> HttpBuilder.withExpect expect
-            |> HttpBuilder.withBody body
-            |> withAuthorization maybeToken
-            |> HttpBuilder.toRequest
+    apiUrl "/user"
+        |> HttpBuilder.put
+        |> HttpBuilder.withExpect expect
+        |> HttpBuilder.withBody body
+        |> withAuthorization maybeToken
+        |> HttpBuilder.toRequest

@@ -1,16 +1,16 @@
-module Views.Page exposing (frame, ActivePage(..), bodyId)
+module Views.Page exposing (ActivePage(..), bodyId, frame)
 
 {-| The frame around a typical page - that is, the header and footer.
 -}
 
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Route exposing (Route)
 import Data.User as User exposing (User, Username)
 import Data.UserPhoto as UserPhoto exposing (UserPhoto)
+import Html exposing (..)
+import Html.Attributes exposing (..)
 import Html.Lazy exposing (lazy2)
-import Views.Spinner exposing (spinner)
+import Route exposing (Route)
 import Util exposing ((=>))
+import Views.Spinner exposing (spinner)
 
 
 {-| Determines which navbar link (if any) will be rendered as active.
@@ -56,7 +56,7 @@ viewHeader page user isLoading =
                 [ text "conduit" ]
             , ul [ class "nav navbar-nav pull-xs-right" ] <|
                 lazy2 Util.viewIf isLoading spinner
-                    :: (navbarLink (page == Home) Route.Home [ text "Home" ])
+                    :: navbarLink (page == Home) Route.Home [ text "Home" ]
                     :: viewSignIn page user
             ]
         ]

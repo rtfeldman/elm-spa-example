@@ -1,21 +1,21 @@
-module Page.Login exposing (view, update, Model, Msg, initialModel, ExternalMsg(..))
+module Page.Login exposing (ExternalMsg(..), Model, Msg, initialModel, update, view)
 
 {-| The login page.
 -}
 
-import Route exposing (Route)
+import Data.Session as Session exposing (Session)
+import Data.User as User exposing (User)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Views.Form as Form
-import Json.Decode as Decode exposing (field, decodeString, string, Decoder)
-import Json.Decode.Pipeline as Pipeline exposing (optional, decode)
-import Validate exposing (..)
-import Data.Session as Session exposing (Session)
 import Http
+import Json.Decode as Decode exposing (Decoder, decodeString, field, string)
+import Json.Decode.Pipeline as Pipeline exposing (decode, optional)
 import Request.User exposing (storeSession)
+import Route exposing (Route)
 import Util exposing ((=>))
-import Data.User as User exposing (User)
+import Validate exposing (..)
+import Views.Form as Form
 
 
 -- MODEL --
@@ -132,9 +132,9 @@ update msg model =
                         _ ->
                             [ "unable to process registration" ]
             in
-                { model | errors = List.map (\errorMessage -> Form => errorMessage) errorMessages }
-                    => Cmd.none
-                    => NoOp
+            { model | errors = List.map (\errorMessage -> Form => errorMessage) errorMessages }
+                => Cmd.none
+                => NoOp
 
         LoginCompleted (Ok user) ->
             model
@@ -199,4 +199,4 @@ optionalError fieldName =
         errorToString errorMessage =
             String.join " " [ fieldName, errorMessage ]
     in
-        optional fieldName (Decode.list (Decode.map errorToString string)) []
+    optional fieldName (Decode.list (Decode.map errorToString string)) []

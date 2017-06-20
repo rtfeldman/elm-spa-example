@@ -1,14 +1,14 @@
-module Request.Article.Comments exposing (post, list, delete)
+module Request.Article.Comments exposing (delete, list, post)
 
-import Http
-import Data.AuthToken as AuthToken exposing (AuthToken, withAuthorization)
-import Data.Article as Article exposing (slugToString, Article, Tag)
+import Data.Article as Article exposing (Article, Tag, slugToString)
 import Data.Article.Comment as Comment exposing (Comment, CommentId)
+import Data.AuthToken as AuthToken exposing (AuthToken, withAuthorization)
+import Http
+import HttpBuilder exposing (RequestBuilder, withExpect, withQueryParams)
 import Json.Decode as Decode
 import Json.Encode as Encode exposing (Value)
-import HttpBuilder exposing (withExpect, withQueryParams, RequestBuilder)
-import Util exposing ((=>))
 import Request.Helpers exposing (apiUrl)
+import Util exposing ((=>))
 
 
 -- LIST --

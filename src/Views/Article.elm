@@ -3,7 +3,7 @@ module Views.Article exposing (view, viewTimestamp)
 {-| Viewing a preview of an individual article, excluding its body.
 -}
 
-import Data.Article as Article exposing (Article)
+import Data.Article exposing (Article)
 import Data.UserPhoto as UserPhoto exposing (UserPhoto)
 import Date.Format
 import Html exposing (..)

@@ -4,7 +4,7 @@ import Data.Article.Author as Author exposing (Author)
 import Date exposing (Date)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Extra
-import Json.Decode.Pipeline as Pipeline exposing (custom, decode, required)
+import Json.Decode.Pipeline exposing (custom, decode, required)
 
 
 type alias Comment =

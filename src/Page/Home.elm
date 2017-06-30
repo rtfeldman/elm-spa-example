@@ -4,12 +4,12 @@ module Page.Home exposing (Model, Msg, init, update, view)
 -}
 
 import Data.Article as Article exposing (Tag)
-import Data.Session as Session exposing (Session)
+import Data.Session exposing (Session)
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, classList, href, id, placeholder)
 import Html.Events exposing (onClick)
 import Http
-import Page.Errored as Errored exposing (PageLoadError, pageLoadError)
+import Page.Errored exposing (PageLoadError, pageLoadError)
 import Request.Article
 import SelectList exposing (SelectList)
 import Task exposing (Task)

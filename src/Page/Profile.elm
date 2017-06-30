@@ -3,14 +3,14 @@ module Page.Profile exposing (Model, Msg, init, update, view)
 {-| Viewing a user's profile.
 -}
 
-import Data.Profile as Profile exposing (Profile)
-import Data.Session as Session exposing (Session)
+import Data.Profile exposing (Profile)
+import Data.Session exposing (Session)
 import Data.User as User exposing (Username)
 import Data.UserPhoto as UserPhoto exposing (UserPhoto)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
-import Page.Errored as Errored exposing (PageLoadError, pageLoadError)
+import Page.Errored exposing (PageLoadError, pageLoadError)
 import Request.Article exposing (ListConfig, defaultListConfig)
 import Request.Profile
 import SelectList exposing (SelectList)

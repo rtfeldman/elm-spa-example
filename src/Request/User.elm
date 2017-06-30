@@ -1,6 +1,6 @@
 module Request.User exposing (edit, login, register, storeSession)
 
-import Data.AuthToken as AuthToken exposing (AuthToken, withAuthorization)
+import Data.AuthToken exposing (AuthToken, withAuthorization)
 import Data.User as User exposing (User)
 import Http
 import HttpBuilder exposing (RequestBuilder, withExpect, withQueryParams)

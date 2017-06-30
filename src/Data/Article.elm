@@ -19,7 +19,7 @@ import Date exposing (Date)
 import Html exposing (Attribute, Html)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Extra
-import Json.Decode.Pipeline as Pipeline exposing (custom, decode, hardcoded, required)
+import Json.Decode.Pipeline exposing (custom, decode, hardcoded, required)
 import Markdown
 import UrlParser
 

@@ -16,7 +16,7 @@ module Request.Article
 
 import Data.Article as Article exposing (Article, Body, Tag, slugToString)
 import Data.Article.Feed as Feed exposing (Feed)
-import Data.AuthToken as AuthToken exposing (AuthToken, withAuthorization)
+import Data.AuthToken exposing (AuthToken, withAuthorization)
 import Data.User as User exposing (Username)
 import Http
 import HttpBuilder exposing (RequestBuilder, withBody, withExpect, withQueryParams)

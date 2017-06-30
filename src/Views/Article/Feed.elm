@@ -15,9 +15,9 @@ overkill, so we use simpler APIs instead.
 
 import Data.Article as Article exposing (Article, Tag)
 import Data.Article.Feed exposing (Feed)
-import Data.AuthToken as AuthToken exposing (AuthToken)
-import Data.Session as Session exposing (Session)
-import Data.User as User exposing (Username)
+import Data.AuthToken exposing (AuthToken)
+import Data.Session exposing (Session)
+import Data.User exposing (Username)
 import Dom.Scroll
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, classList, href, id, placeholder, src)

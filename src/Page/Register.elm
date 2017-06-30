@@ -1,13 +1,13 @@
 module Page.Register exposing (ExternalMsg(..), Model, Msg, initialModel, update, view)
 
-import Data.Session as Session exposing (Session)
-import Data.User as User exposing (User)
+import Data.Session exposing (Session)
+import Data.User exposing (User)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
 import Json.Decode as Decode exposing (Decoder, decodeString, field, string)
-import Json.Decode.Pipeline as Pipeline exposing (decode, optional)
+import Json.Decode.Pipeline exposing (decode, optional)
 import Request.User exposing (storeSession)
 import Route exposing (Route)
 import Util exposing ((=>))

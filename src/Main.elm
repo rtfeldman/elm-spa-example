@@ -22,8 +22,10 @@ import Util exposing ((=>))
 import Views.Page as Page exposing (ActivePage)
 
 
--- WARNING: this whole file will become unnecessary and go away in Elm 0.19,
--- so avoid putting things in here unless there is no alternative!
+-- WARNING: Based on discussions around how asset management features
+-- like code splitting and lazy loading have been shaping up, I expect
+-- most of this file to become unnecessary in a future release of Elm.
+-- Avoid putting things in here unless there is no alternative!
 
 
 type Page

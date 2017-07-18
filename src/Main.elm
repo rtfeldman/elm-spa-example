@@ -103,7 +103,7 @@ viewPage session isLoading page =
                 |> frame Page.Other
 
         Blank ->
-            -- This is for the very intiial page load, while we are loading
+            -- This is for the very initial page load, while we are loading
             -- data via HTTP. We could also render a spinner here.
             Html.text ""
                 |> frame Page.Other

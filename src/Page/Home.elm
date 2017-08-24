@@ -10,10 +10,10 @@ import Html.Attributes exposing (attribute, class, classList, href, id, placehol
 import Html.Events exposing (onClick)
 import Http
 import Page.Errored as Errored exposing (PageLoadError, pageLoadError)
+import Pair exposing ((=>), Pair(Pair))
 import Request.Article
 import SelectList exposing (SelectList)
 import Task exposing (Task)
-import Util exposing ((=>), onClickStopPropagation)
 import Views.Article.Feed as Feed exposing (FeedSource, globalFeed, tagFeed, yourFeed)
 import Views.Page as Page
 
@@ -113,12 +113,12 @@ type Msg
     | SelectTag Tag
 
 
-update : Session -> Msg -> Model -> ( Model, Cmd Msg )
+update : Session -> Msg -> Model -> Pair Model (Cmd Msg)
 update session msg model =
     case msg of
         FeedMsg subMsg ->
             let
-                ( newFeed, subCmd ) =
+                (Pair newFeed subCmd) =
                     Feed.update session subMsg model.feed
             in
             { model | feed = newFeed } => Cmd.map FeedMsg subCmd

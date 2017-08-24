@@ -1,4 +1,4 @@
-module Pair exposing ((=>), Pair(..), first, map2, mapFirst, mapSecond, second, toTuple)
+module Pair exposing ((=>), Pair(Pair), first, map2, mapFirst, mapSecond, second, toTuple)
 
 
 type Pair a b
@@ -20,14 +20,14 @@ map2 transform (Pair a b) =
     transform a b
 
 
-mapFirst : (a -> c) -> Pair a b -> c
-mapFirst transform (Pair a _) =
-    transform a
+mapFirst : (a -> c) -> Pair a b -> Pair c b
+mapFirst transform (Pair a b) =
+    Pair (transform a) b
 
 
-mapSecond : (b -> c) -> Pair a b -> c
-mapSecond transform (Pair _ b) =
-    transform b
+mapSecond : (b -> c) -> Pair a b -> Pair a c
+mapSecond transform (Pair a b) =
+    Pair a (transform b)
 
 
 toTuple : Pair a b -> ( a, b )

@@ -23,10 +23,11 @@ import Html exposing (..)
 import Html.Attributes exposing (attribute, class, classList, href, id, placeholder, src)
 import Html.Events exposing (onClick)
 import Http
+import Pair exposing ((=>), Pair(Pair))
 import Request.Article
 import SelectList exposing (Position(..), SelectList)
 import Task exposing (Task)
-import Util exposing ((=>), onClickStopPropagation, pair, viewIf)
+import Util exposing (onClickStopPropagation, viewIf)
 import Views.Article
 import Views.Errors as Errors
 import Views.Page exposing (bodyId)
@@ -94,7 +95,7 @@ viewFeedSource : Position -> FeedSource -> Html Msg
 viewFeedSource position source =
     li [ class "nav-item" ]
         [ a
-            [ classList [ "nav-link" => True, "active" => position == Selected ]
+            [ classList [ ( "nav-link", True ), ( "active", position == Selected ) ]
             , href "javascript:void(0);"
             , onClick (SelectFeedSource source)
             ]
@@ -170,7 +171,7 @@ pagination activePage feed feedSource =
 
 pageLink : Int -> Bool -> Html Msg
 pageLink page isActive =
-    li [ classList [ "page-item" => True, "active" => isActive ] ]
+    li [ classList [ ( "page-item", True ), ( "active", isActive ) ] ]
         [ a
             [ class "page-link"
             , href "javascript:void(0);"
@@ -193,13 +194,13 @@ type Msg
     | SelectPage Int
 
 
-update : Session -> Msg -> Model -> ( Model, Cmd Msg )
+update : Session -> Msg -> Model -> Pair Model (Cmd Msg)
 update session msg (Model internalModel) =
     updateInternal session msg internalModel
-        |> Tuple.mapFirst Model
+        |> Pair.mapFirst Model
 
 
-updateInternal : Session -> Msg -> InternalModel -> ( InternalModel, Cmd Msg )
+updateInternal : Session -> Msg -> InternalModel -> Pair InternalModel (Cmd Msg)
 updateInternal session msg model =
     case msg of
         DismissErrors ->
@@ -209,7 +210,7 @@ updateInternal session msg model =
             source
                 |> fetch (Maybe.map .token session.user) 1
                 |> Task.attempt (FeedLoadCompleted source)
-                |> pair { model | isLoading = True }
+                |> Pair { model | isLoading = True }
 
         FeedLoadCompleted source (Ok ( activePage, feed )) ->
             { model
@@ -236,7 +237,7 @@ updateInternal session msg model =
                 Just user ->
                     Request.Article.toggleFavorite article user.token
                         |> Http.send FavoriteCompleted
-                        |> pair model
+                        |> Pair model
 
         FavoriteCompleted (Ok article) ->
             let
@@ -261,7 +262,7 @@ updateInternal session msg model =
                 |> fetch (Maybe.map .token session.user) page
                 |> Task.andThen (\feed -> Task.map (\_ -> feed) scrollToTop)
                 |> Task.attempt (FeedLoadCompleted source)
-                |> pair model
+                |> Pair model
 
 
 scrollToTop : Task x ()

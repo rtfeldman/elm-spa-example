@@ -2,14 +2,14 @@ module Data.Session exposing (Session, attempt)
 
 import Data.AuthToken exposing (AuthToken)
 import Data.User as User exposing (User)
-import Util exposing ((=>))
+import Pair exposing ((=>), Pair(Pair))
 
 
 type alias Session =
     { user : Maybe User }
 
 
-attempt : String -> (AuthToken -> Cmd msg) -> Session -> ( List String, Cmd msg )
+attempt : String -> (AuthToken -> Cmd msg) -> Session -> Pair (List String) (Cmd msg)
 attempt attemptedAction toCmd session =
     case Maybe.map .token session.user of
         Nothing ->

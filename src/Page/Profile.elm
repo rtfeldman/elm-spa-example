@@ -11,11 +11,12 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
 import Page.Errored as Errored exposing (PageLoadError, pageLoadError)
+import Pair exposing ((=>), Pair(Pair))
 import Request.Article exposing (ListConfig, defaultListConfig)
 import Request.Profile
 import SelectList exposing (SelectList)
 import Task exposing (Task)
-import Util exposing ((=>), pair, viewIf)
+import Util exposing (viewIf)
 import Views.Article.Feed as Feed exposing (FeedSource, authorFeed, favoritedFeed)
 import Views.Errors as Errors
 import Views.Page as Page
@@ -115,7 +116,7 @@ type Msg
     | FeedMsg Feed.Msg
 
 
-update : Session -> Msg -> Model -> ( Model, Cmd Msg )
+update : Session -> Msg -> Model -> Pair Model (Cmd Msg)
 update session msg model =
     let
         profile =
@@ -137,7 +138,7 @@ update session msg model =
                             profile.username
                             profile.following
                         |> Http.send FollowCompleted
-                        |> pair model
+                        |> Pair model
 
         FollowCompleted (Ok newProfile) ->
             { model | profile = newProfile } => Cmd.none
@@ -147,7 +148,7 @@ update session msg model =
 
         FeedMsg subMsg ->
             let
-                ( newFeed, subCmd ) =
+                (Pair newFeed subCmd) =
                     Feed.update session subMsg model.feed
             in
             { model | feed = newFeed } => Cmd.map FeedMsg subCmd

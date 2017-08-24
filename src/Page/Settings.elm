@@ -9,9 +9,9 @@ import Html.Events exposing (onInput, onSubmit)
 import Http
 import Json.Decode as Decode exposing (Decoder, decodeString, field, list, string)
 import Json.Decode.Pipeline as Pipeline exposing (decode, optional)
+import Pair exposing ((=>), Pair(Pair))
 import Request.User exposing (storeSession)
 import Route
-import Util exposing ((=>), pair)
 import Validate exposing (..)
 import Views.Form as Form
 
@@ -124,7 +124,7 @@ type ExternalMsg
     | SetUser User
 
 
-update : Session -> Msg -> Model -> ( ( Model, Cmd Msg ), ExternalMsg )
+update : Session -> Msg -> Model -> Pair (Pair Model (Cmd Msg)) ExternalMsg
 update session msg model =
     case msg of
         SubmitForm ->
@@ -134,7 +134,7 @@ update session msg model =
                         |> Maybe.map .token
                         |> Request.User.edit model
                         |> Http.send SaveCompleted
-                        |> pair { model | errors = [] }
+                        |> Pair { model | errors = [] }
                         => NoOp
 
                 errors ->
@@ -195,7 +195,7 @@ update session msg model =
 
                 errors =
                     errorMessages
-                        |> List.map (\errorMessage -> Form => errorMessage)
+                        |> List.map (\errorMessage -> ( Form, errorMessage ))
             in
             { model | errors = errors }
                 => Cmd.none
@@ -227,8 +227,8 @@ type alias Error =
 validate : Model -> List Error
 validate =
     Validate.all
-        [ .username >> ifBlank (Username => "username can't be blank.")
-        , .email >> ifBlank (Email => "email can't be blank.")
+        [ .username >> ifBlank ( Username, "username can't be blank." )
+        , .email >> ifBlank ( Email, "email can't be blank." )
         ]
 
 

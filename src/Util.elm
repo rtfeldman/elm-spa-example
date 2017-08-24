@@ -1,4 +1,4 @@
-module Util exposing ((=>), appendErrors, onClickStopPropagation, pair, viewIf)
+module Util exposing ((=>), appendErrors, onClickStopPropagation, viewIf)
 
 import Html exposing (Attribute, Html)
 import Html.Events exposing (defaultOptions, onWithOptions)
@@ -14,20 +14,6 @@ import Json.Decode as Decode
 meaning you can use it at the end of a pipeline and have the precedence work out.
 -}
 infixl 0 =>
-
-
-{-| Useful when building up a Cmd via a pipeline, and then pairing it with
-a model at the end.
-
-    session.user
-        |> User.Request.foo
-        |> Task.attempt Foo
-        |> pair { model | something = blah }
-
--}
-pair : a -> b -> ( a, b )
-pair first second =
-    first => second
 
 
 viewIf : Bool -> Html msg -> Html msg

@@ -8,10 +8,10 @@ import Html.Attributes exposing (attribute, class, defaultValue, disabled, href,
 import Html.Events exposing (onInput, onSubmit)
 import Http
 import Page.Errored as Errored exposing (PageLoadError, pageLoadError)
+import Pair exposing ((=>), Pair(Pair))
 import Request.Article
 import Route
 import Task exposing (Task)
-import Util exposing ((=>), pair, viewIf)
 import Validate exposing (ifBlank)
 import Views.Form as Form
 import Views.Page as Page
@@ -141,7 +141,7 @@ type Msg
     | EditCompleted (Result Http.Error (Article Body))
 
 
-update : User -> Msg -> Model -> ( Model, Cmd Msg )
+update : User -> Msg -> Model -> Pair Model (Cmd Msg)
 update user msg model =
     case msg of
         Save ->
@@ -152,13 +152,13 @@ update user msg model =
                             user.token
                                 |> Request.Article.create model
                                 |> Http.send CreateCompleted
-                                |> pair { model | errors = [] }
+                                |> Pair { model | errors = [] }
 
                         Just slug ->
                             user.token
                                 |> Request.Article.update slug model
                                 |> Http.send EditCompleted
-                                |> pair { model | errors = [] }
+                                |> Pair { model | errors = [] }
 
                 errors ->
                     { model | errors = errors } => Cmd.none
@@ -178,19 +178,19 @@ update user msg model =
         CreateCompleted (Ok article) ->
             Route.Article article.slug
                 |> Route.modifyUrl
-                |> pair model
+                |> Pair model
 
         CreateCompleted (Err error) ->
-            { model | errors = model.errors ++ [ Form => "Server error while attempting to publish article" ] }
+            { model | errors = model.errors ++ [ ( Form, "Server error while attempting to publish article" ) ] }
                 => Cmd.none
 
         EditCompleted (Ok article) ->
             Route.Article article.slug
                 |> Route.modifyUrl
-                |> pair model
+                |> Pair model
 
         EditCompleted (Err error) ->
-            { model | errors = model.errors ++ [ Form => "Server error while attempting to save article" ] }
+            { model | errors = model.errors ++ [ ( Form, "Server error while attempting to save article" ) ] }
                 => Cmd.none
 
 
@@ -211,8 +211,8 @@ type alias Error =
 validate : Model -> List Error
 validate =
     Validate.all
-        [ .title >> ifBlank (Title => "title can't be blank.")
-        , .body >> ifBlank (Body => "body can't be blank.")
+        [ .title >> ifBlank ( Title, "title can't be blank." )
+        , .body >> ifBlank ( Body, "body can't be blank." )
         ]
 
 

@@ -16,12 +16,13 @@ import Html.Attributes exposing (attribute, class, disabled, href, id, placehold
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Http
 import Page.Errored as Errored exposing (PageLoadError, pageLoadError)
+import Pair exposing ((=>), Pair(Pair))
 import Request.Article
 import Request.Article.Comments
 import Request.Profile
 import Route
 import Task exposing (Task)
-import Util exposing ((=>), pair, viewIf)
+import Util exposing (viewIf)
 import Views.Article
 import Views.Article.Favorite as Favorite
 import Views.Author
@@ -239,7 +240,7 @@ type Msg
     | ArticleDeleted (Result Http.Error ())
 
 
-update : Session -> Msg -> Model -> ( Model, Cmd Msg )
+update : Session -> Msg -> Model -> Pair Model (Cmd Msg)
 update session msg model =
     let
         article =
@@ -262,7 +263,7 @@ update session msg model =
             in
             session
                 |> Session.attempt "favorite" cmdFromAuth
-                |> Tuple.mapFirst (Util.appendErrors model)
+                |> Pair.mapFirst (Util.appendErrors model)
 
         FavoriteCompleted (Ok newArticle) ->
             { model | article = newArticle } => Cmd.none
@@ -283,7 +284,7 @@ update session msg model =
             in
             session
                 |> Session.attempt "follow" cmdFromAuth
-                |> Tuple.mapFirst (Util.appendErrors model)
+                |> Pair.mapFirst (Util.appendErrors model)
 
         FollowCompleted (Ok { following }) ->
             let
@@ -315,7 +316,7 @@ update session msg model =
                 in
                 session
                     |> Session.attempt "post a comment" cmdFromAuth
-                    |> Tuple.mapFirst (Util.appendErrors { model | commentInFlight = True })
+                    |> Pair.mapFirst (Util.appendErrors { model | commentInFlight = True })
 
         CommentPosted (Ok comment) ->
             { model
@@ -337,7 +338,7 @@ update session msg model =
             in
             session
                 |> Session.attempt "delete comments" cmdFromAuth
-                |> Tuple.mapFirst (Util.appendErrors model)
+                |> Pair.mapFirst (Util.appendErrors model)
 
         CommentDeleted id (Ok ()) ->
             { model | comments = withoutComment id model.comments }
@@ -356,7 +357,7 @@ update session msg model =
             in
             session
                 |> Session.attempt "delete articles" cmdFromAuth
-                |> Tuple.mapFirst (Util.appendErrors model)
+                |> Pair.mapFirst (Util.appendErrors model)
 
         ArticleDeleted (Ok ()) ->
             model => Route.modifyUrl Route.Home

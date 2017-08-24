@@ -54,13 +54,12 @@ type alias Model =
     }
 
 
-init : Value -> Location -> ( Model, Cmd Msg )
+init : Value -> Location -> Pair Model (Cmd Msg)
 init val location =
     setRoute (Route.fromLocation location)
         { pageState = Loaded initialPage
         , session = { user = decodeUserFromJson val }
         }
-        |> Pair.toTuple
 
 
 decodeUserFromJson : Value -> Maybe User
@@ -312,10 +311,9 @@ pageErrored model activePage errorMessage =
     { model | pageState = Loaded (Errored error) } => Cmd.none
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Pair Model (Cmd Msg)
 update msg model =
     updatePage (getPage model.pageState) msg model
-        |> Pair.toTuple
 
 
 updatePage : Page -> Msg -> Model -> Pair Model (Cmd Msg)
@@ -326,7 +324,7 @@ updatePage page msg model =
 
         toPage toModel toMsg subUpdate subMsg subModel =
             let
-                ( newModel, newCmd ) =
+                (Pair newModel newCmd) =
                     subUpdate subMsg subModel
             in
             Pair { model | pageState = Loaded (toModel newModel) } (Cmd.map toMsg newCmd)
@@ -379,7 +377,7 @@ updatePage page msg model =
 
         Pair (SettingsMsg subMsg) (Settings subModel) ->
             let
-                ( ( pageModel, cmd ), msgFromPage ) =
+                (Pair (Pair pageModel cmd) msgFromPage) =
                     Settings.update model.session subMsg subModel
 
                 newModel =
@@ -399,7 +397,7 @@ updatePage page msg model =
 
         Pair (LoginMsg subMsg) (Login subModel) ->
             let
-                ( ( pageModel, cmd ), msgFromPage ) =
+                (Pair (Pair pageModel cmd) msgFromPage) =
                     Login.update subMsg subModel
 
                 newModel =
@@ -419,7 +417,7 @@ updatePage page msg model =
 
         Pair (RegisterMsg subMsg) (Register subModel) ->
             let
-                ( ( pageModel, cmd ), msgFromPage ) =
+                (Pair (Pair pageModel cmd) msgFromPage) =
                     Register.update subMsg subModel
 
                 newModel =
@@ -476,8 +474,8 @@ updatePage page msg model =
 main : Program Value Model Msg
 main =
     Navigation.programWithFlags (Route.fromLocation >> SetRoute)
-        { init = init
+        { init = \loc flags -> init loc flags |> Pair.toTuple
         , view = view
-        , update = update
+        , update = \msg model -> update msg model |> Pair.toTuple
         , subscriptions = subscriptions
         }

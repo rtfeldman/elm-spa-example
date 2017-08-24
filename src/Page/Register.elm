@@ -8,9 +8,9 @@ import Html.Events exposing (..)
 import Http
 import Json.Decode as Decode exposing (Decoder, decodeString, field, string)
 import Json.Decode.Pipeline as Pipeline exposing (decode, optional)
+import Pair exposing ((=>), Pair(Pair))
 import Request.User exposing (storeSession)
 import Route exposing (Route)
-import Util exposing ((=>))
 import Validate exposing (ifBlank)
 import Views.Form as Form
 
@@ -101,7 +101,7 @@ type ExternalMsg
     | SetUser User
 
 
-update : Msg -> Model -> ( ( Model, Cmd Msg ), ExternalMsg )
+update : Msg -> Model -> Pair (Pair Model (Cmd Msg)) ExternalMsg
 update msg model =
     case msg of
         SubmitForm ->
@@ -143,7 +143,7 @@ update msg model =
                         _ ->
                             [ "unable to process registration" ]
             in
-            { model | errors = List.map (\errorMessage -> Form => errorMessage) errorMessages }
+            { model | errors = List.map (\errorMessage -> ( Form, errorMessage )) errorMessages }
                 => Cmd.none
                 => NoOp
 
@@ -171,9 +171,9 @@ type alias Error =
 validate : Model -> List Error
 validate =
     Validate.all
-        [ .username >> ifBlank (Username => "username can't be blank.")
-        , .email >> ifBlank (Email => "email can't be blank.")
-        , .password >> ifBlank (Password => "password can't be blank.")
+        [ .username >> ifBlank ( Username, "username can't be blank." )
+        , .email >> ifBlank ( Email, "email can't be blank." )
+        , .password >> ifBlank ( Password, "password can't be blank." )
         ]
 
 

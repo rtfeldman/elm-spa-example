@@ -15,17 +15,15 @@ import Page.NotFound as NotFound
 import Page.Profile as Profile
 import Page.Register as Register
 import Page.Settings as Settings
+import Pair exposing (..)
 import Ports
 import Route exposing (Route)
 import Task
-import Util exposing ((=>))
 import Views.Page as Page exposing (ActivePage)
 
 
--- WARNING: Based on discussions around how asset management features
--- like code splitting and lazy loading have been shaping up, I expect
--- most of this file to become unnecessary in a future release of Elm.
--- Avoid putting things in here unless there is no alternative!
+-- WARNING: this whole file will become unnecessary and go away in Elm 0.19,
+-- so avoid putting things in here unless there is no alternative!
 
 
 type Page
@@ -62,6 +60,7 @@ init val location =
         { pageState = Loaded initialPage
         , session = { user = decodeUserFromJson val }
         }
+        |> Pair.toTuple
 
 
 decodeUserFromJson : Value -> Maybe User
@@ -103,7 +102,7 @@ viewPage session isLoading page =
                 |> frame Page.Other
 
         Blank ->
-            -- This is for the very initial page load, while we are loading
+            -- This is for the very intiial page load, while we are loading
             -- data via HTTP. We could also render a spinner here.
             Html.text ""
                 |> frame Page.Other
@@ -239,7 +238,7 @@ type Msg
     | EditorMsg Editor.Msg
 
 
-setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
+setRoute : Maybe Route -> Model -> Pair Model (Cmd Msg)
 setRoute maybeRoute model =
     let
         transition toMsg task =
@@ -304,7 +303,7 @@ setRoute maybeRoute model =
             transition ArticleLoaded (Article.init model.session slug)
 
 
-pageErrored : Model -> ActivePage -> String -> ( Model, Cmd msg )
+pageErrored : Model -> ActivePage -> String -> Pair Model (Cmd msg)
 pageErrored model activePage errorMessage =
     let
         error =
@@ -316,9 +315,10 @@ pageErrored model activePage errorMessage =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     updatePage (getPage model.pageState) msg model
+        |> Pair.toTuple
 
 
-updatePage : Page -> Msg -> Model -> ( Model, Cmd Msg )
+updatePage : Page -> Msg -> Model -> Pair Model (Cmd Msg)
 updatePage page msg model =
     let
         session =
@@ -329,40 +329,40 @@ updatePage page msg model =
                 ( newModel, newCmd ) =
                     subUpdate subMsg subModel
             in
-            ( { model | pageState = Loaded (toModel newModel) }, Cmd.map toMsg newCmd )
+            Pair { model | pageState = Loaded (toModel newModel) } (Cmd.map toMsg newCmd)
 
         errored =
             pageErrored model
     in
-    case ( msg, page ) of
-        ( SetRoute route, _ ) ->
+    case Pair msg page of
+        Pair (SetRoute route) _ ->
             setRoute route model
 
-        ( HomeLoaded (Ok subModel), _ ) ->
+        Pair (HomeLoaded (Ok subModel)) _ ->
             { model | pageState = Loaded (Home subModel) } => Cmd.none
 
-        ( HomeLoaded (Err error), _ ) ->
+        Pair (HomeLoaded (Err error)) _ ->
             { model | pageState = Loaded (Errored error) } => Cmd.none
 
-        ( ProfileLoaded username (Ok subModel), _ ) ->
+        Pair (ProfileLoaded username (Ok subModel)) _ ->
             { model | pageState = Loaded (Profile username subModel) } => Cmd.none
 
-        ( ProfileLoaded username (Err error), _ ) ->
+        Pair (ProfileLoaded username (Err error)) _ ->
             { model | pageState = Loaded (Errored error) } => Cmd.none
 
-        ( ArticleLoaded (Ok subModel), _ ) ->
+        Pair (ArticleLoaded (Ok subModel)) _ ->
             { model | pageState = Loaded (Article subModel) } => Cmd.none
 
-        ( ArticleLoaded (Err error), _ ) ->
+        Pair (ArticleLoaded (Err error)) _ ->
             { model | pageState = Loaded (Errored error) } => Cmd.none
 
-        ( EditArticleLoaded slug (Ok subModel), _ ) ->
+        Pair (EditArticleLoaded slug (Ok subModel)) _ ->
             { model | pageState = Loaded (Editor (Just slug) subModel) } => Cmd.none
 
-        ( EditArticleLoaded slug (Err error), _ ) ->
+        Pair (EditArticleLoaded slug (Err error)) _ ->
             { model | pageState = Loaded (Errored error) } => Cmd.none
 
-        ( SetUser user, _ ) ->
+        Pair (SetUser user) _ ->
             let
                 session =
                     model.session
@@ -377,7 +377,7 @@ updatePage page msg model =
             { model | session = { session | user = user } }
                 => cmd
 
-        ( SettingsMsg subMsg, Settings subModel ) ->
+        Pair (SettingsMsg subMsg) (Settings subModel) ->
             let
                 ( ( pageModel, cmd ), msgFromPage ) =
                     Settings.update model.session subMsg subModel
@@ -397,7 +397,7 @@ updatePage page msg model =
             { newModel | pageState = Loaded (Settings pageModel) }
                 => Cmd.map SettingsMsg cmd
 
-        ( LoginMsg subMsg, Login subModel ) ->
+        Pair (LoginMsg subMsg) (Login subModel) ->
             let
                 ( ( pageModel, cmd ), msgFromPage ) =
                     Login.update subMsg subModel
@@ -417,7 +417,7 @@ updatePage page msg model =
             { newModel | pageState = Loaded (Login pageModel) }
                 => Cmd.map LoginMsg cmd
 
-        ( RegisterMsg subMsg, Register subModel ) ->
+        Pair (RegisterMsg subMsg) (Register subModel) ->
             let
                 ( ( pageModel, cmd ), msgFromPage ) =
                     Register.update subMsg subModel
@@ -437,16 +437,16 @@ updatePage page msg model =
             { newModel | pageState = Loaded (Register pageModel) }
                 => Cmd.map RegisterMsg cmd
 
-        ( HomeMsg subMsg, Home subModel ) ->
+        Pair (HomeMsg subMsg) (Home subModel) ->
             toPage Home HomeMsg (Home.update session) subMsg subModel
 
-        ( ProfileMsg subMsg, Profile username subModel ) ->
+        Pair (ProfileMsg subMsg) (Profile username subModel) ->
             toPage (Profile username) ProfileMsg (Profile.update model.session) subMsg subModel
 
-        ( ArticleMsg subMsg, Article subModel ) ->
+        Pair (ArticleMsg subMsg) (Article subModel) ->
             toPage Article ArticleMsg (Article.update model.session) subMsg subModel
 
-        ( EditorMsg subMsg, Editor slug subModel ) ->
+        Pair (EditorMsg subMsg) (Editor slug subModel) ->
             case model.session.user of
                 Nothing ->
                     if slug == Nothing then
@@ -459,12 +459,12 @@ updatePage page msg model =
                 Just user ->
                     toPage (Editor slug) EditorMsg (Editor.update user) subMsg subModel
 
-        ( _, NotFound ) ->
+        Pair _ NotFound ->
             -- Disregard incoming messages when we're on the
             -- NotFound page.
             model => Cmd.none
 
-        ( _, _ ) ->
+        Pair _ _ ->
             -- Disregard incoming messages that arrived for the wrong page
             model => Cmd.none
 

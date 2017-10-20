@@ -364,9 +364,6 @@ updatePage page msg model =
 
         ( SetUser user, _ ) ->
             let
-                session =
-                    model.session
-
                 cmd =
                     -- If we just signed out, then redirect to Home.
                     if session.user /= Nothing && user == Nothing then
@@ -388,10 +385,6 @@ updatePage page msg model =
                             model
 
                         Settings.SetUser user ->
-                            let
-                                session =
-                                    model.session
-                            in
                             { model | session = { user = Just user } }
             in
             { newModel | pageState = Loaded (Settings pageModel) }
@@ -408,10 +401,6 @@ updatePage page msg model =
                             model
 
                         Login.SetUser user ->
-                            let
-                                session =
-                                    model.session
-                            in
                             { model | session = { user = Just user } }
             in
             { newModel | pageState = Loaded (Login pageModel) }
@@ -428,10 +417,6 @@ updatePage page msg model =
                             model
 
                         Register.SetUser user ->
-                            let
-                                session =
-                                    model.session
-                            in
                             { model | session = { user = Just user } }
             in
             { newModel | pageState = Loaded (Register pageModel) }

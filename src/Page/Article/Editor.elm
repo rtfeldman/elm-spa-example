@@ -27,6 +27,7 @@ type alias Model =
     , body : String
     , description : String
     , tags : List String
+    , isSaving : Bool
     }
 
 
@@ -38,6 +39,7 @@ initNew =
     , body = ""
     , description = ""
     , tags = []
+    , isSaving = False
     }
 
 
@@ -59,6 +61,7 @@ initEdit session slug =
                 , body = Article.bodyToMarkdownString article.body
                 , description = article.description
                 , tags = article.tags
+                , isSaving = False
                 }
             )
 
@@ -121,7 +124,7 @@ viewForm model =
                 , defaultValue (String.join " " model.tags)
                 ]
                 []
-            , button [ class "btn btn-lg pull-xs-right btn-primary" ]
+            , button [ class "btn btn-lg pull-xs-right btn-primary", disabled model.isSaving ]
                 [ text saveButtonText ]
             ]
         ]
@@ -152,13 +155,13 @@ update user msg model =
                             user.token
                                 |> Request.Article.create model
                                 |> Http.send CreateCompleted
-                                |> pair { model | errors = [] }
+                                |> pair { model | errors = [], isSaving = True }
 
                         Just slug ->
                             user.token
                                 |> Request.Article.update slug model
                                 |> Http.send EditCompleted
-                                |> pair { model | errors = [] }
+                                |> pair { model | errors = [], isSaving = True }
 
                 errors ->
                     { model | errors = errors } => Cmd.none
@@ -181,7 +184,10 @@ update user msg model =
                 |> pair model
 
         CreateCompleted (Err error) ->
-            { model | errors = model.errors ++ [ Form => "Server error while attempting to publish article" ] }
+            { model
+                | errors = model.errors ++ [ Form => "Server error while attempting to publish article" ]
+                , isSaving = False
+            }
                 => Cmd.none
 
         EditCompleted (Ok article) ->
@@ -190,7 +196,10 @@ update user msg model =
                 |> pair model
 
         EditCompleted (Err error) ->
-            { model | errors = model.errors ++ [ Form => "Server error while attempting to save article" ] }
+            { model
+                | errors = model.errors ++ [ Form => "Server error while attempting to save article" ]
+                , isSaving = False
+            }
                 => Cmd.none
 
 

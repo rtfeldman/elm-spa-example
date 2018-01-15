@@ -1,5 +1,8 @@
 # ![RealWorld Example App](https://cloud.githubusercontent.com/assets/556934/25448178/3e7dc5c0-2a7d-11e7-8069-06da5169dae6.png)
 
+I gave a talk, [Scaling Elm Apps](https://www.youtube.com/watch?v=DoA4Txr4GUs),
+to explain the principles I used to build this. I highly recommend watching it!
+
 > ### [Elm](http://elm-lang.org) codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld-example-apps) spec and API.
 
 

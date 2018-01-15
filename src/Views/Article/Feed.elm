@@ -1,7 +1,10 @@
 module Views.Article.Feed exposing (FeedSource, Model, Msg, authorFeed, favoritedFeed, globalFeed, init, selectTag, tagFeed, update, viewArticles, viewFeedSources, yourFeed)
 
-{-| The reusable Article Feed that appears on both the Home page as well as on
-the Profile page. There's a lot of logic here, so it's more convenient to use
+{-| NOTE: This module has its own Model, view, and update. This is not normal!
+If you find yourself doing this often, please watch <https://www.youtube.com/watch?v=DoA4Txr4GUs>
+
+This is the reusable Article Feed that appears on both the Home page as well as
+on the Profile page. There's a lot of logic here, so it's more convenient to use
 the heavyweight approach of giving this its own Model, view, and update.
 
 This means callers must use Html.map and Cmd.map to use this thing, but in

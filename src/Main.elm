@@ -18,7 +18,6 @@ import Page.Settings as Settings
 import Ports
 import Route exposing (Route)
 import Task
-import Util exposing ((=>))
 import Views.Page as Page exposing (ActivePage)
 
 
@@ -243,20 +242,21 @@ setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
 setRoute maybeRoute model =
     let
         transition toMsg task =
-            { model | pageState = TransitioningFrom (getPage model.pageState) }
-                => Task.attempt toMsg task
+            ( { model | pageState = TransitioningFrom (getPage model.pageState) }
+            , Task.attempt toMsg task
+            )
 
         errored =
             pageErrored model
     in
     case maybeRoute of
         Nothing ->
-            { model | pageState = Loaded NotFound } => Cmd.none
+            ( { model | pageState = Loaded NotFound }, Cmd.none )
 
         Just Route.NewArticle ->
             case model.session.user of
                 Just user ->
-                    { model | pageState = Loaded (Editor Nothing Editor.initNew) } => Cmd.none
+                    ( { model | pageState = Loaded (Editor Nothing Editor.initNew) }, Cmd.none )
 
                 Nothing ->
                     errored Page.NewArticle "You must be signed in to post an article."
@@ -272,7 +272,7 @@ setRoute maybeRoute model =
         Just Route.Settings ->
             case model.session.user of
                 Just user ->
-                    { model | pageState = Loaded (Settings (Settings.init user)) } => Cmd.none
+                    ( { model | pageState = Loaded (Settings (Settings.init user)) }, Cmd.none )
 
                 Nothing ->
                     errored Page.Settings "You must be signed in to access your settings."
@@ -281,24 +281,25 @@ setRoute maybeRoute model =
             transition HomeLoaded (Home.init model.session)
 
         Just Route.Root ->
-            model => Route.modifyUrl Route.Home
+            ( model, Route.modifyUrl Route.Home )
 
         Just Route.Login ->
-            { model | pageState = Loaded (Login Login.initialModel) } => Cmd.none
+            ( { model | pageState = Loaded (Login Login.initialModel) }, Cmd.none )
 
         Just Route.Logout ->
             let
                 session =
                     model.session
             in
-            { model | session = { session | user = Nothing } }
-                => Cmd.batch
-                    [ Ports.storeSession Nothing
-                    , Route.modifyUrl Route.Home
-                    ]
+            ( { model | session = { session | user = Nothing } }
+            , Cmd.batch
+                [ Ports.storeSession Nothing
+                , Route.modifyUrl Route.Home
+                ]
+            )
 
         Just Route.Register ->
-            { model | pageState = Loaded (Register Register.initialModel) } => Cmd.none
+            ( { model | pageState = Loaded (Register Register.initialModel) }, Cmd.none )
 
         Just (Route.Profile username) ->
             transition (ProfileLoaded username) (Profile.init model.session username)
@@ -313,7 +314,7 @@ pageErrored model activePage errorMessage =
         error =
             Errored.pageLoadError activePage errorMessage
     in
-    { model | pageState = Loaded (Errored error) } => Cmd.none
+    ( { model | pageState = Loaded (Errored error) }, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -342,28 +343,28 @@ updatePage page msg model =
             setRoute route model
 
         ( HomeLoaded (Ok subModel), _ ) ->
-            { model | pageState = Loaded (Home subModel) } => Cmd.none
+            ( { model | pageState = Loaded (Home subModel) }, Cmd.none )
 
         ( HomeLoaded (Err error), _ ) ->
-            { model | pageState = Loaded (Errored error) } => Cmd.none
+            ( { model | pageState = Loaded (Errored error) }, Cmd.none )
 
         ( ProfileLoaded username (Ok subModel), _ ) ->
-            { model | pageState = Loaded (Profile username subModel) } => Cmd.none
+            ( { model | pageState = Loaded (Profile username subModel) }, Cmd.none )
 
         ( ProfileLoaded username (Err error), _ ) ->
-            { model | pageState = Loaded (Errored error) } => Cmd.none
+            ( { model | pageState = Loaded (Errored error) }, Cmd.none )
 
         ( ArticleLoaded (Ok subModel), _ ) ->
-            { model | pageState = Loaded (Article subModel) } => Cmd.none
+            ( { model | pageState = Loaded (Article subModel) }, Cmd.none )
 
         ( ArticleLoaded (Err error), _ ) ->
-            { model | pageState = Loaded (Errored error) } => Cmd.none
+            ( { model | pageState = Loaded (Errored error) }, Cmd.none )
 
         ( EditArticleLoaded slug (Ok subModel), _ ) ->
-            { model | pageState = Loaded (Editor (Just slug) subModel) } => Cmd.none
+            ( { model | pageState = Loaded (Editor (Just slug) subModel) }, Cmd.none )
 
         ( EditArticleLoaded slug (Err error), _ ) ->
-            { model | pageState = Loaded (Errored error) } => Cmd.none
+            ( { model | pageState = Loaded (Errored error) }, Cmd.none )
 
         ( SetUser user, _ ) ->
             let
@@ -374,8 +375,9 @@ updatePage page msg model =
                     else
                         Cmd.none
             in
-            { model | session = { session | user = user } }
-                => cmd
+            ( { model | session = { session | user = user } }
+            , cmd
+            )
 
         ( SettingsMsg subMsg, Settings subModel ) ->
             let
@@ -390,8 +392,9 @@ updatePage page msg model =
                         Settings.SetUser user ->
                             { model | session = { user = Just user } }
             in
-            { newModel | pageState = Loaded (Settings pageModel) }
-                => Cmd.map SettingsMsg cmd
+            ( { newModel | pageState = Loaded (Settings pageModel) }
+            , Cmd.map SettingsMsg cmd
+            )
 
         ( LoginMsg subMsg, Login subModel ) ->
             let
@@ -406,8 +409,9 @@ updatePage page msg model =
                         Login.SetUser user ->
                             { model | session = { user = Just user } }
             in
-            { newModel | pageState = Loaded (Login pageModel) }
-                => Cmd.map LoginMsg cmd
+            ( { newModel | pageState = Loaded (Login pageModel) }
+            , Cmd.map LoginMsg cmd
+            )
 
         ( RegisterMsg subMsg, Register subModel ) ->
             let
@@ -422,8 +426,9 @@ updatePage page msg model =
                         Register.SetUser user ->
                             { model | session = { user = Just user } }
             in
-            { newModel | pageState = Loaded (Register pageModel) }
-                => Cmd.map RegisterMsg cmd
+            ( { newModel | pageState = Loaded (Register pageModel) }
+            , Cmd.map RegisterMsg cmd
+            )
 
         ( HomeMsg subMsg, Home subModel ) ->
             toPage Home HomeMsg (Home.update session) subMsg subModel
@@ -450,11 +455,11 @@ updatePage page msg model =
         ( _, NotFound ) ->
             -- Disregard incoming messages when we're on the
             -- NotFound page.
-            model => Cmd.none
+            ( model, Cmd.none )
 
         ( _, _ ) ->
             -- Disregard incoming messages that arrived for the wrong page
-            model => Cmd.none
+            ( model, Cmd.none )
 
 
 

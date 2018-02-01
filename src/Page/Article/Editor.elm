@@ -11,7 +11,7 @@ import Page.Errored exposing (PageLoadError, pageLoadError)
 import Request.Article
 import Route
 import Task exposing (Task)
-import Util exposing ((=>), pair, viewIf)
+import Util exposing (pair, viewIf)
 import Validate exposing (Validator, ifBlank, validate)
 import Views.Form as Form
 import Views.Page as Page
@@ -164,19 +164,19 @@ update user msg model =
                                 |> pair { model | errors = [], isSaving = True }
 
                 errors ->
-                    { model | errors = errors } => Cmd.none
+                    ( { model | errors = errors }, Cmd.none )
 
         SetTitle title ->
-            { model | title = title } => Cmd.none
+            ( { model | title = title }, Cmd.none )
 
         SetDescription description ->
-            { model | description = description } => Cmd.none
+            ( { model | description = description }, Cmd.none )
 
         SetTags tags ->
-            { model | tags = tagsFromString tags } => Cmd.none
+            ( { model | tags = tagsFromString tags }, Cmd.none )
 
         SetBody body ->
-            { model | body = body } => Cmd.none
+            ( { model | body = body }, Cmd.none )
 
         CreateCompleted (Ok article) ->
             Route.Article article.slug
@@ -184,11 +184,12 @@ update user msg model =
                 |> pair model
 
         CreateCompleted (Err error) ->
-            { model
-                | errors = model.errors ++ [ Form => "Server error while attempting to publish article" ]
+            ( { model
+                | errors = model.errors ++ [ ( Form, "Server error while attempting to publish article" ) ]
                 , isSaving = False
-            }
-                => Cmd.none
+              }
+            , Cmd.none
+            )
 
         EditCompleted (Ok article) ->
             Route.Article article.slug
@@ -196,11 +197,12 @@ update user msg model =
                 |> pair model
 
         EditCompleted (Err error) ->
-            { model
-                | errors = model.errors ++ [ Form => "Server error while attempting to save article" ]
+            ( { model
+                | errors = model.errors ++ [ ( Form, "Server error while attempting to save article" ) ]
                 , isSaving = False
-            }
-                => Cmd.none
+              }
+            , Cmd.none
+            )
 
 
 
@@ -220,8 +222,8 @@ type alias Error =
 modelValidator : Validator Error Model
 modelValidator =
     Validate.all
-        [ ifBlank .title (Title => "title can't be blank.")
-        , ifBlank .body (Body => "body can't be blank.")
+        [ ifBlank .title ( Title, "title can't be blank." )
+        , ifBlank .body ( Body, "body can't be blank." )
         ]
 
 

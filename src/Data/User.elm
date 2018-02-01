@@ -8,7 +8,6 @@ import Json.Decode.Pipeline exposing (decode, required)
 import Json.Encode as Encode exposing (Value)
 import Json.Encode.Extra as EncodeExtra
 import UrlParser
-import Util exposing ((=>))
 
 
 type alias User =
@@ -41,13 +40,13 @@ decoder =
 encode : User -> Value
 encode user =
     Encode.object
-        [ "email" => Encode.string user.email
-        , "token" => AuthToken.encode user.token
-        , "username" => encodeUsername user.username
-        , "bio" => EncodeExtra.maybe Encode.string user.bio
-        , "image" => UserPhoto.encode user.image
-        , "createdAt" => Encode.string user.createdAt
-        , "updatedAt" => Encode.string user.updatedAt
+        [ ( "email", Encode.string user.email )
+        , ( "token", AuthToken.encode user.token )
+        , ( "username", encodeUsername user.username )
+        , ( "bio", EncodeExtra.maybe Encode.string user.bio )
+        , ( "image", UserPhoto.encode user.image )
+        , ( "createdAt", Encode.string user.createdAt )
+        , ( "updatedAt", Encode.string user.updatedAt )
         ]
 
 

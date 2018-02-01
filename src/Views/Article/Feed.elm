@@ -29,7 +29,7 @@ import Http
 import Request.Article
 import SelectList exposing (Position(..), SelectList)
 import Task exposing (Task)
-import Util exposing ((=>), onClickStopPropagation, pair, viewIf)
+import Util exposing (onClickStopPropagation, pair, viewIf)
 import Views.Article
 import Views.Errors as Errors
 import Views.Page exposing (bodyId)
@@ -97,7 +97,7 @@ viewFeedSource : Position -> FeedSource -> Html Msg
 viewFeedSource position source =
     li [ class "nav-item" ]
         [ a
-            [ classList [ "nav-link" => True, "active" => position == Selected ]
+            [ classList [ ( "nav-link", True ), ( "active", position == Selected ) ]
             , href "javascript:void(0);"
             , onClick (SelectFeedSource source)
             ]
@@ -173,7 +173,7 @@ pagination activePage feed feedSource =
 
 pageLink : Int -> Bool -> Html Msg
 pageLink page isActive =
-    li [ classList [ "page-item" => True, "active" => isActive ] ]
+    li [ classList [ ( "page-item", True ), ( "active", isActive ) ] ]
         [ a
             [ class "page-link"
             , href "javascript:void(0);"
@@ -206,7 +206,7 @@ updateInternal : Session -> Msg -> InternalModel -> ( InternalModel, Cmd Msg )
 updateInternal session msg model =
     case msg of
         DismissErrors ->
-            { model | errors = [] } => Cmd.none
+            ( { model | errors = [] }, Cmd.none )
 
         SelectFeedSource source ->
             source
@@ -215,26 +215,29 @@ updateInternal session msg model =
                 |> pair { model | isLoading = True }
 
         FeedLoadCompleted source (Ok ( activePage, feed )) ->
-            { model
+            ( { model
                 | feed = feed
                 , feedSources = selectFeedSource source model.feedSources
                 , activePage = activePage
                 , isLoading = False
-            }
-                => Cmd.none
+              }
+            , Cmd.none
+            )
 
         FeedLoadCompleted _ (Err error) ->
-            { model
+            ( { model
                 | errors = model.errors ++ [ "Server error while trying to load feed" ]
                 , isLoading = False
-            }
-                => Cmd.none
+              }
+            , Cmd.none
+            )
 
         ToggleFavorite article ->
             case session.user of
                 Nothing ->
-                    { model | errors = model.errors ++ [ "You are currently signed out. You must sign in to favorite articles." ] }
-                        => Cmd.none
+                    ( { model | errors = model.errors ++ [ "You are currently signed out. You must sign in to favorite articles." ] }
+                    , Cmd.none
+                    )
 
                 Just user ->
                     Request.Article.toggleFavorite article user.token
@@ -249,11 +252,12 @@ updateInternal session msg model =
                 newFeed =
                     { feed | articles = List.map (replaceArticle article) feed.articles }
             in
-            { model | feed = newFeed } => Cmd.none
+            ( { model | feed = newFeed }, Cmd.none )
 
         FavoriteCompleted (Err error) ->
-            { model | errors = model.errors ++ [ "Server error while trying to favorite article." ] }
-                => Cmd.none
+            ( { model | errors = model.errors ++ [ "Server error while trying to favorite article." ] }
+            , Cmd.none
+            )
 
         SelectPage page ->
             let

@@ -13,7 +13,6 @@ import Page.Errored exposing (PageLoadError, pageLoadError)
 import Request.Article
 import SelectList exposing (SelectList)
 import Task exposing (Task)
-import Util exposing ((=>), onClickStopPropagation)
 import Views.Article.Feed as Feed exposing (FeedSource, globalFeed, tagFeed, yourFeed)
 import Views.Page as Page
 
@@ -121,11 +120,11 @@ update session msg model =
                 ( newFeed, subCmd ) =
                     Feed.update session subMsg model.feed
             in
-            { model | feed = newFeed } => Cmd.map FeedMsg subCmd
+            ( { model | feed = newFeed }, Cmd.map FeedMsg subCmd )
 
         SelectTag tagName ->
             let
                 subCmd =
                     Feed.selectTag (Maybe.map .token session.user) tagName
             in
-            model => Cmd.map FeedMsg subCmd
+            ( model, Cmd.map FeedMsg subCmd )

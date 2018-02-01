@@ -13,7 +13,6 @@ import Json.Decode as Decode exposing (Decoder, decodeString, field, string)
 import Json.Decode.Pipeline exposing (decode, optional)
 import Request.User exposing (storeSession)
 import Route exposing (Route)
-import Util exposing ((=>))
 import Validate exposing (Validator, ifBlank, validate)
 import Views.Form as Form
 
@@ -101,24 +100,32 @@ update msg model =
         SubmitForm ->
             case validate modelValidator model of
                 [] ->
-                    { model | errors = [] }
-                        => Http.send LoginCompleted (Request.User.login model)
-                        => NoOp
+                    ( ( { model | errors = [] }
+                      , Http.send LoginCompleted (Request.User.login model)
+                      )
+                    , NoOp
+                    )
 
                 errors ->
-                    { model | errors = errors }
-                        => Cmd.none
-                        => NoOp
+                    ( ( { model | errors = errors }
+                      , Cmd.none
+                      )
+                    , NoOp
+                    )
 
         SetEmail email ->
-            { model | email = email }
-                => Cmd.none
-                => NoOp
+            ( ( { model | email = email }
+              , Cmd.none
+              )
+            , NoOp
+            )
 
         SetPassword password ->
-            { model | password = password }
-                => Cmd.none
-                => NoOp
+            ( ( { model | password = password }
+              , Cmd.none
+              )
+            , NoOp
+            )
 
         LoginCompleted (Err error) ->
             let
@@ -132,14 +139,18 @@ update msg model =
                         _ ->
                             [ "unable to perform login" ]
             in
-            { model | errors = List.map (\errorMessage -> Form => errorMessage) errorMessages }
-                => Cmd.none
-                => NoOp
+            ( ( { model | errors = List.map (\errorMessage -> ( Form, errorMessage )) errorMessages }
+              , Cmd.none
+              )
+            , NoOp
+            )
 
         LoginCompleted (Ok user) ->
-            model
-                => Cmd.batch [ storeSession user, Route.modifyUrl Route.Home ]
-                => SetUser user
+            ( ( model
+              , Cmd.batch [ storeSession user, Route.modifyUrl Route.Home ]
+              )
+            , SetUser user
+            )
 
 
 
@@ -180,8 +191,8 @@ type alias Error =
 modelValidator : Validator Error Model
 modelValidator =
     Validate.all
-        [ ifBlank .email (Email => "email can't be blank.")
-        , ifBlank .password (Password => "password can't be blank.")
+        [ ifBlank .email ( Email, "email can't be blank." )
+        , ifBlank .password ( Password, "password can't be blank." )
         ]
 
 

@@ -1,194 +1,317 @@
-module Page.Register exposing (ExternalMsg(..), Model, Msg, initialModel, update, view)
+module Page.Register exposing (Model, Msg, init, subscriptions, toSession, update, view)
 
-import Data.Session exposing (Session)
-import Data.User exposing (User)
+import Api exposing (Cred)
+import Browser.Navigation as Nav
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
 import Json.Decode as Decode exposing (Decoder, decodeString, field, string)
-import Json.Decode.Pipeline exposing (decode, optional)
-import Request.User exposing (storeSession)
+import Json.Decode.Pipeline exposing (optional)
+import Json.Encode as Encode
 import Route exposing (Route)
-import Util exposing ((=>))
-import Validate exposing (Validator, ifBlank, validate)
-import Views.Form as Form
+import Session exposing (Session)
+import Viewer exposing (Viewer)
 
 
--- MODEL --
+
+-- MODEL
 
 
 type alias Model =
-    { errors : List Error
-    , email : String
+    { session : Session
+    , problems : List Problem
+    , form : Form
+    }
+
+
+type alias Form =
+    { email : String
     , username : String
     , password : String
     }
 
 
-initialModel : Model
-initialModel =
-    { errors = []
-    , email = ""
-    , username = ""
-    , password = ""
-    }
+type Problem
+    = InvalidEntry ValidatedField String
+    | ServerError String
+
+
+init : Session -> ( Model, Cmd msg )
+init session =
+    ( { session = session
+      , problems = []
+      , form =
+            { email = ""
+            , username = ""
+            , password = ""
+            }
+      }
+    , Cmd.none
+    )
 
 
 
--- VIEW --
+-- VIEW
 
 
-view : Session -> Model -> Html Msg
-view session model =
-    div [ class "auth-page" ]
-        [ div [ class "container page" ]
-            [ div [ class "row" ]
-                [ div [ class "col-md-6 offset-md-3 col-xs-12" ]
-                    [ h1 [ class "text-xs-center" ] [ text "Sign up" ]
-                    , p [ class "text-xs-center" ]
-                        [ a [ Route.href Route.Login ]
-                            [ text "Have an account?" ]
+view : Model -> { title : String, content : Html Msg }
+view model =
+    { title = "Register"
+    , content =
+        div [ class "cred-page" ]
+            [ div [ class "container page" ]
+                [ div [ class "row" ]
+                    [ div [ class "col-md-6 offset-md-3 col-xs-12" ]
+                        [ h1 [ class "text-xs-center" ] [ text "Sign up" ]
+                        , p [ class "text-xs-center" ]
+                            [ a [ Route.href Route.Login ]
+                                [ text "Have an account?" ]
+                            ]
+                        , ul [ class "error-messages" ]
+                            (List.map viewProblem model.problems)
+                        , viewForm model.form
                         ]
-                    , Form.viewErrors model.errors
-                    , viewForm
                     ]
                 ]
             ]
-        ]
+    }
 
 
-viewForm : Html Msg
-viewForm =
-    Html.form [ onSubmit SubmitForm ]
-        [ Form.input
-            [ class "form-control-lg"
-            , placeholder "Username"
-            , onInput SetUsername
+viewForm : Form -> Html Msg
+viewForm form =
+    Html.form [ onSubmit SubmittedForm ]
+        [ fieldset [ class "form-group" ]
+            [ input
+                [ class "form-control form-control-lg"
+                , placeholder "Username"
+                , onInput EnteredUsername
+                , value form.username
+                ]
+                []
             ]
-            []
-        , Form.input
-            [ class "form-control-lg"
-            , placeholder "Email"
-            , onInput SetEmail
+        , fieldset [ class "form-group" ]
+            [ input
+                [ class "form-control form-control-lg"
+                , placeholder "Email"
+                , onInput EnteredEmail
+                , value form.email
+                ]
+                []
             ]
-            []
-        , Form.password
-            [ class "form-control-lg"
-            , placeholder "Password"
-            , onInput SetPassword
+        , fieldset [ class "form-group" ]
+            [ input
+                [ class "form-control form-control-lg"
+                , type_ "password"
+                , placeholder "Password"
+                , onInput EnteredPassword
+                , value form.password
+                ]
+                []
             ]
-            []
         , button [ class "btn btn-lg btn-primary pull-xs-right" ]
             [ text "Sign up" ]
         ]
 
 
+viewProblem : Problem -> Html msg
+viewProblem problem =
+    let
+        errorMessage =
+            case problem of
+                InvalidEntry _ str ->
+                    str
 
--- UPDATE --
+                ServerError str ->
+                    str
+    in
+    li [] [ text errorMessage ]
+
+
+
+-- UPDATE
 
 
 type Msg
-    = SubmitForm
-    | SetEmail String
-    | SetUsername String
-    | SetPassword String
-    | RegisterCompleted (Result Http.Error User)
+    = SubmittedForm
+    | EnteredEmail String
+    | EnteredUsername String
+    | EnteredPassword String
+    | CompletedRegister (Result Http.Error Viewer)
+    | GotSession Session
 
 
-type ExternalMsg
-    = NoOp
-    | SetUser User
-
-
-update : Msg -> Model -> ( ( Model, Cmd Msg ), ExternalMsg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        SubmitForm ->
-            case validate modelValidator model of
-                [] ->
-                    { model | errors = [] }
-                        => Http.send RegisterCompleted (Request.User.register model)
-                        => NoOp
+        SubmittedForm ->
+            case validate model.form of
+                Ok validForm ->
+                    ( { model | problems = [] }
+                    , Http.send CompletedRegister (register validForm)
+                    )
 
-                errors ->
-                    { model | errors = errors }
-                        => Cmd.none
-                        => NoOp
+                Err problems ->
+                    ( { model | problems = problems }
+                    , Cmd.none
+                    )
 
-        SetEmail email ->
-            { model | email = email }
-                => Cmd.none
-                => NoOp
+        EnteredUsername username ->
+            updateForm (\form -> { form | username = username }) model
 
-        SetUsername username ->
-            { model | username = username }
-                => Cmd.none
-                => NoOp
+        EnteredEmail email ->
+            updateForm (\form -> { form | email = email }) model
 
-        SetPassword password ->
-            { model | password = password }
-                => Cmd.none
-                => NoOp
+        EnteredPassword password ->
+            updateForm (\form -> { form | password = password }) model
 
-        RegisterCompleted (Err error) ->
+        CompletedRegister (Err error) ->
             let
-                errorMessages =
-                    case error of
-                        Http.BadStatus response ->
-                            response.body
-                                |> decodeString (field "errors" errorsDecoder)
-                                |> Result.withDefault []
-
-                        _ ->
-                            [ "unable to process registration" ]
+                serverErrors =
+                    Api.decodeErrors error
+                        |> List.map ServerError
             in
-            { model | errors = List.map (\errorMessage -> Form => errorMessage) errorMessages }
-                => Cmd.none
-                => NoOp
+            ( { model | problems = List.append model.problems serverErrors }
+            , Cmd.none
+            )
 
-        RegisterCompleted (Ok user) ->
-            model
-                => Cmd.batch [ storeSession user, Route.modifyUrl Route.Home ]
-                => SetUser user
+        CompletedRegister (Ok viewer) ->
+            ( model
+            , Viewer.store viewer
+            )
+
+        GotSession session ->
+            ( { model | session = session }
+            , Route.replaceUrl (Session.navKey session) Route.Home
+            )
+
+
+{-| Helper function for `update`. Updates the form and returns Cmd.none.
+Useful for recording form fields!
+-}
+updateForm : (Form -> Form) -> Model -> ( Model, Cmd Msg )
+updateForm transform model =
+    ( { model | form = transform model.form }, Cmd.none )
 
 
 
--- VALIDATION --
+-- SUBSCRIPTIONS
 
 
-type Field
-    = Form
-    | Username
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Session.changes GotSession (Session.navKey model.session)
+
+
+
+-- EXPORT
+
+
+toSession : Model -> Session
+toSession model =
+    model.session
+
+
+
+-- FORM
+
+
+{-| Marks that we've trimmed the form's fields, so we don't accidentally send
+it to the server without having trimmed it!
+-}
+type TrimmedForm
+    = Trimmed Form
+
+
+{-| When adding a variant here, add it to `fieldsToValidate` too!
+-}
+type ValidatedField
+    = Username
     | Email
     | Password
 
 
-type alias Error =
-    ( Field, String )
+fieldsToValidate : List ValidatedField
+fieldsToValidate =
+    [ Username
+    , Email
+    , Password
+    ]
 
 
-modelValidator : Validator Error Model
-modelValidator =
-    Validate.all
-        [ ifBlank .username (Username => "username can't be blank.")
-        , ifBlank .email (Email => "email can't be blank.")
-        , ifBlank .password (Password => "password can't be blank.")
-        ]
-
-
-errorsDecoder : Decoder (List String)
-errorsDecoder =
-    decode (\email username password -> List.concat [ email, username, password ])
-        |> optionalError "email"
-        |> optionalError "username"
-        |> optionalError "password"
-
-
-optionalError : String -> Decoder (List String -> a) -> Decoder a
-optionalError fieldName =
+{-| Trim the form and validate its fields. If there are problems, report them!
+-}
+validate : Form -> Result (List Problem) TrimmedForm
+validate form =
     let
-        errorToString errorMessage =
-            String.join " " [ fieldName, errorMessage ]
+        trimmedForm =
+            trimFields form
     in
-    optional fieldName (Decode.list (Decode.map errorToString string)) []
+    case List.concatMap (validateField trimmedForm) fieldsToValidate of
+        [] ->
+            Ok trimmedForm
+
+        problems ->
+            Err problems
+
+
+validateField : TrimmedForm -> ValidatedField -> List Problem
+validateField (Trimmed form) field =
+    List.map (InvalidEntry field) <|
+        case field of
+            Username ->
+                if String.isEmpty form.username then
+                    [ "username can't be blank." ]
+
+                else
+                    []
+
+            Email ->
+                if String.isEmpty form.email then
+                    [ "email can't be blank." ]
+
+                else
+                    []
+
+            Password ->
+                if String.isEmpty form.password then
+                    [ "password can't be blank." ]
+
+                else if String.length form.password < Viewer.minPasswordChars then
+                    [ "password must be at least " ++ String.fromInt Viewer.minPasswordChars ++ " characters long." ]
+
+                else
+                    []
+
+
+{-| Don't trim while the user is typing! That would be super annoying.
+Instead, trim only on submit.
+-}
+trimFields : Form -> TrimmedForm
+trimFields form =
+    Trimmed
+        { username = String.trim form.username
+        , email = String.trim form.email
+        , password = String.trim form.password
+        }
+
+
+
+-- HTTP
+
+
+register : TrimmedForm -> Http.Request Viewer
+register (Trimmed form) =
+    let
+        user =
+            Encode.object
+                [ ( "username", Encode.string form.username )
+                , ( "email", Encode.string form.email )
+                , ( "password", Encode.string form.password )
+                ]
+
+        body =
+            Encode.object [ ( "user", user ) ]
+                |> Http.jsonBody
+    in
+    Api.register body Viewer.decoder

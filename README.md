@@ -19,12 +19,14 @@ Check out [the full writeup](https://dev.to/rtfeldman/tour-of-an-open-source-elm
 
 # Getting started
 
-If you don't already have `elm` and `elm-live`:
+I set this up with `make` to show that you can make a SPA in Elm with any
+build tool you like! It takes very little configuration.
 
-> npm install -g elm elm-live
+To build production assets (including minification):
 
-Then, to build everything:
+> make
 
-> elm-live --output=elm.js src/Main.elm --pushstate --open --debug
+To build local development (including the time-traveling debugger)
 
-(Leave off the `--debug` if you don't want the time-traveling debugger.)
+> make dev
+

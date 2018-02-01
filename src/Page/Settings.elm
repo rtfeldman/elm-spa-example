@@ -1,103 +1,185 @@
-module Page.Settings exposing (ExternalMsg(..), Model, Msg, init, update, view)
+module Page.Settings exposing (Model, Msg, init, subscriptions, toSession, update, view)
 
-import Data.Session exposing (Session)
-import Data.User as User exposing (User)
-import Data.UserPhoto as UserPhoto
-import Html exposing (Html, button, div, fieldset, h1, input, text, textarea)
-import Html.Attributes exposing (attribute, class, defaultValue, placeholder, type_)
+import Api exposing (Cred)
+import Api.Endpoint as Endpoint
+import Avatar
+import Browser.Navigation as Nav
+import Email exposing (Email)
+import Html exposing (Html, button, div, fieldset, h1, input, li, text, textarea, ul)
+import Html.Attributes exposing (attribute, class, placeholder, type_, value)
 import Html.Events exposing (onInput, onSubmit)
 import Http
 import Json.Decode as Decode exposing (Decoder, decodeString, field, list, string)
-import Json.Decode.Pipeline exposing (decode, optional)
-import Request.User exposing (storeSession)
+import Json.Decode.Pipeline exposing (hardcoded, required)
+import Json.Encode as Encode
+import Loading
+import Log
+import Profile exposing (Profile)
 import Route
-import Util exposing ((=>), pair)
-import Validate exposing (Validator, ifBlank, validate)
-import Views.Form as Form
+import Session exposing (Session)
+import Task
+import Username as Username exposing (Username)
+import Viewer exposing (Viewer)
 
 
--- MODEL --
+
+-- MODEL
 
 
 type alias Model =
-    { errors : List Error
-    , image : Maybe String
-    , email : String
+    { session : Session
+    , problems : List Problem
+    , status : Status
+    }
+
+
+type alias Form =
+    { avatar : String
     , bio : String
+    , email : String
     , username : String
-    , password : Maybe String
+    , password : String
     }
 
 
-init : User -> Model
-init user =
-    { errors = []
-    , image = UserPhoto.toMaybeString user.image
-    , email = user.email
-    , bio = Maybe.withDefault "" user.bio
-    , username = User.usernameToString user.username
-    , password = Nothing
-    }
+type Status
+    = Loading
+    | LoadingSlowly
+    | Loaded Form
+    | Failed
 
 
+type Problem
+    = InvalidEntry ValidatedField String
+    | ServerError String
 
--- VIEW --
 
-
-view : Session -> Model -> Html Msg
-view session model =
-    div [ class "settings-page" ]
-        [ div [ class "container page" ]
-            [ div [ class "row" ]
-                [ div [ class "col-md-6 offset-md-3 col-xs-12" ]
-                    [ h1 [ class "text-xs-center" ] [ text "Your Settings" ]
-                    , Form.viewErrors model.errors
-                    , viewForm model
-                    ]
-                ]
-            ]
+init : Session -> ( Model, Cmd Msg )
+init session =
+    ( { session = session
+      , problems = []
+      , status = Loading
+      }
+    , Cmd.batch
+        [ Api.get Endpoint.user (Session.cred session) (Decode.field "user" formDecoder)
+            |> Http.send CompletedFormLoad
+        , Task.perform (\_ -> PassedSlowLoadThreshold) Loading.slowThreshold
         ]
+    )
 
 
-viewForm : Model -> Html Msg
-viewForm model =
-    Html.form [ onSubmit SubmitForm ]
+formDecoder : Decoder Form
+formDecoder =
+    Decode.succeed Form
+        |> required "image" (Decode.map (Maybe.withDefault "") (Decode.nullable Decode.string))
+        |> required "bio" (Decode.map (Maybe.withDefault "") (Decode.nullable Decode.string))
+        |> required "email" Decode.string
+        |> required "username" Decode.string
+        |> hardcoded ""
+
+
+{-| A form that has been validated. Only the `edit` function uses this. Its
+purpose is to prevent us from forgetting to validate the form before passing
+it to `edit`.
+
+This doesn't create any guarantees that the form was actually validated. If
+we wanted to do that, we'd need to move the form data into a separate module!
+
+-}
+type ValidForm
+    = Valid Form
+
+
+
+-- VIEW
+
+
+view : Model -> { title : String, content : Html Msg }
+view model =
+    { title = "Settings"
+    , content =
+        case Session.cred model.session of
+            Just cred ->
+                div [ class "settings-page" ]
+                    [ div [ class "container page" ]
+                        [ div [ class "row" ]
+                            [ div [ class "col-md-6 offset-md-3 col-xs-12" ] <|
+                                [ h1 [ class "text-xs-center" ] [ text "Your Settings" ]
+                                , ul [ class "error-messages" ]
+                                    (List.map viewProblem model.problems)
+                                , case model.status of
+                                    Loaded form ->
+                                        viewForm cred form
+
+                                    Loading ->
+                                        text ""
+
+                                    LoadingSlowly ->
+                                        Loading.icon
+
+                                    Failed ->
+                                        text "Error loading page."
+                                ]
+                            ]
+                        ]
+                    ]
+
+            Nothing ->
+                text "Sign in to view your settings."
+    }
+
+
+viewForm : Cred -> Form -> Html Msg
+viewForm cred form =
+    Html.form [ onSubmit (SubmittedForm cred form) ]
         [ fieldset []
-            [ Form.input
-                [ placeholder "URL of profile picture"
-                , defaultValue (Maybe.withDefault "" model.image)
-                , onInput SetImage
+            [ fieldset [ class "form-group" ]
+                [ input
+                    [ class "form-control"
+                    , placeholder "URL of profile picture"
+                    , value form.avatar
+                    , onInput EnteredAvatar
+                    ]
+                    []
                 ]
-                []
-            , Form.input
-                [ class "form-control-lg"
-                , placeholder "Username"
-                , defaultValue model.username
-                , onInput SetUsername
+            , fieldset [ class "form-group" ]
+                [ input
+                    [ class "form-control form-control-lg"
+                    , placeholder "Username"
+                    , value form.username
+                    , onInput EnteredUsername
+                    ]
+                    []
                 ]
-                []
-            , Form.textarea
-                [ class "form-control-lg"
-                , placeholder "Short bio about you"
-                , attribute "rows" "8"
-                , defaultValue model.bio
-                , onInput SetBio
+            , fieldset [ class "form-group" ]
+                [ textarea
+                    [ class "form-control form-control-lg"
+                    , placeholder "Short bio about you"
+                    , attribute "rows" "8"
+                    , value form.bio
+                    , onInput EnteredBio
+                    ]
+                    []
                 ]
-                []
-            , Form.input
-                [ class "form-control-lg"
-                , placeholder "Email"
-                , defaultValue model.email
-                , onInput SetEmail
+            , fieldset [ class "form-group" ]
+                [ input
+                    [ class "form-control form-control-lg"
+                    , placeholder "Email"
+                    , value form.email
+                    , onInput EnteredEmail
+                    ]
+                    []
                 ]
-                []
-            , Form.password
-                [ class "form-control-lg"
-                , placeholder "Password"
-                , defaultValue (Maybe.withDefault "" model.password)
-                , onInput SetPassword
+            , fieldset [ class "form-group" ]
+                [ input
+                    [ class "form-control form-control-lg"
+                    , type_ "password"
+                    , placeholder "Password"
+                    , value form.password
+                    , onInput EnteredPassword
+                    ]
+                    []
                 ]
-                []
             , button
                 [ class "btn btn-lg btn-primary pull-xs-right" ]
                 [ text "Update Settings" ]
@@ -105,145 +187,275 @@ viewForm model =
         ]
 
 
+viewProblem : Problem -> Html msg
+viewProblem problem =
+    let
+        errorMessage =
+            case problem of
+                InvalidEntry _ message ->
+                    message
 
--- UPDATE --
+                ServerError message ->
+                    message
+    in
+    li [] [ text errorMessage ]
+
+
+
+-- UPDATE
 
 
 type Msg
-    = SubmitForm
-    | SetEmail String
-    | SetUsername String
-    | SetPassword String
-    | SetBio String
-    | SetImage String
-    | SaveCompleted (Result Http.Error User)
+    = SubmittedForm Cred Form
+    | EnteredEmail String
+    | EnteredUsername String
+    | EnteredPassword String
+    | EnteredBio String
+    | EnteredAvatar String
+    | CompletedFormLoad (Result Http.Error Form)
+    | CompletedSave (Result Http.Error Viewer)
+    | GotSession Session
+    | PassedSlowLoadThreshold
 
 
-type ExternalMsg
-    = NoOp
-    | SetUser User
-
-
-update : Session -> Msg -> Model -> ( ( Model, Cmd Msg ), ExternalMsg )
-update session msg model =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
     case msg of
-        SubmitForm ->
-            case validate modelValidator model of
-                [] ->
-                    session.user
-                        |> Maybe.map .token
-                        |> Request.User.edit model
-                        |> Http.send SaveCompleted
-                        |> pair { model | errors = [] }
-                        => NoOp
+        CompletedFormLoad (Ok form) ->
+            ( { model | status = Loaded form }
+            , Cmd.none
+            )
 
-                errors ->
-                    { model | errors = errors }
-                        => Cmd.none
-                        => NoOp
+        CompletedFormLoad (Err _) ->
+            ( { model | status = Failed }
+            , Cmd.none
+            )
 
-        SetEmail email ->
-            { model | email = email }
-                => Cmd.none
-                => NoOp
+        SubmittedForm cred form ->
+            case validate form of
+                Ok validForm ->
+                    ( { model | status = Loaded form }
+                    , edit cred validForm
+                        |> Http.send CompletedSave
+                    )
 
-        SetUsername username ->
-            { model | username = username }
-                => Cmd.none
-                => NoOp
+                Err problems ->
+                    ( { model | problems = problems }
+                    , Cmd.none
+                    )
 
-        SetPassword passwordStr ->
+        EnteredEmail email ->
+            updateForm (\form -> { form | email = email }) model
+
+        EnteredUsername username ->
+            updateForm (\form -> { form | username = username }) model
+
+        EnteredPassword password ->
+            updateForm (\form -> { form | password = password }) model
+
+        EnteredBio bio ->
+            updateForm (\form -> { form | bio = bio }) model
+
+        EnteredAvatar avatar ->
+            updateForm (\form -> { form | avatar = avatar }) model
+
+        CompletedSave (Err error) ->
             let
-                password =
-                    if String.isEmpty passwordStr then
-                        Nothing
-                    else
-                        Just passwordStr
+                serverErrors =
+                    Api.decodeErrors error
+                        |> List.map ServerError
             in
-            { model | password = password }
-                => Cmd.none
-                => NoOp
+            ( { model | problems = List.append model.problems serverErrors }
+            , Cmd.none
+            )
 
-        SetBio bio ->
-            { model | bio = bio }
-                => Cmd.none
-                => NoOp
+        CompletedSave (Ok viewer) ->
+            ( model
+            , Viewer.store viewer
+            )
 
-        SetImage imageStr ->
-            let
-                image =
-                    if String.isEmpty imageStr then
-                        Nothing
-                    else
-                        Just imageStr
-            in
-            { model | image = image }
-                => Cmd.none
-                => NoOp
+        GotSession session ->
+            ( { model | session = session }
+            , Route.replaceUrl (Session.navKey session) Route.Home
+            )
 
-        SaveCompleted (Err error) ->
-            let
-                errorMessages =
-                    case error of
-                        Http.BadStatus response ->
-                            response.body
-                                |> decodeString (field "errors" errorsDecoder)
-                                |> Result.withDefault []
+        PassedSlowLoadThreshold ->
+            case model.status of
+                Loading ->
+                    ( { model | status = LoadingSlowly }
+                    , Cmd.none
+                    )
 
-                        _ ->
-                            [ "unable to save changes" ]
+                _ ->
+                    ( model, Cmd.none )
 
-                errors =
-                    errorMessages
-                        |> List.map (\errorMessage -> Form => errorMessage)
-            in
-            { model | errors = errors }
-                => Cmd.none
-                => NoOp
 
-        SaveCompleted (Ok user) ->
-            model
-                => Cmd.batch [ storeSession user, Route.modifyUrl Route.Home ]
-                => SetUser user
+{-| Helper function for `update`. Updates the form and returns Cmd.none.
+Useful for recording form fields!
+-}
+updateForm : (Form -> Form) -> Model -> ( Model, Cmd msg )
+updateForm transform model =
+    case model.status of
+        Loaded form ->
+            ( { model | status = Loaded (transform form) }, Cmd.none )
+
+        _ ->
+            ( model, Log.error )
 
 
 
--- VALIDATION --
+-- SUBSCRIPTIONS
 
 
-type Field
-    = Form
-    | Username
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Session.changes GotSession (Session.navKey model.session)
+
+
+
+-- EXPORT
+
+
+toSession : Model -> Session
+toSession model =
+    model.session
+
+
+
+-- FORM
+
+
+{-| Marks that we've trimmed the form's fields, so we don't accidentally send
+it to the server without having trimmed it!
+-}
+type TrimmedForm
+    = Trimmed Form
+
+
+{-| When adding a variant here, add it to `fieldsToValidate` too!
+
+NOTE: there are no ImageUrl or Bio variants here, because they aren't validated!
+
+-}
+type ValidatedField
+    = Username
     | Email
     | Password
-    | ImageUrl
-    | Bio
 
 
-type alias Error =
-    ( Field, String )
+fieldsToValidate : List ValidatedField
+fieldsToValidate =
+    [ Username
+    , Email
+    , Password
+    ]
 
 
-modelValidator : Validator Error Model
-modelValidator =
-    Validate.all
-        [ ifBlank .username (Username => "username can't be blank.")
-        , ifBlank .email (Email => "email can't be blank.")
-        ]
-
-
-errorsDecoder : Decoder (List String)
-errorsDecoder =
-    decode (\email username password -> List.concat [ email, username, password ])
-        |> optionalError "email"
-        |> optionalError "username"
-        |> optionalError "password"
-
-
-optionalError : String -> Decoder (List String -> a) -> Decoder a
-optionalError fieldName =
+{-| Trim the form and validate its fields. If there are problems, report them!
+-}
+validate : Form -> Result (List Problem) TrimmedForm
+validate form =
     let
-        errorToString errorMessage =
-            String.join " " [ fieldName, errorMessage ]
+        trimmedForm =
+            trimFields form
     in
-    optional fieldName (list (Decode.map errorToString string)) []
+    case List.concatMap (validateField trimmedForm) fieldsToValidate of
+        [] ->
+            Ok trimmedForm
+
+        problems ->
+            Err problems
+
+
+validateField : TrimmedForm -> ValidatedField -> List Problem
+validateField (Trimmed form) field =
+    List.map (InvalidEntry field) <|
+        case field of
+            Username ->
+                if String.isEmpty form.username then
+                    [ "username can't be blank." ]
+
+                else
+                    []
+
+            Email ->
+                if String.isEmpty form.email then
+                    [ "email can't be blank." ]
+
+                else
+                    []
+
+            Password ->
+                let
+                    passwordLength =
+                        String.length form.password
+                in
+                if passwordLength > 0 && passwordLength < Viewer.minPasswordChars then
+                    [ "password must be at least " ++ String.fromInt Viewer.minPasswordChars ++ " characters long." ]
+
+                else
+                    []
+
+
+{-| Don't trim while the user is typing! That would be super annoying.
+Instead, trim only on submit.
+-}
+trimFields : Form -> TrimmedForm
+trimFields form =
+    Trimmed
+        { avatar = String.trim form.avatar
+        , bio = String.trim form.bio
+        , email = String.trim form.email
+        , username = String.trim form.username
+        , password = String.trim form.password
+        }
+
+
+
+-- HTTP
+
+
+{-| This takes a Valid Form as a reminder that it needs to have been validated
+first.
+-}
+edit : Cred -> TrimmedForm -> Http.Request Viewer
+edit cred (Trimmed form) =
+    let
+        encodedAvatar =
+            case form.avatar of
+                "" ->
+                    Encode.null
+
+                avatar ->
+                    Encode.string avatar
+
+        updates =
+            [ ( "username", Encode.string form.username )
+            , ( "email", Encode.string form.email )
+            , ( "bio", Encode.string form.bio )
+            , ( "image", encodedAvatar )
+            ]
+
+        encodedUser =
+            Encode.object <|
+                case form.password of
+                    "" ->
+                        updates
+
+                    password ->
+                        ( "password", Encode.string password ) :: updates
+
+        body =
+            Encode.object [ ( "user", encodedUser ) ]
+                |> Http.jsonBody
+    in
+    Api.settings cred body Viewer.decoder
+
+
+nothingIfEmpty : String -> Maybe String
+nothingIfEmpty str =
+    if String.isEmpty str then
+        Nothing
+
+    else
+        Just str

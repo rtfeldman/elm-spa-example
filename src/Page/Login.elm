@@ -130,7 +130,7 @@ update msg model =
                                 |> Result.withDefault []
 
                         _ ->
-                            [ "unable to process registration" ]
+                            [ "unable to perform login" ]
             in
             { model | errors = List.map (\errorMessage -> Form => errorMessage) errorMessages }
                 => Cmd.none

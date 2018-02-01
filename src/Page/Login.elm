@@ -14,7 +14,7 @@ import Json.Decode.Pipeline as Pipeline exposing (decode, optional)
 import Request.User exposing (storeSession)
 import Route exposing (Route)
 import Util exposing ((=>))
-import Validate exposing (..)
+import Validate exposing (Validator, ifBlank, validate)
 import Views.Form as Form
 
 
@@ -99,7 +99,7 @@ update : Msg -> Model -> ( ( Model, Cmd Msg ), ExternalMsg )
 update msg model =
     case msg of
         SubmitForm ->
-            case validate model of
+            case validate modelValidator model of
                 [] ->
                     { model | errors = [] }
                         => Http.send LoginCompleted (Request.User.login model)
@@ -177,11 +177,11 @@ type alias Error =
     ( Field, String )
 
 
-validate : Model -> List Error
-validate =
+modelValidator : Validator Error Model
+modelValidator =
     Validate.all
-        [ .email >> ifBlank (Email => "email can't be blank.")
-        , .password >> ifBlank (Password => "password can't be blank.")
+        [ ifBlank .email (Email => "email can't be blank.")
+        , ifBlank .password (Password => "password can't be blank.")
         ]
 
 

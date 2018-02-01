@@ -6,7 +6,6 @@ module Views.Errors exposing (view)
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
-import Html
 import Util exposing ((=>))
 
 

@@ -1,11 +1,11 @@
-module Route exposing (Route(..), href, modifyUrl, fromLocation)
+module Route exposing (Route(..), fromLocation, href, modifyUrl)
 
-import UrlParser as Url exposing (parseHash, s, (</>), string, oneOf, Parser)
-import Navigation exposing (Location)
-import Html exposing (Attribute)
-import Html.Attributes as Attr
 import Data.Article as Article
 import Data.User as User exposing (Username)
+import Html exposing (Attribute)
+import Html.Attributes as Attr
+import Navigation exposing (Location)
+import UrlParser as Url exposing ((</>), Parser, oneOf, parseHash, s, string)
 
 
 -- ROUTING --
@@ -78,7 +78,7 @@ routeToString page =
                 EditArticle slug ->
                     [ "editor", Article.slugToString slug ]
     in
-        "#/" ++ (String.join "/" pieces)
+    "#/" ++ String.join "/" pieces
 
 
 

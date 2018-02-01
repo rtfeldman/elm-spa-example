@@ -1,6 +1,6 @@
-module Views.Form exposing (viewErrors, input, textarea, password)
+module Views.Form exposing (input, password, textarea, viewErrors)
 
-import Html exposing (fieldset, ul, li, Html, Attribute, text)
+import Html exposing (Attribute, Html, fieldset, li, text, ul)
 import Html.Attributes exposing (class, type_)
 
 

@@ -1,25 +1,25 @@
 module Data.Article
     exposing
         ( Article
-        , Slug
         , Body
+        , Slug
         , Tag
         , bodyToHtml
+        , bodyToMarkdownString
         , decoder
         , decoderWithBody
-        , bodyToMarkdownString
-        , slugToString
         , slugParser
-        , tagToString
+        , slugToString
         , tagDecoder
+        , tagToString
         )
 
-import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline as Pipeline exposing (decode, required, custom, hardcoded)
-import Json.Decode.Extra
-import Date exposing (Date)
-import Html exposing (Html, Attribute)
 import Data.Article.Author as Author exposing (Author)
+import Date exposing (Date)
+import Html exposing (Attribute, Html)
+import Json.Decode as Decode exposing (Decoder)
+import Json.Decode.Extra
+import Json.Decode.Pipeline as Pipeline exposing (custom, decode, hardcoded, required)
 import Markdown
 import UrlParser
 
@@ -36,7 +36,7 @@ This definition for `Article` means we can write:
 viewArticle : Article Body -> Html msg
 viewFeed : List (Article ()) -> Html msg
 
-This indicates that `viewArticle` requires an article *with a `body` present*,
+This indicates that `viewArticle` requires an article _with a `body` present_,
 wereas `viewFeed` accepts articles with no bodies. (We could also have written
 it as `List (Article a)` to specify that feeds can accept either articles that
 have `body` present or not. Either work, given that feeds do not attempt to

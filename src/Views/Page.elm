@@ -1,19 +1,16 @@
-module Views.Page exposing (frame, ActivePage(..), bodyId)
+module Views.Page exposing (ActivePage(..), bodyId, frame)
 
 {-| The frame around a typical page - that is, the header and footer.
 -}
 
-import Route exposing (Route)
-import Route exposing (Route)
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Route exposing (Route)
 import Data.User as User exposing (User, Username)
 import Data.UserPhoto as UserPhoto exposing (UserPhoto)
-import Html
+import Html exposing (..)
+import Html.Attributes exposing (..)
 import Html.Lazy exposing (lazy2)
-import Views.Spinner exposing (spinner)
+import Route exposing (Route)
 import Util exposing ((=>))
+import Views.Spinner exposing (spinner)
 
 
 {-| Determines which navbar link (if any) will be rendered as active.
@@ -59,7 +56,7 @@ viewHeader page user isLoading =
                 [ text "conduit" ]
             , ul [ class "nav navbar-nav pull-xs-right" ] <|
                 lazy2 Util.viewIf isLoading spinner
-                    :: (navbarLink (page == Home) Route.Home [ text "Home" ])
+                    :: navbarLink page Route.Home [ text "Home" ]
                     :: viewSignIn page user
             ]
         ]
@@ -67,22 +64,25 @@ viewHeader page user isLoading =
 
 viewSignIn : ActivePage -> Maybe User -> List (Html msg)
 viewSignIn page user =
+    let
+        linkTo =
+            navbarLink page
+    in
     case user of
         Nothing ->
-            [ navbarLink (page == Login) Route.Login [ text "Sign in" ]
-            , navbarLink (page == Register) Route.Register [ text "Sign up" ]
+            [ linkTo Route.Login [ text "Sign in" ]
+            , linkTo Route.Register [ text "Sign up" ]
             ]
 
         Just user ->
-            [ navbarLink (page == NewArticle) Route.NewArticle [ i [ class "ion-compose" ] [], text " New Post" ]
-            , navbarLink (page == Settings) Route.Settings [ i [ class "ion-gear-a" ] [], text " Settings" ]
-            , navbarLink
-                (page == Profile user.username)
+            [ linkTo Route.NewArticle [ i [ class "ion-compose" ] [], text " New Post" ]
+            , linkTo Route.Settings [ i [ class "ion-gear-a" ] [], text " Settings" ]
+            , linkTo
                 (Route.Profile user.username)
                 [ img [ class "user-pic", UserPhoto.src user.image ] []
                 , User.usernameToHtml user.username
                 ]
-            , navbarLink False Route.Logout [ text "Sign out" ]
+            , linkTo Route.Logout [ text "Sign out" ]
             ]
 
 
@@ -100,10 +100,35 @@ viewFooter =
         ]
 
 
-navbarLink : Bool -> Route -> List (Html msg) -> Html msg
-navbarLink isActive route linkContent =
-    li [ classList [ ( "nav-item", True ), ( "active", isActive ) ] ]
+navbarLink : ActivePage -> Route -> List (Html msg) -> Html msg
+navbarLink page route linkContent =
+    li [ classList [ ( "nav-item", True ), ( "active", isActive page route ) ] ]
         [ a [ class "nav-link", Route.href route ] linkContent ]
+
+
+isActive : ActivePage -> Route -> Bool
+isActive page route =
+    case ( page, route ) of
+        ( Home, Route.Home ) ->
+            True
+
+        ( Login, Route.Login ) ->
+            True
+
+        ( Register, Route.Register ) ->
+            True
+
+        ( Settings, Route.Settings ) ->
+            True
+
+        ( Profile pageUsername, Route.Profile routeUsername ) ->
+            pageUsername == routeUsername
+
+        ( NewArticle, Route.NewArticle ) ->
+            True
+
+        _ ->
+            False
 
 
 {-| This id comes from index.html.

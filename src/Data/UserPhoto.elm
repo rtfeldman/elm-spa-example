@@ -1,8 +1,8 @@
 module Data.UserPhoto exposing (UserPhoto, decoder, encode, src, toMaybeString)
 
-import Json.Decode as Decode exposing (Decoder)
-import Html.Attributes
 import Html exposing (Attribute)
+import Html.Attributes
+import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Json.Encode.Extra as EncodeExtra
 

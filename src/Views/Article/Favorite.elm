@@ -3,9 +3,9 @@ module Views.Article.Favorite exposing (button)
 {-| The Favorite button.
 -}
 
-import Html exposing (Html, Attribute, i, text)
-import Html.Attributes exposing (class)
 import Data.Article as Article exposing (Article)
+import Html exposing (Attribute, Html, i, text)
+import Html.Attributes exposing (class)
 import Util exposing ((=>), onClickStopPropagation)
 
 
@@ -39,4 +39,4 @@ button toggleFavorite article extraAttributes extraChildren =
             [ i [ class "ion-heart" ] [] ]
                 ++ extraChildren
     in
-        Html.button attributes children
+    Html.button attributes children

@@ -1,18 +1,18 @@
-module Page.Register exposing (view, update, Model, Msg, ExternalMsg(..), initialModel)
+module Page.Register exposing (ExternalMsg(..), Model, Msg, initialModel, update, view)
 
-import Route exposing (Route)
+import Data.Session as Session exposing (Session)
+import Data.User as User exposing (User)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Views.Form as Form
-import Json.Decode as Decode exposing (field, decodeString, string, Decoder)
-import Json.Decode.Pipeline as Pipeline exposing (optional, decode)
-import Data.Session as Session exposing (Session)
-import Validate exposing (ifBlank)
-import Request.User exposing (storeSession)
 import Http
+import Json.Decode as Decode exposing (Decoder, decodeString, field, string)
+import Json.Decode.Pipeline as Pipeline exposing (decode, optional)
+import Request.User exposing (storeSession)
+import Route exposing (Route)
 import Util exposing ((=>))
-import Data.User as User exposing (User)
+import Validate exposing (Validator, ifBlank, validate)
+import Views.Form as Form
 
 
 -- MODEL --
@@ -105,7 +105,7 @@ update : Msg -> Model -> ( ( Model, Cmd Msg ), ExternalMsg )
 update msg model =
     case msg of
         SubmitForm ->
-            case validate model of
+            case validate modelValidator model of
                 [] ->
                     { model | errors = [] }
                         => Http.send RegisterCompleted (Request.User.register model)
@@ -143,9 +143,9 @@ update msg model =
                         _ ->
                             [ "unable to process registration" ]
             in
-                { model | errors = List.map (\errorMessage -> Form => errorMessage) errorMessages }
-                    => Cmd.none
-                    => NoOp
+            { model | errors = List.map (\errorMessage -> Form => errorMessage) errorMessages }
+                => Cmd.none
+                => NoOp
 
         RegisterCompleted (Ok user) ->
             model
@@ -168,12 +168,12 @@ type alias Error =
     ( Field, String )
 
 
-validate : Model -> List Error
-validate =
+modelValidator : Validator Error Model
+modelValidator =
     Validate.all
-        [ .username >> ifBlank (Username => "username can't be blank.")
-        , .email >> ifBlank (Email => "email can't be blank.")
-        , .password >> ifBlank (Password => "password can't be blank.")
+        [ ifBlank .username (Username => "username can't be blank.")
+        , ifBlank .email (Email => "email can't be blank.")
+        , ifBlank .password (Password => "password can't be blank.")
         ]
 
 
@@ -191,4 +191,4 @@ optionalError fieldName =
         errorToString errorMessage =
             String.join " " [ fieldName, errorMessage ]
     in
-        optional fieldName (Decode.list (Decode.map errorToString string)) []
+    optional fieldName (Decode.list (Decode.map errorToString string)) []

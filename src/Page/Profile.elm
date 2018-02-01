@@ -1,25 +1,25 @@
-module Page.Profile exposing (view, update, Model, Msg, init)
+module Page.Profile exposing (Model, Msg, init, update, view)
 
 {-| Viewing a user's profile.
 -}
 
+import Data.Profile as Profile exposing (Profile)
+import Data.Session as Session exposing (Session)
+import Data.User as User exposing (Username)
+import Data.UserPhoto as UserPhoto exposing (UserPhoto)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Util exposing ((=>), pair, viewIf)
-import Page.Errored as Errored exposing (PageLoadError, pageLoadError)
-import Data.Session as Session exposing (Session)
-import Data.Profile as Profile exposing (Profile)
-import Data.UserPhoto as UserPhoto exposing (UserPhoto)
-import Data.User as User exposing (Username)
-import Views.Article.Feed as Feed exposing (FeedSource, authorFeed, favoritedFeed)
-import Views.User.Follow as Follow
-import Views.Errors as Errors
 import Http
+import Page.Errored as Errored exposing (PageLoadError, pageLoadError)
+import Request.Article exposing (ListConfig, defaultListConfig)
 import Request.Profile
-import Request.Article exposing (defaultListConfig, ListConfig)
-import Views.Page as Page
-import Task exposing (Task)
 import SelectList exposing (SelectList)
+import Task exposing (Task)
+import Util exposing ((=>), pair, viewIf)
+import Views.Article.Feed as Feed exposing (FeedSource, authorFeed, favoritedFeed)
+import Views.Errors as Errors
+import Views.Page as Page
+import Views.User.Follow as Follow
 
 
 -- MODEL --
@@ -54,8 +54,8 @@ init session username =
             "Profile is currently unavailable."
                 |> pageLoadError (Page.Profile username)
     in
-        Task.map2 (Model []) loadProfile loadFeedSources
-            |> Task.mapError handleLoadError
+    Task.map2 (Model []) loadProfile loadFeedSources
+        |> Task.mapError handleLoadError
 
 
 
@@ -73,17 +73,17 @@ view session model =
                 |> Maybe.map (\{ username } -> username == profile.username)
                 |> Maybe.withDefault False
     in
-        div [ class "profile-page" ]
-            [ Errors.view DismissErrors model.errors
-            , div [ class "user-info" ]
-                [ div [ class "container" ]
-                    [ div [ class "row" ]
-                        [ viewProfileInfo isMyProfile profile ]
-                    ]
+    div [ class "profile-page" ]
+        [ Errors.view DismissErrors model.errors
+        , div [ class "user-info" ]
+            [ div [ class "container" ]
+                [ div [ class "row" ]
+                    [ viewProfileInfo isMyProfile profile ]
                 ]
-            , div [ class "container" ]
-                [ div [ class "row" ] [ viewFeed model.feed ] ]
             ]
+        , div [ class "container" ]
+            [ div [ class "row" ] [ viewFeed model.feed ] ]
+        ]
 
 
 viewProfileInfo : Bool -> Profile -> Html Msg
@@ -121,36 +121,36 @@ update session msg model =
         profile =
             model.profile
     in
-        case msg of
-            DismissErrors ->
-                { model | errors = [] } => Cmd.none
+    case msg of
+        DismissErrors ->
+            { model | errors = [] } => Cmd.none
 
-            ToggleFollow ->
-                case session.user of
-                    Nothing ->
-                        { model | errors = model.errors ++ [ "You are currently signed out. You must be signed in to follow people." ] }
-                            => Cmd.none
+        ToggleFollow ->
+            case session.user of
+                Nothing ->
+                    { model | errors = model.errors ++ [ "You are currently signed out. You must be signed in to follow people." ] }
+                        => Cmd.none
 
-                    Just user ->
-                        user.token
-                            |> Request.Profile.toggleFollow
-                                profile.username
-                                profile.following
-                            |> Http.send FollowCompleted
-                            |> pair model
+                Just user ->
+                    user.token
+                        |> Request.Profile.toggleFollow
+                            profile.username
+                            profile.following
+                        |> Http.send FollowCompleted
+                        |> pair model
 
-            FollowCompleted (Ok newProfile) ->
-                { model | profile = newProfile } => Cmd.none
+        FollowCompleted (Ok newProfile) ->
+            { model | profile = newProfile } => Cmd.none
 
-            FollowCompleted (Err error) ->
-                model => Cmd.none
+        FollowCompleted (Err error) ->
+            model => Cmd.none
 
-            FeedMsg subMsg ->
-                let
-                    ( newFeed, subCmd ) =
-                        Feed.update session subMsg model.feed
-                in
-                    { model | feed = newFeed } => Cmd.map FeedMsg subCmd
+        FeedMsg subMsg ->
+            let
+                ( newFeed, subCmd ) =
+                    Feed.update session subMsg model.feed
+            in
+            { model | feed = newFeed } => Cmd.map FeedMsg subCmd
 
 
 followButton : Profile -> Html Msg

@@ -1,20 +1,20 @@
-module Page.Article.Editor exposing (view, update, Model, Msg, initNew, initEdit)
+module Page.Article.Editor exposing (Model, Msg, initEdit, initNew, update, view)
 
-import Html exposing (..)
-import Html.Attributes exposing (class, href, id, placeholder, attribute, disabled, type_, defaultValue)
-import Html.Events exposing (onSubmit, onInput)
-import Request.Article
-import Views.Page as Page
-import Views.Form as Form
-import Validate exposing (ifBlank)
-import Page.Errored as Errored exposing (PageLoadError, pageLoadError)
+import Data.Article as Article exposing (Article, Body)
 import Data.Session as Session exposing (Session)
 import Data.User as User exposing (User)
-import Data.Article as Article exposing (Article, Body)
+import Html exposing (..)
+import Html.Attributes exposing (attribute, class, defaultValue, disabled, href, id, placeholder, type_)
+import Html.Events exposing (onInput, onSubmit)
+import Http
+import Page.Errored as Errored exposing (PageLoadError, pageLoadError)
+import Request.Article
 import Route
 import Task exposing (Task)
-import Http
 import Util exposing ((=>), pair, viewIf)
+import Validate exposing (Validator, ifBlank, validate)
+import Views.Form as Form
+import Views.Page as Page
 
 
 -- MODEL --
@@ -48,19 +48,19 @@ initEdit session slug =
             session.user
                 |> Maybe.map .token
     in
-        Request.Article.get maybeAuthToken slug
-            |> Http.toTask
-            |> Task.mapError (\_ -> pageLoadError Page.Other "Article is currently unavailable.")
-            |> Task.map
-                (\article ->
-                    { errors = []
-                    , editingArticle = Just slug
-                    , title = article.title
-                    , body = Article.bodyToMarkdownString article.body
-                    , description = article.description
-                    , tags = article.tags
-                    }
-                )
+    Request.Article.get maybeAuthToken slug
+        |> Http.toTask
+        |> Task.mapError (\_ -> pageLoadError Page.Other "Article is currently unavailable.")
+        |> Task.map
+            (\article ->
+                { errors = []
+                , editingArticle = Just slug
+                , title = article.title
+                , body = Article.bodyToMarkdownString article.body
+                , description = article.description
+                , tags = article.tags
+                }
+            )
 
 
 
@@ -93,38 +93,38 @@ viewForm model =
             else
                 "Publish Article"
     in
-        Html.form [ onSubmit Save ]
-            [ fieldset []
-                [ Form.input
-                    [ class "form-control-lg"
-                    , placeholder "Article Title"
-                    , onInput SetTitle
-                    , defaultValue model.title
-                    ]
-                    []
-                , Form.input
-                    [ placeholder "What's this article about?"
-                    , onInput SetDescription
-                    , defaultValue model.description
-                    ]
-                    []
-                , Form.textarea
-                    [ placeholder "Write your article (in markdown)"
-                    , attribute "rows" "8"
-                    , onInput SetBody
-                    , defaultValue model.body
-                    ]
-                    []
-                , Form.input
-                    [ placeholder "Enter tags"
-                    , onInput SetTags
-                    , defaultValue (String.join " " model.tags)
-                    ]
-                    []
-                , button [ class "btn btn-lg pull-xs-right btn-primary" ]
-                    [ text saveButtonText ]
+    Html.form [ onSubmit Save ]
+        [ fieldset []
+            [ Form.input
+                [ class "form-control-lg"
+                , placeholder "Article Title"
+                , onInput SetTitle
+                , defaultValue model.title
                 ]
+                []
+            , Form.input
+                [ placeholder "What's this article about?"
+                , onInput SetDescription
+                , defaultValue model.description
+                ]
+                []
+            , Form.textarea
+                [ placeholder "Write your article (in markdown)"
+                , attribute "rows" "8"
+                , onInput SetBody
+                , defaultValue model.body
+                ]
+                []
+            , Form.input
+                [ placeholder "Enter tags"
+                , onInput SetTags
+                , defaultValue (String.join " " model.tags)
+                ]
+                []
+            , button [ class "btn btn-lg pull-xs-right btn-primary" ]
+                [ text saveButtonText ]
             ]
+        ]
 
 
 
@@ -145,7 +145,7 @@ update : User -> Msg -> Model -> ( Model, Cmd Msg )
 update user msg model =
     case msg of
         Save ->
-            case validate model of
+            case validate modelValidator model of
                 [] ->
                     case model.editingArticle of
                         Nothing ->
@@ -208,11 +208,11 @@ type alias Error =
     ( Field, String )
 
 
-validate : Model -> List Error
-validate =
+modelValidator : Validator Error Model
+modelValidator =
     Validate.all
-        [ .title >> ifBlank (Title => "title can't be blank.")
-        , .body >> ifBlank (Body => "body can't be blank.")
+        [ ifBlank .title (Title => "title can't be blank.")
+        , ifBlank .body (Body => "body can't be blank.")
         ]
 
 

@@ -4,10 +4,10 @@ module Views.Author exposing (view)
 profile, and that's it.
 -}
 
-import Route exposing (Route)
-import Html exposing (Html, a)
-import Html.Attributes exposing (class, href, id, placeholder, attribute)
 import Data.User as User exposing (Username)
+import Html exposing (Html, a)
+import Html.Attributes exposing (attribute, class, href, id, placeholder)
+import Route exposing (Route)
 
 
 view : Username -> Html msg

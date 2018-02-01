@@ -11,7 +11,7 @@ import Json.Decode as Decode exposing (Decoder, decodeString, field, list, strin
 import Json.Decode.Pipeline exposing (decode, optional)
 import Request.User exposing (storeSession)
 import Route
-import Util exposing ((=>), pair)
+import Util exposing (pair)
 import Validate exposing (Validator, ifBlank, validate)
 import Views.Form as Form
 
@@ -130,27 +130,34 @@ update session msg model =
         SubmitForm ->
             case validate modelValidator model of
                 [] ->
-                    session.user
+                    ( session.user
                         |> Maybe.map .token
                         |> Request.User.edit model
                         |> Http.send SaveCompleted
                         |> pair { model | errors = [] }
-                        => NoOp
+                    , NoOp
+                    )
 
                 errors ->
-                    { model | errors = errors }
-                        => Cmd.none
-                        => NoOp
+                    ( ( { model | errors = errors }
+                      , Cmd.none
+                      )
+                    , NoOp
+                    )
 
         SetEmail email ->
-            { model | email = email }
-                => Cmd.none
-                => NoOp
+            ( ( { model | email = email }
+              , Cmd.none
+              )
+            , NoOp
+            )
 
         SetUsername username ->
-            { model | username = username }
-                => Cmd.none
-                => NoOp
+            ( ( { model | username = username }
+              , Cmd.none
+              )
+            , NoOp
+            )
 
         SetPassword passwordStr ->
             let
@@ -160,14 +167,18 @@ update session msg model =
                     else
                         Just passwordStr
             in
-            { model | password = password }
-                => Cmd.none
-                => NoOp
+            ( ( { model | password = password }
+              , Cmd.none
+              )
+            , NoOp
+            )
 
         SetBio bio ->
-            { model | bio = bio }
-                => Cmd.none
-                => NoOp
+            ( ( { model | bio = bio }
+              , Cmd.none
+              )
+            , NoOp
+            )
 
         SetImage imageStr ->
             let
@@ -177,9 +188,11 @@ update session msg model =
                     else
                         Just imageStr
             in
-            { model | image = image }
-                => Cmd.none
-                => NoOp
+            ( ( { model | image = image }
+              , Cmd.none
+              )
+            , NoOp
+            )
 
         SaveCompleted (Err error) ->
             let
@@ -195,16 +208,20 @@ update session msg model =
 
                 errors =
                     errorMessages
-                        |> List.map (\errorMessage -> Form => errorMessage)
+                        |> List.map (\errorMessage -> ( Form, errorMessage ))
             in
-            { model | errors = errors }
-                => Cmd.none
-                => NoOp
+            ( ( { model | errors = errors }
+              , Cmd.none
+              )
+            , NoOp
+            )
 
         SaveCompleted (Ok user) ->
-            model
-                => Cmd.batch [ storeSession user, Route.modifyUrl Route.Home ]
-                => SetUser user
+            ( ( model
+              , Cmd.batch [ storeSession user, Route.modifyUrl Route.Home ]
+              )
+            , SetUser user
+            )
 
 
 
@@ -227,8 +244,8 @@ type alias Error =
 modelValidator : Validator Error Model
 modelValidator =
     Validate.all
-        [ ifBlank .username (Username => "username can't be blank.")
-        , ifBlank .email (Email => "email can't be blank.")
+        [ ifBlank .username ( Username, "username can't be blank." )
+        , ifBlank .email ( Email, "email can't be blank." )
         ]
 
 

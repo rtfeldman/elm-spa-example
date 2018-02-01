@@ -9,7 +9,6 @@ import Json.Encode as Encode
 import Json.Encode.Extra as EncodeExtra
 import Ports
 import Request.Helpers exposing (apiUrl)
-import Util exposing ((=>))
 
 
 storeSession : User -> Cmd msg
@@ -25,12 +24,12 @@ login { email, password } =
     let
         user =
             Encode.object
-                [ "email" => Encode.string email
-                , "password" => Encode.string password
+                [ ( "email", Encode.string email )
+                , ( "password", Encode.string password )
                 ]
 
         body =
-            Encode.object [ "user" => user ]
+            Encode.object [ ( "user", user ) ]
                 |> Http.jsonBody
     in
     Decode.field "user" User.decoder
@@ -42,13 +41,13 @@ register { username, email, password } =
     let
         user =
             Encode.object
-                [ "username" => Encode.string username
-                , "email" => Encode.string email
-                , "password" => Encode.string password
+                [ ( "username", Encode.string username )
+                , ( "email", Encode.string email )
+                , ( "password", Encode.string password )
                 ]
 
         body =
-            Encode.object [ "user" => user ]
+            Encode.object [ ( "user", user ) ]
                 |> Http.jsonBody
     in
     Decode.field "user" User.decoder
@@ -68,16 +67,16 @@ edit :
 edit { username, email, bio, password, image } maybeToken =
     let
         updates =
-            [ Just ("username" => Encode.string username)
-            , Just ("email" => Encode.string email)
-            , Just ("bio" => Encode.string bio)
-            , Just ("image" => EncodeExtra.maybe Encode.string image)
-            , Maybe.map (\pass -> "password" => Encode.string pass) password
+            [ Just ( "username", Encode.string username )
+            , Just ( "email", Encode.string email )
+            , Just ( "bio", Encode.string bio )
+            , Just ( "image", EncodeExtra.maybe Encode.string image )
+            , Maybe.map (\pass -> ( "password", Encode.string pass )) password
             ]
                 |> List.filterMap identity
 
         body =
-            ("user" => Encode.object updates)
+            ( "user", Encode.object updates )
                 |> List.singleton
                 |> Encode.object
                 |> Http.jsonBody

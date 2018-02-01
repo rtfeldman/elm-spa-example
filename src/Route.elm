@@ -13,6 +13,7 @@ import UrlParser as Url exposing ((</>), Parser, oneOf, parseHash, s, string)
 
 type Route
     = Home
+    | Root
     | Login
     | Logout
     | Register
@@ -48,6 +49,9 @@ routeToString page =
         pieces =
             case page of
                 Home ->
+                    []
+
+                Root ->
                     []
 
                 Login ->
@@ -94,6 +98,6 @@ modifyUrl =
 fromLocation : Location -> Maybe Route
 fromLocation location =
     if String.isEmpty location.hash then
-        Just Home
+        Just Root
     else
         parseHash route location

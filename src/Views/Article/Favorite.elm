@@ -6,7 +6,7 @@ module Views.Article.Favorite exposing (button)
 import Data.Article exposing (Article)
 import Html exposing (Attribute, Html, i, text)
 import Html.Attributes exposing (class)
-import Util exposing ((=>), onClickStopPropagation)
+import Util exposing (onClickStopPropagation)
 
 
 {-| This is a "build your own element" API.

@@ -9,7 +9,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Lazy exposing (lazy2)
 import Route exposing (Route)
-import Util exposing ((=>))
+import Util
 import Views.Spinner exposing (spinner)
 
 

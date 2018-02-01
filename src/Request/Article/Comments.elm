@@ -8,7 +8,6 @@ import HttpBuilder exposing (RequestBuilder, withExpect, withQueryParams)
 import Json.Decode as Decode
 import Json.Encode as Encode exposing (Value)
 import Request.Helpers exposing (apiUrl)
-import Util exposing ((=>))
 
 
 -- LIST --
@@ -39,7 +38,7 @@ post slug body token =
 
 encodeCommentBody : String -> Value
 encodeCommentBody body =
-    Encode.object [ "comment" => Encode.object [ "body" => Encode.string body ] ]
+    Encode.object [ ( "comment", Encode.object [ ( "body", Encode.string body ) ] ) ]
 
 
 

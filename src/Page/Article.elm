@@ -21,7 +21,7 @@ import Request.Article.Comments
 import Request.Profile
 import Route
 import Task exposing (Task)
-import Util exposing ((=>), pair, viewIf)
+import Util exposing (pair, viewIf)
 import Views.Article
 import Views.Article.Favorite as Favorite
 import Views.Author
@@ -250,7 +250,7 @@ update session msg model =
     in
     case msg of
         DismissErrors ->
-            { model | errors = [] } => Cmd.none
+            ( { model | errors = [] }, Cmd.none )
 
         ToggleFavorite ->
             let
@@ -265,14 +265,15 @@ update session msg model =
                 |> Tuple.mapFirst (Util.appendErrors model)
 
         FavoriteCompleted (Ok newArticle) ->
-            { model | article = newArticle } => Cmd.none
+            ( { model | article = newArticle }, Cmd.none )
 
         FavoriteCompleted (Err error) ->
             -- In a serious production application, we would log the error to
             -- a logging service so we could investigate later.
-            [ "There was a server error trying to record your Favorite. Sorry!" ]
+            ( [ "There was a server error trying to record your Favorite. Sorry!" ]
                 |> Util.appendErrors model
-                => Cmd.none
+            , Cmd.none
+            )
 
         ToggleFollow ->
             let
@@ -290,14 +291,13 @@ update session msg model =
                 newArticle =
                     { article | author = { author | following = following } }
             in
-            { model | article = newArticle } => Cmd.none
+            ( { model | article = newArticle }, Cmd.none )
 
         FollowCompleted (Err error) ->
-            { model | errors = "Unable to follow user." :: model.errors }
-                => Cmd.none
+            ( { model | errors = "Unable to follow user." :: model.errors }, Cmd.none )
 
         SetCommentText commentText ->
-            { model | commentText = commentText } => Cmd.none
+            ( { model | commentText = commentText }, Cmd.none )
 
         PostComment ->
             let
@@ -305,7 +305,7 @@ update session msg model =
                     model.commentText
             in
             if model.commentInFlight || String.isEmpty comment then
-                model => Cmd.none
+                ( model, Cmd.none )
             else
                 let
                     cmdFromAuth authToken =
@@ -318,15 +318,17 @@ update session msg model =
                     |> Tuple.mapFirst (Util.appendErrors { model | commentInFlight = True })
 
         CommentPosted (Ok comment) ->
-            { model
+            ( { model
                 | commentInFlight = False
                 , comments = comment :: model.comments
-            }
-                => Cmd.none
+              }
+            , Cmd.none
+            )
 
         CommentPosted (Err error) ->
-            { model | errors = model.errors ++ [ "Server error while trying to post comment." ] }
-                => Cmd.none
+            ( { model | errors = model.errors ++ [ "Server error while trying to post comment." ] }
+            , Cmd.none
+            )
 
         DeleteComment id ->
             let
@@ -340,12 +342,14 @@ update session msg model =
                 |> Tuple.mapFirst (Util.appendErrors model)
 
         CommentDeleted id (Ok ()) ->
-            { model | comments = withoutComment id model.comments }
-                => Cmd.none
+            ( { model | comments = withoutComment id model.comments }
+            , Cmd.none
+            )
 
         CommentDeleted id (Err error) ->
-            { model | errors = model.errors ++ [ "Server error while trying to delete comment." ] }
-                => Cmd.none
+            ( { model | errors = model.errors ++ [ "Server error while trying to delete comment." ] }
+            , Cmd.none
+            )
 
         DeleteArticle ->
             let
@@ -359,11 +363,12 @@ update session msg model =
                 |> Tuple.mapFirst (Util.appendErrors model)
 
         ArticleDeleted (Ok ()) ->
-            model => Route.modifyUrl Route.Home
+            ( model, Route.modifyUrl Route.Home )
 
         ArticleDeleted (Err error) ->
-            { model | errors = model.errors ++ [ "Server error while trying to delete article." ] }
-                => Cmd.none
+            ( { model | errors = model.errors ++ [ "Server error while trying to delete article." ] }
+            , Cmd.none
+            )
 
 
 

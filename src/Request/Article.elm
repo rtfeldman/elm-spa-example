@@ -23,7 +23,6 @@ import HttpBuilder exposing (RequestBuilder, withBody, withExpect, withQueryPara
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Request.Helpers exposing (apiUrl)
-import Util exposing ((=>))
 
 
 -- SINGLE --
@@ -69,11 +68,11 @@ defaultListConfig =
 
 list : ListConfig -> Maybe AuthToken -> Http.Request Feed
 list config maybeToken =
-    [ "tag" => Maybe.map Article.tagToString config.tag
-    , "author" => Maybe.map User.usernameToString config.author
-    , "favorited" => Maybe.map User.usernameToString config.favorited
-    , "limit" => Just (toString config.limit)
-    , "offset" => Just (toString config.offset)
+    [ ( "tag", Maybe.map Article.tagToString config.tag )
+    , ( "author", Maybe.map User.usernameToString config.author )
+    , ( "favorited", Maybe.map User.usernameToString config.favorited )
+    , ( "limit", Just (toString config.limit) )
+    , ( "offset", Just (toString config.offset) )
     ]
         |> List.filterMap maybeVal
         |> buildFromQueryParams "/articles"
@@ -100,8 +99,8 @@ defaultFeedConfig =
 
 feed : FeedConfig -> AuthToken -> Http.Request Feed
 feed config token =
-    [ "limit" => Just (toString config.limit)
-    , "offset" => Just (toString config.offset)
+    [ ( "limit", Just (toString config.limit) )
+    , ( "offset", Just (toString config.offset) )
     ]
         |> List.filterMap maybeVal
         |> buildFromQueryParams "/articles/feed"
@@ -192,14 +191,14 @@ create config token =
 
         article =
             Encode.object
-                [ "title" => Encode.string config.title
-                , "description" => Encode.string config.description
-                , "body" => Encode.string config.body
-                , "tagList" => Encode.list (List.map Encode.string config.tags)
+                [ ( "title", Encode.string config.title )
+                , ( "description", Encode.string config.description )
+                , ( "body", Encode.string config.body )
+                , ( "tagList", Encode.list (List.map Encode.string config.tags) )
                 ]
 
         body =
-            Encode.object [ "article" => article ]
+            Encode.object [ ( "article", article ) ]
                 |> Http.jsonBody
     in
     apiUrl "/articles"
@@ -220,13 +219,13 @@ update slug config token =
 
         article =
             Encode.object
-                [ "title" => Encode.string config.title
-                , "description" => Encode.string config.description
-                , "body" => Encode.string config.body
+                [ ( "title", Encode.string config.title )
+                , ( "description", Encode.string config.description )
+                , ( "body", Encode.string config.body )
                 ]
 
         body =
-            Encode.object [ "article" => article ]
+            Encode.object [ ( "article", article ) ]
                 |> Http.jsonBody
     in
     apiUrl ("/articles/" ++ slugToString slug)
@@ -260,7 +259,7 @@ maybeVal ( key, value ) =
             Nothing
 
         Just val ->
-            Just (key => val)
+            Just ( key, val )
 
 
 buildFromQueryParams : String -> List ( String, String ) -> RequestBuilder Feed

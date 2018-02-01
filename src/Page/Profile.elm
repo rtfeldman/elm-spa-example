@@ -15,7 +15,7 @@ import Request.Article exposing (ListConfig, defaultListConfig)
 import Request.Profile
 import SelectList exposing (SelectList)
 import Task exposing (Task)
-import Util exposing ((=>), pair, viewIf)
+import Util exposing (pair, viewIf)
 import Views.Article.Feed as Feed exposing (FeedSource, authorFeed, favoritedFeed)
 import Views.Errors as Errors
 import Views.Page as Page
@@ -123,13 +123,14 @@ update session msg model =
     in
     case msg of
         DismissErrors ->
-            { model | errors = [] } => Cmd.none
+            ( { model | errors = [] }, Cmd.none )
 
         ToggleFollow ->
             case session.user of
                 Nothing ->
-                    { model | errors = model.errors ++ [ "You are currently signed out. You must be signed in to follow people." ] }
-                        => Cmd.none
+                    ( { model | errors = model.errors ++ [ "You are currently signed out. You must be signed in to follow people." ] }
+                    , Cmd.none
+                    )
 
                 Just user ->
                     user.token
@@ -140,17 +141,17 @@ update session msg model =
                         |> pair model
 
         FollowCompleted (Ok newProfile) ->
-            { model | profile = newProfile } => Cmd.none
+            ( { model | profile = newProfile }, Cmd.none )
 
         FollowCompleted (Err error) ->
-            model => Cmd.none
+            ( model, Cmd.none )
 
         FeedMsg subMsg ->
             let
                 ( newFeed, subCmd ) =
                     Feed.update session subMsg model.feed
             in
-            { model | feed = newFeed } => Cmd.map FeedMsg subCmd
+            ( { model | feed = newFeed }, Cmd.map FeedMsg subCmd )
 
 
 followButton : Profile -> Html Msg

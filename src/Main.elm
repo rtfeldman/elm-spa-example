@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Data.Article exposing (Slug)
-import Data.Session as Session exposing (Session)
+import Data.Session exposing (Session)
 import Data.User as User exposing (User, Username)
 import Html exposing (..)
 import Json.Decode as Decode exposing (Value)

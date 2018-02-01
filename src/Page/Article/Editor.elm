@@ -1,13 +1,13 @@
 module Page.Article.Editor exposing (Model, Msg, initEdit, initNew, update, view)
 
 import Data.Article as Article exposing (Article, Body)
-import Data.Session as Session exposing (Session)
-import Data.User as User exposing (User)
+import Data.Session exposing (Session)
+import Data.User exposing (User)
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, defaultValue, disabled, href, id, placeholder, type_)
 import Html.Events exposing (onInput, onSubmit)
 import Http
-import Page.Errored as Errored exposing (PageLoadError, pageLoadError)
+import Page.Errored exposing (PageLoadError, pageLoadError)
 import Request.Article
 import Route
 import Task exposing (Task)

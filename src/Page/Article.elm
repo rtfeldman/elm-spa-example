@@ -4,8 +4,8 @@ module Page.Article exposing (Model, Msg, init, update, view)
 -}
 
 import Data.Article as Article exposing (Article, Body)
-import Data.Article.Author as Author exposing (Author)
-import Data.Article.Comment as Comment exposing (Comment, CommentId)
+import Data.Article.Author exposing (Author)
+import Data.Article.Comment exposing (Comment, CommentId)
 import Data.Session as Session exposing (Session)
 import Data.User as User exposing (User)
 import Data.UserPhoto as UserPhoto
@@ -15,7 +15,7 @@ import Html exposing (..)
 import Html.Attributes exposing (attribute, class, disabled, href, id, placeholder)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Http
-import Page.Errored as Errored exposing (PageLoadError, pageLoadError)
+import Page.Errored exposing (PageLoadError, pageLoadError)
 import Request.Article
 import Request.Article.Comments
 import Request.Profile

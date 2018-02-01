@@ -2,7 +2,7 @@ module Data.Article.Feed exposing (Feed, decoder)
 
 import Data.Article as Article exposing (Article)
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline as Pipeline exposing (decode, required)
+import Json.Decode.Pipeline exposing (decode, required)
 
 
 type alias Feed =

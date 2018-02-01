@@ -12,7 +12,7 @@ import Json.Decode.Pipeline as Pipeline exposing (decode, optional)
 import Request.User exposing (storeSession)
 import Route
 import Util exposing ((=>), pair)
-import Validate exposing (..)
+import Validate exposing (Validator, ifBlank, validate)
 import Views.Form as Form
 
 
@@ -128,7 +128,7 @@ update : Session -> Msg -> Model -> ( ( Model, Cmd Msg ), ExternalMsg )
 update session msg model =
     case msg of
         SubmitForm ->
-            case validate model of
+            case validate modelValidator model of
                 [] ->
                     session.user
                         |> Maybe.map .token
@@ -224,11 +224,11 @@ type alias Error =
     ( Field, String )
 
 
-validate : Model -> List Error
-validate =
+modelValidator : Validator Error Model
+modelValidator =
     Validate.all
-        [ .username >> ifBlank (Username => "username can't be blank.")
-        , .email >> ifBlank (Email => "email can't be blank.")
+        [ ifBlank .username (Username => "username can't be blank.")
+        , ifBlank .email (Email => "email can't be blank.")
         ]
 
 

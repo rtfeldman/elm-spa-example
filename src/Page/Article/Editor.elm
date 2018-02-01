@@ -12,7 +12,7 @@ import Request.Article
 import Route
 import Task exposing (Task)
 import Util exposing ((=>), pair, viewIf)
-import Validate exposing (ifBlank)
+import Validate exposing (Validator, ifBlank, validate)
 import Views.Form as Form
 import Views.Page as Page
 
@@ -145,7 +145,7 @@ update : User -> Msg -> Model -> ( Model, Cmd Msg )
 update user msg model =
     case msg of
         Save ->
-            case validate model of
+            case validate modelValidator model of
                 [] ->
                     case model.editingArticle of
                         Nothing ->
@@ -208,11 +208,11 @@ type alias Error =
     ( Field, String )
 
 
-validate : Model -> List Error
-validate =
+modelValidator : Validator Error Model
+modelValidator =
     Validate.all
-        [ .title >> ifBlank (Title => "title can't be blank.")
-        , .body >> ifBlank (Body => "body can't be blank.")
+        [ ifBlank .title (Title => "title can't be blank.")
+        , ifBlank .body (Body => "body can't be blank.")
         ]
 
 

@@ -6,7 +6,7 @@ import Html.Attributes exposing (class, style)
 
 spinner : Html msg
 spinner =
-    li [ class "sk-three-bounce", style [ ( "float", "left" ), ( "margin", "8px" ) ] ]
+    li [ class "sk-three-bounce", style "float" "left", style "margin" "8px" ]
         [ div [ class "sk-child sk-bounce1" ] []
         , div [ class "sk-child sk-bounce2" ] []
         , div [ class "sk-child sk-bounce3" ] []

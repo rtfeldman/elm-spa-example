@@ -13,17 +13,14 @@ view dismissErrors errors =
     if List.isEmpty errors then
         Html.text ""
     else
-        div [ class "error-messages", styles ] <|
+        div
+            [ class "error-messages"
+            , style "position" "fixed"
+            , style "top" "0"
+            , style "background" "rgb(250, 250, 250)"
+            , style "padding" "20px"
+            , style "border" "1px solid"
+            ]
+        <|
             List.map (\error -> p [] [ text error ]) errors
                 ++ [ button [ onClick dismissErrors ] [ text "Ok" ] ]
-
-
-styles : Attribute msg
-styles =
-    style
-        [ ( "position", "fixed" )
-        , ( "top", "0" )
-        , ( "background", "rgb(250, 250, 250)" )
-        , ( "padding", "20px" )
-        , ( "border", "1px solid" )
-        ]

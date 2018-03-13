@@ -6,7 +6,6 @@ import Http
 import HttpBuilder exposing (RequestBuilder, withExpect, withQueryParams)
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Json.Encode.Extra as EncodeExtra
 import Ports
 import Request.Helpers exposing (apiUrl)
 
@@ -70,7 +69,7 @@ edit { username, email, bio, password, image } maybeToken =
             [ Just ( "username", Encode.string username )
             , Just ( "email", Encode.string email )
             , Just ( "bio", Encode.string bio )
-            , Just ( "image", EncodeExtra.maybe Encode.string image )
+            , Just ( "image", Maybe.withDefault Encode.null (Maybe.map Encode.string image) )
             , Maybe.map (\pass -> ( "password", Encode.string pass )) password
             ]
                 |> List.filterMap identity

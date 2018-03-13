@@ -1,7 +1,8 @@
 {
     "type": "browser",
     "source-directories": [
-        "src"
+        "src",
+        "vendor"
     ],
     "elm-version": "0.19.0",
     "dependencies": {

@@ -24,15 +24,15 @@ isLeapYear year =
     let
         -- A If the year is evenly divisible by 4, go to step B
         a =
-            0 == year % 4
+            0 == modBy 4 year
 
         -- B If the year is evenly divisible by 100, go to step C
         b =
-            0 == year % 100
+            0 == modBy 100 year
 
         -- C If the year is evenly divisible by 400, go to step D
         c =
-            0 == year % 400
+            0 == modBy 400 year
     in
     case [ a, b, c ] of
         [ True, True, True ] ->

@@ -21,7 +21,7 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Extra
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, required)
 import Markdown
-import UrlParser
+import Url.Parser
 
 
 {-| An article, optionally with an article body.
@@ -99,9 +99,9 @@ type Slug
     = Slug String
 
 
-slugParser : UrlParser.Parser (Slug -> a) a
+slugParser : Url.Parser.Parser (Slug -> a) a
 slugParser =
-    UrlParser.custom "SLUG" (Ok << Slug)
+    Url.Parser.custom "SLUG" (Ok << Slug)
 
 
 slugToString : Slug -> String

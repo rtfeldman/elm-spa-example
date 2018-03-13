@@ -6,7 +6,7 @@ import Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (decode, required)
 import Json.Encode as Encode exposing (Value)
-import UrlParser
+import Url.Parser
 
 
 type alias User =
@@ -62,9 +62,9 @@ usernameToString (Username username) =
     username
 
 
-usernameParser : UrlParser.Parser (Username -> a) a
+usernameParser : Url.Parser.Parser (Username -> a) a
 usernameParser =
-    UrlParser.custom "USERNAME" (Ok << Username)
+    Url.Parser.custom "USERNAME" (Just << Username)
 
 
 usernameDecoder : Decoder Username

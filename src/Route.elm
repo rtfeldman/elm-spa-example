@@ -5,7 +5,7 @@ import Data.User as User exposing (Username)
 import Html exposing (Attribute)
 import Html.Attributes as Attr
 import Navigation exposing (Location)
-import UrlParser as Url exposing ((</>), Parser, oneOf, parseHash, s, string)
+import Url.Parser as Url exposing ((</>), Parser, oneOf, parseHash, s, string)
 
 
 -- ROUTING --

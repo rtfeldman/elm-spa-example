@@ -1,13 +1,13 @@
 module ISO8601
     exposing
         ( Offset
-        , Time
+        , Posix
         , Weekday(..)
         , add
         , day
         , diff
+        , fromPosix
         , fromString
-        , fromTime
         , hour
         , millisecond
         , minute
@@ -15,8 +15,8 @@ module ISO8601
         , offset
         , second
         , sub
+        , toPosix
         , toString
-        , toTime
         , weekday
         , year
         )
@@ -25,9 +25,9 @@ module ISO8601
 on the ISO 8601 standard i.e. `2016-03-31T12:13:14.22-04:00`
 
 
-# Time record
+# Posix record
 
-@docs Time, Weekday, Offset
+@docs Posix, Weekday, Offset
 
 
 # Accessors
@@ -40,14 +40,14 @@ on the ISO 8601 standard i.e. `2016-03-31T12:13:14.22-04:00`
 @docs fromString, toString
 
 
-# Time conversion
+# Posix conversion
 
-@docs toTime, fromTime
+@docs toPosix, fromPosix
 
 
 # Manipulation
 
-Note: The Time record has an offset, but not a time size. Adding or
+Note: The Posix record has an offset, but not a time size. Adding or
 subtracting time across a daylight savings boundary will NOT adjust the
 offset.
 
@@ -57,9 +57,16 @@ offset.
 
 import Array
 import ISO8601.Extras exposing (..)
-import Regex exposing (find, split)
+import Regex exposing (split)
 import Result exposing (Result)
 import String
+import Time exposing (Posix)
+
+
+regex str =
+    Regex.fromString str
+        |> Maybe.withDefault Regex.never
+
 
 
 -- Model
@@ -102,7 +109,7 @@ iday =
 
 {-| Record representing the time. Offset is tuple representing the hour and minute ± from UTC.
 -}
-type alias Time =
+type alias Posix =
     Model
 
 
@@ -118,8 +125,8 @@ type alias Model =
     }
 
 
-defaultTime : Time
-defaultTime =
+defaultPosix : Posix
+defaultPosix =
     { year = 0
     , month = 1
     , day = 1
@@ -146,16 +153,16 @@ type Weekday
 fmt : Int -> String
 fmt n =
     if n < 10 then
-        "0" ++ Basics.toString n
+        "0" ++ String.fromInt n
     else
-        Basics.toString n
+        String.fromInt n
 
 
 fmtYear : Int -> String
 fmtYear n =
     let
         s =
-            Basics.toString n
+            String.fromInt n
     in
     if n < 10 then
         "000" ++ s
@@ -172,16 +179,16 @@ fmtMs n =
     if n == 0 then
         ""
     else if n < 10 then
-        ".00" ++ Basics.toString n
+        ".00" ++ String.fromInt n
     else if n < 100 then
-        ".0" ++ Basics.toString n
+        ".0" ++ String.fromInt n
     else
-        "." ++ Basics.toString n
+        "." ++ String.fromInt n
 
 
 fmtOffset : Offset -> String
-fmtOffset offset =
-    case offset of
+fmtOffset offsetVal =
+    case offsetVal of
         ( 0, 0 ) ->
             "Z"
 
@@ -196,9 +203,9 @@ fmtOffset offset =
             symbol ++ fmt (abs h) ++ fmt m
 
 
-{-| Converts a Time record to an ISO 8601 formated string.
+{-| Converts a Posix record to an ISO 8601 formated string.
 -}
-toString : Time -> String
+toString : Posix -> String
 toString time =
     String.join ""
         [ fmtYear time.year
@@ -217,18 +224,18 @@ toString time =
         ]
 
 
-{-| Given an ISO 8601 compatible string, returns a Time record.
+{-| Given an ISO 8601 compatible string, returns a Posix record.
 
     ISO8601.fromString "2016-01-01T01:30:00-04:00"
     -- { year = 2016, month = 1, day = 1, hour = 1, minute = 30, second = 0, millisecond = 0, offset = (-4,0) }
-        : ISO8601.Time
+        : ISO8601.Posix
     ISO8601.fromString "2016-11-07"
     --{ year = 2016, month = 11, day = 7, hour = 0, minute = 0, second = 0, millisecond = 0, offset = (0,0) }
-        : ISO8601.Time
+        : ISO8601.Posix
     ```
 
 -}
-fromString : String -> Result String Time
+fromString : String -> Result String Posix
 fromString s =
     -- validate the string
     -- validate the numbers
@@ -241,23 +248,23 @@ fromString s =
             x |> Maybe.withDefault d |> toInt
     in
     case parts of
-        [ [ year, month, day, hour, minute, second, millisecond, offset, invalid ] ] ->
-            case invalid of
+        [ [ yearVal, monthVal, dayVal, hourVal, minuteVal, secondVal, millisecondVal, offsetVal, invalidVal ] ] ->
+            case invalidVal of
                 Just _ ->
                     Err "unexpected text"
 
                 Nothing ->
-                    validateTime
-                        { year = unwrap year "0"
-                        , month = unwrap month "1"
-                        , day = unwrap day "1"
-                        , hour = unwrap hour "0"
-                        , minute = unwrap minute "0"
-                        , second = unwrap second "0"
+                    validatePosix
+                        { year = unwrap yearVal "0"
+                        , month = unwrap monthVal "1"
+                        , day = unwrap dayVal "1"
+                        , hour = unwrap hourVal "0"
+                        , minute = unwrap minuteVal "0"
+                        , second = unwrap secondVal "0"
                         , -- since the ms will possibly start with 0, add the 1 and get the remainder
                           -- ms' = (toInt ("1" ++ ms)) % 1000
-                          millisecond = parseMilliseconds millisecond
-                        , offset = parseOffset offset
+                          millisecond = parseMilliseconds millisecondVal
+                        , offset = parseOffset offsetVal
                         }
 
         _ ->
@@ -266,8 +273,8 @@ fromString s =
 
 iso8601Regex : String -> List Regex.Match
 iso8601Regex =
-    Regex.find (Regex.AtMost 1)
-        (Regex.fromString
+    Regex.findAtMost 1
+        (regex
             ("(\\d{4})?-?"
                 ++ -- year
                    "(\\d{2})?-?"
@@ -275,7 +282,7 @@ iso8601Regex =
                    "(\\d{2})?"
                 ++ -- DAY
                    "T?"
-                ++ -- Time indicator
+                ++ -- Posix indicator
                    "(\\d{2})?:?"
                 ++ -- hour
                    "(\\d{2})?:?"
@@ -289,7 +296,6 @@ iso8601Regex =
                    "(.*)?"
              -- invalid text
             )
-            |> Maybe.withDefault Regex.never
         )
 
 
@@ -302,10 +308,11 @@ parseMilliseconds msString =
         Just s ->
             let
                 decimalStr =
-                    Regex.replace (Regex.AtMost 1) (Regex.regex "[,.]") (\_ -> "0.") s
+                    -- TODO this should be replaceAtMost 1
+                    Regex.replace (regex "[,.]") (\_ -> "0.") s
 
                 decimal =
-                    String.toFloat decimalStr |> Result.toMaybe |> Maybe.withDefault 0.0
+                    String.toFloat decimalStr |> Maybe.withDefault 0.0
             in
             1000 * decimal |> round
 
@@ -314,43 +321,43 @@ parseOffset : Maybe String -> Offset
 parseOffset timeString =
     let
         re =
-            Regex.regex "(Z|([+-]\\d{2}:?\\d{2}))?"
+            regex "(Z|([+-]\\d{2}:?\\d{2}))?"
 
         -- offset
         -- offset can be Z or ±h:mm ±hhmm or ±hh
         match =
             timeString
                 |> Maybe.withDefault ""
-                |> find (Regex.AtMost 1) (regex "([-+])(\\d\\d):?(\\d\\d)")
+                |> Regex.findAtMost 1 (regex "([-+])(\\d\\d):?(\\d\\d)")
 
         parts =
             List.map .submatches match
 
-        setHour modifier hour =
+        setHour modifier hourVal =
             case modifier of
                 "+" ->
-                    hour
+                    hourVal
 
                 "-" ->
-                    modifier ++ hour
+                    modifier ++ hourVal
 
                 -- this should never happen
                 _ ->
-                    hour
+                    hourVal
     in
     case parts of
-        [ [ Just modifier, Just hour, Just minute ] ] ->
-            ( toInt (setHour modifier hour), toInt minute )
+        [ [ Just modifier, Just hourVal, Just minuteVal ] ] ->
+            ( toInt (setHour modifier hourVal), toInt minuteVal )
 
-        [ [ Just modifier, Just hour ] ] ->
-            ( toInt (setHour modifier hour), 0 )
+        [ [ Just modifier, Just hourVal ] ] ->
+            ( toInt (setHour modifier hourVal), 0 )
 
         _ ->
             ( 0, 0 )
 
 
-offsetToTime : Time -> Int
-offsetToTime time =
+offsetToPosix : Posix -> Int
+offsetToPosix time =
     let
         ( m, s ) =
             time.offset
@@ -358,10 +365,10 @@ offsetToTime time =
     (ihour * m) + (imin * s)
 
 
-{-| Converts the Time to milliseconds relative to the Unix epoch: `1970-01-01T00:00:00Z`
+{-| Converts the Posix to milliseconds relative to the Unix epoch: `1970-01-01T00:00:00Z`
 -}
-toTime : Time -> Float
-toTime time =
+toPosix : Posix -> Float
+toPosix time =
     case time.year >= 1970 of
         False ->
             let
@@ -379,7 +386,7 @@ toTime time =
                     , iday - ihour - (ihour * time.hour)
                     , ihour - imin - (imin * time.minute)
                     , imin - (isec * time.second)
-                    , offsetToTime time
+                    , offsetToPosix time
                     ]
             in
             0 - (List.sum tots - time.millisecond) |> toFloat
@@ -399,22 +406,22 @@ toTime time =
                     , ihour * time.hour
                     , imin * time.minute
                     , isec * time.second
-                    , -1 * offsetToTime time
+                    , -1 * offsetToPosix time
                     ]
             in
             List.sum tots + time.millisecond |> toFloat
 
 
-{-| Converts the milliseconds relative to the Unix epoch to a Time record.
+{-| Converts the milliseconds relative to the Unix epoch to a Posix record.
 -}
-fromTime : Float -> Time
-fromTime msFloat =
+fromPosix : Float -> Posix
+fromPosix msFloat =
     let
         ms =
             msFloat |> round
 
-        milliseconds =
-            ms % isec
+        millisecondsVal =
+            modBy isec ms
 
         v =
             if ms >= 0 then
@@ -426,76 +433,76 @@ fromTime msFloat =
         After ->
             let
                 -- additional days, the first day is implied
-                days =
+                daysVal =
                     ms // iday
 
-                seconds =
-                    ms // isec % 60
+                secondsVal =
+                    ms // modBy 60 isec
 
-                minutes =
-                    ms // imin % 60
+                minutesVal =
+                    ms // modBy 60 imin
 
-                hours =
-                    ms // ihour % 24
+                hoursVal =
+                    ms // modBy 24 ihour
 
-                ( years, remainingDays ) =
-                    daysToYears After 1970 days
+                ( yearsVal, remainingDays ) =
+                    daysToYears After 1970 daysVal
 
-                ( month, daysInMonth ) =
-                    daysToMonths years 1 (remainingDays + 1)
+                ( monthVal, daysInMonth ) =
+                    daysToMonths yearsVal 1 (remainingDays + 1)
             in
-            { defaultTime
-                | second = seconds
-                , minute = minutes
-                , hour = hours
+            { defaultPosix
+                | second = secondsVal
+                , minute = minutesVal
+                , hour = hoursVal
                 , day = daysInMonth
-                , month = month
-                , year = years
-                , millisecond = milliseconds
+                , month = monthVal
+                , year = yearsVal
+                , millisecond = millisecondsVal
             }
 
         Before ->
             let
                 rem =
-                    ms % iday
+                    modBy iday ms
 
                 totalDays =
                     ms // iday
 
                 -- this is right at the start of a new day
-                ( years, remainingDays ) =
+                ( yearsVal, remainingDays ) =
                     if rem == 0 then
                         daysToYears Before 1969 (totalDays + 1)
                     else
                         daysToYears Before 1969 totalDays
 
-                ( month, daysInMonth ) =
-                    daysToMonths years 1 remainingDays
+                ( monthVal, daysInMonth ) =
+                    daysToMonths yearsVal 1 remainingDays
 
-                days =
+                daysVal =
                     rem // iday
 
-                seconds =
-                    rem // isec % 60
+                secondsVal =
+                    rem // modBy 60 isec
 
-                minutes =
-                    rem // imin % 60
+                minutesVal =
+                    rem // modBy 60 imin
 
-                hours =
-                    rem // ihour % 24
+                hoursVal =
+                    rem // modBy 24 ihour
             in
-            { defaultTime
-                | second = seconds
-                , minute = minutes
-                , hour = hours
+            { defaultPosix
+                | second = secondsVal
+                , minute = minutesVal
+                , hour = hoursVal
                 , day = daysInMonth
-                , month = month
-                , year = years
-                , millisecond = milliseconds
+                , month = monthVal
+                , year = yearsVal
+                , millisecond = millisecondsVal
             }
 
 
-validateHour : Time -> Result String Time
+validateHour : Posix -> Result String Posix
 validateHour time =
     let
         h =
@@ -519,8 +526,8 @@ validateHour time =
         Ok time
 
 
-validateTime : Time -> Result String Time
-validateTime time =
+validatePosix : Posix -> Result String Posix
+validatePosix time =
     let
         maxDays =
             daysInMonth
@@ -535,83 +542,83 @@ validateTime time =
 
 {-| return the year
 -}
-year : Time -> Int
+year : Posix -> Int
 year time =
     time.year
 
 
 {-| return the month
 -}
-month : Time -> Int
+month : Posix -> Int
 month time =
     time.month
 
 
 {-| return the day
 -}
-day : Time -> Int
+day : Posix -> Int
 day time =
     time.day
 
 
 {-| return the hour
 -}
-hour : Time -> Int
+hour : Posix -> Int
 hour time =
     time.hour
 
 
 {-| return the minute
 -}
-minute : Time -> Int
+minute : Posix -> Int
 minute time =
     time.minute
 
 
 {-| return the secon
 -}
-second : Time -> Int
+second : Posix -> Int
 second time =
     time.second
 
 
 {-| return the millisecond
 -}
-millisecond : Time -> Int
+millisecond : Posix -> Int
 millisecond time =
     time.millisecond
 
 
 {-| return the offset
 -}
-offset : Time -> Offset
+offset : Posix -> Offset
 offset time =
     time.offset
 
 
-{-| Returns the day of the week from the Time record
+{-| Returns the day of the week from the Posix record
 -}
-weekday : Time -> Weekday
+weekday : Posix -> Weekday
 weekday time =
     let
         daysFromEpoch =
             Array.fromList [ Thu, Fri, Sat, Sun, Mon, Tue, Wed ]
 
         daysSinceEpoch =
-            ({ defaultTime
+            ({ defaultPosix
                 | year = time.year
                 , month = time.month
                 , day = time.day
              }
-                |> toTime
+                |> toPosix
                 |> round
             )
                 // iday
 
-        day =
-            Array.get (daysSinceEpoch % 7) daysFromEpoch
+        dayVal =
+            Array.get (modBy 7 daysSinceEpoch) daysFromEpoch
     in
-    case day of
+    case dayVal of
         Just d ->
             d
 
@@ -624,40 +631,40 @@ weekday time =
 -- Manipulation
 
 
-{-| the difference bewteen two Time records in milliseconds
+{-| the difference bewteen two Posix records in milliseconds
 -}
-diff : Time -> Time -> Float
+diff : Posix -> Posix -> Float
 diff a b =
-    toTime a - toTime b
+    toPosix a - toPosix b
 
 
-{-| Subtract milliseconds from a Time records
+{-| Subtract milliseconds from a Posix records
 -}
-sub : Time -> Float -> Time
+sub : Posix -> Float -> Posix
 sub time amount =
-    toTime time - amount |> fromTimeWithOffset time.offset
+    toPosix time - amount |> fromPosixWithOffset time.offset
 
 
-{-| Add milliseconds to a Time records
+{-| Add milliseconds to a Posix records
 -}
-add : Time -> Float -> Time
+add : Posix -> Float -> Posix
 add time amount =
-    toTime time + amount |> fromTimeWithOffset time.offset
+    toPosix time + amount |> fromPosixWithOffset time.offset
 
 
 offsetToMS : Offset -> Float
-offsetToMS offset =
+offsetToMS offsetVal =
     let
-        ( hour, minutes ) =
-            offset
+        ( hourVal, minutesVal ) =
+            offsetVal
     in
-    (hour * 60 * 60 * 1000) + (minutes * 60 * 1000) |> toFloat
+    (hourVal * 60 * 60 * 1000) + (minutesVal * 60 * 1000) |> toFloat
 
 
-fromTimeWithOffset : Offset -> Float -> Time
-fromTimeWithOffset offset unix =
+fromPosixWithOffset : Offset -> Float -> Posix
+fromPosixWithOffset offsetVal unix =
     let
         new =
-            fromTime (unix + offsetToMS offset)
+            fromPosix (unix + offsetToMS offsetVal)
     in
-    { new | offset = offset }
+    { new | offset = offsetVal }

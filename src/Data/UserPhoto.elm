@@ -4,7 +4,6 @@ import Html exposing (Attribute)
 import Html.Attributes
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
-import Json.Encode.Extra as EncodeExtra
 
 
 type UserPhoto
@@ -23,7 +22,9 @@ decoder =
 
 encode : UserPhoto -> Value
 encode (UserPhoto maybeUrl) =
-    EncodeExtra.maybe Encode.string maybeUrl
+    maybeUrl
+        |> Maybe.map Encode.string
+        |> Maybe.withDefault Encode.null
 
 
 toMaybeString : UserPhoto -> Maybe String

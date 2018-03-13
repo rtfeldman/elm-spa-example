@@ -9,7 +9,6 @@ import Data.Article.Comment exposing (Comment, CommentId)
 import Data.Session as Session exposing (Session)
 import Data.User as User exposing (User)
 import Data.UserPhoto as UserPhoto
-import Date exposing (Date)
 import Date.Format
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, disabled, href, id, placeholder)
@@ -215,7 +214,7 @@ viewComment user comment =
         ]
 
 
-formatCommentTimestamp : Date -> String
+formatCommentTimestamp : Time -> String
 formatCommentTimestamp =
     Date.Format.format "%B %e, %Y"
 

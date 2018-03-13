@@ -4,16 +4,17 @@ module Date.Format exposing (format, formatISO8601, localFormat)
 @docs format, localFormat, formatISO8601
 -}
 
-import Date
 import Date.Local exposing (Local, international)
 import Maybe exposing (andThen, withDefault)
 import Regex
 import String exposing (padLeft, right, toUpper)
+import Time exposing (Posix)
 
 
 re : Regex.Regex
 re =
-    Regex.regex "%(_|-|0)?(%|Y|y|m|B|b|d|e|a|A|H|k|I|l|L|p|P|M|S)"
+    Regex.fromString "%(_|-|0)?(%|Y|y|m|B|b|d|e|a|A|H|k|I|l|L|p|P|M|S)"
+        |> Maybe.withDefault Regex.never
 
 
 type Padding

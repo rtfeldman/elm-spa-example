@@ -15,13 +15,12 @@ module Data.Article
         )
 
 import Data.Article.Author as Author exposing (Author)
-import Date exposing (Date)
 import Html exposing (Attribute, Html)
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Extra
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, required)
 import Markdown
 import Url.Parser
+import Util
 
 
 {-| An article, optionally with an article body.
@@ -52,8 +51,8 @@ type alias Article a =
     , slug : Slug
     , title : String
     , tags : List String
-    , createdAt : Date
-    , updatedAt : Date
+    , createdAt : Time
+    , updatedAt : Time
     , favorited : Bool
     , favoritesCount : Int
     , author : Author
@@ -84,8 +83,8 @@ baseArticleDecoder =
         |> required "slug" (Decode.map Slug Decode.string)
         |> required "title" Decode.string
         |> required "tagList" (Decode.list Decode.string)
-        |> required "createdAt" Json.Decode.Extra.date
-        |> required "updatedAt" Json.Decode.Extra.date
+        |> required "createdAt" Util.dateStringDecoder
+        |> required "updatedAt" Util.dateStringDecoder
         |> required "favorited" Decode.bool
         |> required "favoritesCount" Decode.int
         |> required "author" Author.decoder

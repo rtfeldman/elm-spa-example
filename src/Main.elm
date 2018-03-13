@@ -1,11 +1,11 @@
 module Main exposing (main)
 
+import Browser.Navigation exposing (Location)
 import Data.Article exposing (Slug)
 import Data.Session exposing (Session)
 import Data.User as User exposing (User, Username)
 import Html exposing (..)
 import Json.Decode as Decode exposing (Value)
-import Navigation exposing (Location)
 import Page.Article as Article
 import Page.Article.Editor as Editor
 import Page.Errored as Errored exposing (PageLoadError)

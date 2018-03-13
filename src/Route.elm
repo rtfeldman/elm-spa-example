@@ -1,10 +1,10 @@
 module Route exposing (Route(..), fromLocation, href, modifyUrl)
 
+import Browser.Navigation exposing (Location)
 import Data.Article as Article
 import Data.User as User exposing (Username)
 import Html exposing (Attribute)
 import Html.Attributes as Attr
-import Navigation exposing (Location)
 import Url.Parser as Url exposing ((</>), Parser, oneOf, parseHash, s, string)
 
 

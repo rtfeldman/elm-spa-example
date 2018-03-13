@@ -2,7 +2,9 @@ module Util exposing (appendErrors, onClickStopPropagation, pair, viewIf)
 
 import Html exposing (Attribute, Html)
 import Html.Events exposing (defaultOptions, onWithOptions)
+import ISO8601
 import Json.Decode as Decode
+import Time exposing (Posix)
 
 
 {-| Useful when building up a Cmd via a pipeline, and then pairing it with
@@ -37,3 +39,21 @@ onClickStopPropagation msg =
 appendErrors : { model | errors : List error } -> List error -> { model | errors : List error }
 appendErrors model errors =
     { model | errors = model.errors ++ errors }
+
+
+{-| Decode an ISO-8601 date string.
+-}
+dateStringDecoder : Decoder Time
+dateStringDecoder =
+    Decode.string
+        |> Decode.andThen (ISO8601.fromString >> fromResult)
+
+
+fromResult : Result String a -> Decoder a
+fromResult result =
+    case result of
+        Ok successValue ->
+            succeed successValue
+
+        Err errorMessage ->
+            fail errorMessage

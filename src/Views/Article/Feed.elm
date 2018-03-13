@@ -16,12 +16,12 @@ overkill, so we use simpler APIs instead.
 
 -}
 
+import Browser
 import Data.Article as Article exposing (Article, Tag)
 import Data.Article.Feed exposing (Feed)
 import Data.AuthToken exposing (AuthToken)
 import Data.Session exposing (Session)
 import Data.User exposing (Username)
-import Dom.Scroll
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, classList, href, id, placeholder, src)
 import Html.Events exposing (onClick)
@@ -273,7 +273,7 @@ updateInternal session msg model =
 
 scrollToTop : Task x ()
 scrollToTop =
-    Dom.Scroll.toTop bodyId
+    Browser.setScrollTop bodyId
         -- It's not worth showing the user anything special if scrolling fails.
         -- If anything, we'd log this to an error recording service.
         |> Task.onError (\_ -> Task.succeed ())

@@ -114,7 +114,7 @@ module DateFormat
 
 -}
 
-import Date exposing (Date, Day(..), Month(..))
+import Time exposing (Month(..), Posix, Weekday(..))
 
 
 {-| Get the numeric value of the month.
@@ -754,7 +754,7 @@ piece date token =
 monthPair : Date -> ( Int, Month )
 monthPair date =
     months
-        |> List.indexedMap (,)
+        |> List.indexedMap Tuple.pair
         |> List.filter (\( i, m ) -> m == Date.month date)
         |> List.head
         |> Maybe.withDefault ( 0, Jan )
@@ -907,7 +907,7 @@ dayOfYear date =
 dayOfWeek : Date -> Int
 dayOfWeek date =
     days
-        |> List.indexedMap (,)
+        |> List.indexedMap Tuple.pair
         |> List.filter (\( _, d ) -> d == Date.dayOfWeek date)
         |> List.head
         |> Maybe.withDefault ( 0, Sun )

@@ -242,7 +242,7 @@ dayOfWeekToWord loc dow =
 
 
 mod12 h =
-    h % 12
+    modBy 12 h
 
 
 zero2twelve n =

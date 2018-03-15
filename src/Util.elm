@@ -1,7 +1,7 @@
 module Util exposing (appendErrors, onClickStopPropagation, pair, viewIf)
 
 import Html exposing (Attribute, Html)
-import Html.Events exposing (defaultOptions, onWithOptions)
+import Html.Events exposing (onWithOptions)
 import ISO8601
 import Json.Decode as Decode
 import Time exposing (Posix)

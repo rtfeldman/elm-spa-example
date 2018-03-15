@@ -3,7 +3,7 @@ module Request.User exposing (edit, login, register, storeSession)
 import Data.AuthToken exposing (AuthToken, withAuthorization)
 import Data.User as User exposing (User)
 import Http
-import HttpBuilder exposing (RequestBuilder, withExpect, withQueryParams)
+import HttpBuilder exposing (RequestBuilder, withExpect)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Ports

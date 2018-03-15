@@ -4,7 +4,7 @@ import Data.AuthToken exposing (AuthToken, withAuthorization)
 import Data.Profile as Profile exposing (Profile)
 import Data.User as User exposing (Username)
 import Http
-import HttpBuilder exposing (RequestBuilder, withExpect, withQueryParams)
+import HttpBuilder exposing (RequestBuilder, withExpect)
 import Json.Decode as Decode
 import Request.Helpers exposing (apiUrl)
 

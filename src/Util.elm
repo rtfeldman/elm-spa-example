@@ -1,9 +1,9 @@
-module Util exposing (appendErrors, onClickStopPropagation, pair, viewIf)
+module Util exposing (appendErrors, dateStringDecoder, onClickStopPropagation, pair, viewIf)
 
 import Html exposing (Attribute, Html)
-import Html.Events exposing (onWithOptions)
+import Html.Events exposing (stopPropagationOn)
 import ISO8601
-import Json.Decode as Decode
+import Json.Decode as Decode exposing (Decoder, fail, succeed)
 import Time exposing (Posix)
 
 
@@ -31,9 +31,8 @@ viewIf condition content =
 
 onClickStopPropagation : msg -> Attribute msg
 onClickStopPropagation msg =
-    onWithOptions "click"
-        { defaultOptions | stopPropagation = True }
-        (Decode.succeed msg)
+    stopPropagationOn "click"
+        (Decode.succeed ( msg, True ))
 
 
 appendErrors : { model | errors : List error } -> List error -> { model | errors : List error }
@@ -43,10 +42,10 @@ appendErrors model errors =
 
 {-| Decode an ISO-8601 date string.
 -}
-dateStringDecoder : Decoder Time
+dateStringDecoder : Decoder Posix
 dateStringDecoder =
     Decode.string
-        |> Decode.andThen (ISO8601.fromString >> fromResult)
+        |> Decode.andThen (ISO8601.fromString >> Result.map ISO8601.toPosix >> fromResult)
 
 
 fromResult : Result String a -> Decoder a

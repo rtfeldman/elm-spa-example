@@ -1,11 +1,11 @@
-module Route exposing (Route(..), fromLocation, href, modifyUrl)
+module Route exposing (Route(..), fromUrl, href, replaceUrl)
 
-import Browser.Navigation exposing (Location)
+import Browser.Navigation as Nav
 import Data.Article as Article
 import Data.User as User exposing (Username)
 import Html exposing (Attribute)
 import Html.Attributes as Attr
-import Url.Parser as Url exposing ((</>), Parser, oneOf, parseHash, s, string)
+import Url.Parser as Url exposing ((</>), Parser, Url, oneOf, s, string)
 
 
 -- ROUTING --
@@ -86,18 +86,30 @@ routeToString page =
 
 
 href : Route -> Attribute msg
-href route =
-    Attr.href (routeToString route)
+href targetRoute =
+    Attr.href (routeToString targetRoute)
 
 
-modifyUrl : Route -> Cmd msg
-modifyUrl =
-    routeToString >> Navigation.modifyUrl
+replaceUrl : Route -> Cmd msg
+replaceUrl =
+    routeToString >> Nav.replaceUrl
 
 
-fromLocation : Location -> Maybe Route
-fromLocation location =
-    if String.isEmpty location.hash then
-        Just Root
-    else
-        parseHash route location
+fromUrl : Url -> Maybe Route
+fromUrl url =
+    case url.fragment of
+        Nothing ->
+            Just Root
+
+        Just fragment ->
+            fragmentToRoute fragment
+
+
+fragmentToRoute : String -> Maybe Route
+fragmentToRoute fragment =
+    case Url.toUrl fragment of
+        Nothing ->
+            Nothing
+
+        Just segments ->
+            Url.parse route segments

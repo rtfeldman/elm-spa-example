@@ -101,7 +101,7 @@ type Slug
 
 slugParser : Url.Parser.Parser (Slug -> a) a
 slugParser =
-    Url.Parser.custom "SLUG" (Ok << Slug)
+    Url.Parser.custom "SLUG" (Just << Slug)
 
 
 slugToString : Slug -> String

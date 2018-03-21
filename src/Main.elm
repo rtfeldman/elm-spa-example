@@ -55,11 +55,11 @@ type alias Model =
     }
 
 
-init : Value -> Location -> ( Model, Cmd Msg )
-init val location =
-    setRoute (Route.fromLocation location)
+init : { url : Url, flags : Value } -> ( Model, Cmd Msg )
+init { url, flags } =
+    setRoute (Route.fromUrl url)
         { pageState = Loaded initialPage
-        , session = { user = decodeUserFromJson val }
+        , session = { user = decodeUserFromJson flags }
         }
 
 

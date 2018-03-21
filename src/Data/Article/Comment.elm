@@ -40,7 +40,7 @@ type CommentId
 
 idToString : CommentId -> String
 idToString (CommentId id) =
-    toString id
+    String.fromInt id
 
 
 commentIdDecoder : Decoder CommentId

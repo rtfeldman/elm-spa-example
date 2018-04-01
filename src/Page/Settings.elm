@@ -218,7 +218,7 @@ update session msg model =
 
         SaveCompleted (Ok user) ->
             ( ( model
-              , Cmd.batch [ storeSession user, Route.modifyUrl Route.Home ]
+              , Cmd.batch [ storeSession user, Route.replaceUrl Route.Home ]
               )
             , SetUser user
             )

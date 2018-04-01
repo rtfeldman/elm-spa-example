@@ -180,7 +180,7 @@ update user msg model =
 
         CreateCompleted (Ok article) ->
             Route.Article article.slug
-                |> Route.modifyUrl
+                |> Route.replaceUrl
                 |> pair model
 
         CreateCompleted (Err error) ->
@@ -193,7 +193,7 @@ update user msg model =
 
         EditCompleted (Ok article) ->
             Route.Article article.slug
-                |> Route.modifyUrl
+                |> Route.replaceUrl
                 |> pair model
 
         EditCompleted (Err error) ->
@@ -241,4 +241,4 @@ tagsFromString str =
 
 redirectToArticle : Article.Slug -> Cmd msg
 redirectToArticle =
-    Route.modifyUrl << Route.Article
+    Route.replaceUrl << Route.Article

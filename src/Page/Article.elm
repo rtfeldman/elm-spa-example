@@ -362,7 +362,7 @@ update session msg model =
                 |> Tuple.mapFirst (Util.appendErrors model)
 
         ArticleDeleted (Ok ()) ->
-            ( model, Route.modifyUrl Route.Home )
+            ( model, Route.replaceUrl Route.Home )
 
         ArticleDeleted (Err error) ->
             ( { model | errors = model.errors ++ [ "Server error while trying to delete article." ] }

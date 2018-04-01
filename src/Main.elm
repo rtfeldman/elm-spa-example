@@ -281,7 +281,7 @@ setRoute maybeRoute model =
             transition HomeLoaded (Home.init model.session)
 
         Just Route.Root ->
-            ( model, Route.modifyUrl Route.Home )
+            ( model, Route.replaceUrl Route.Home )
 
         Just Route.Login ->
             ( { model | pageState = Loaded (Login Login.initialModel) }, Cmd.none )
@@ -294,7 +294,7 @@ setRoute maybeRoute model =
             ( { model | session = { session | user = Nothing } }
             , Cmd.batch
                 [ Ports.storeSession Nothing
-                , Route.modifyUrl Route.Home
+                , Route.replaceUrl Route.Home
                 ]
             )
 
@@ -371,7 +371,7 @@ updatePage page msg model =
                 cmd =
                     -- If we just signed out, then redirect to Home.
                     if session.user /= Nothing && user == Nothing then
-                        Route.modifyUrl Route.Home
+                        Route.replaceUrl Route.Home
                     else
                         Cmd.none
             in

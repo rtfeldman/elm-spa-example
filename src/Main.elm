@@ -1,6 +1,7 @@
 module Main exposing (main)
 
-import Browser.Navigation exposing (Location)
+import Browser
+import Browser.Navigation
 import Data.Article exposing (Slug)
 import Data.Session exposing (Session)
 import Data.User as User exposing (User, Username)
@@ -18,6 +19,7 @@ import Page.Settings as Settings
 import Ports
 import Route exposing (Route)
 import Task
+import Url.Parser exposing (Url)
 import Views.Page as Page exposing (ActivePage)
 
 
@@ -55,12 +57,17 @@ type alias Model =
     }
 
 
-init : { url : Url, flags : Value } -> ( Model, Cmd Msg )
+init : Browser.Env Value -> ( Model, Cmd Msg )
 init { url, flags } =
     setRoute (Route.fromUrl url)
         { pageState = Loaded initialPage
         , session = { user = decodeUserFromJson flags }
         }
+
+
+onNavigation : Url -> Msg
+onNavigation url =
+    SetRoute (Route.fromUrl url)
 
 
 decodeUserFromJson : Value -> Maybe User
@@ -468,9 +475,10 @@ updatePage page msg model =
 
 main : Program Value Model Msg
 main =
-    Navigation.programWithFlags (Route.fromLocation >> SetRoute)
+    Browser.fullscreen
         { init = init
-        , view = view
-        , update = update
+        , onNavigation = Just onNavigation
         , subscriptions = subscriptions
+        , update = update
+        , view = view
         }

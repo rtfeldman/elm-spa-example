@@ -19,10 +19,11 @@ import Data.Article.Feed as Feed exposing (Feed)
 import Data.AuthToken exposing (AuthToken, withAuthorization)
 import Data.User as User exposing (Username)
 import Http
-import HttpBuilder exposing (RequestBuilder, withBody, withExpect, withQueryParams)
+import HttpBuilder exposing (RequestBuilder, withBody, withExpect, withQueryParameters)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Request.Helpers exposing (apiUrl)
+import Url exposing (QueryParameter)
 
 
 -- SINGLE --
@@ -68,13 +69,13 @@ defaultListConfig =
 
 list : ListConfig -> Maybe AuthToken -> Http.Request Feed
 list config maybeToken =
-    [ ( "tag", Maybe.map Article.tagToString config.tag )
-    , ( "author", Maybe.map User.usernameToString config.author )
-    , ( "favorited", Maybe.map User.usernameToString config.favorited )
-    , ( "limit", Just (toString config.limit) )
-    , ( "offset", Just (toString config.offset) )
+    [ Maybe.map (Article.tagToString >> Url.string "tag") config.tag
+    , Maybe.map (User.usernameToString >> Url.string "author") config.author
+    , Maybe.map (User.usernameToString >> Url.string "favorited") config.favorited
+    , Just (Url.int "limit" config.limit)
+    , Just (Url.int "offset" config.offset)
     ]
-        |> List.filterMap maybeVal
+        |> List.filterMap identity
         |> buildFromQueryParams "/articles"
         |> withAuthorization maybeToken
         |> HttpBuilder.toRequest
@@ -99,10 +100,9 @@ defaultFeedConfig =
 
 feed : FeedConfig -> AuthToken -> Http.Request Feed
 feed config token =
-    [ ( "limit", Just (toString config.limit) )
-    , ( "offset", Just (toString config.offset) )
+    [ Url.int "limit" config.limit
+    , Url.int "offset" config.offset
     ]
-        |> List.filterMap maybeVal
         |> buildFromQueryParams "/articles/feed"
         |> withAuthorization (Just token)
         |> HttpBuilder.toRequest
@@ -252,20 +252,10 @@ delete slug token =
 -- HELPERS --
 
 
-maybeVal : ( a, Maybe b ) -> Maybe ( a, b )
-maybeVal ( key, value ) =
-    case value of
-        Nothing ->
-            Nothing
-
-        Just val ->
-            Just ( key, val )
-
-
-buildFromQueryParams : String -> List ( String, String ) -> RequestBuilder Feed
+buildFromQueryParams : String -> List QueryParameter -> RequestBuilder Feed
 buildFromQueryParams url queryParams =
     url
         |> apiUrl
         |> HttpBuilder.get
         |> withExpect (Http.expectJson Feed.decoder)
-        |> withQueryParams queryParams
+        |> withQueryParameters queryParams

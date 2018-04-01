@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import Browser
+import Browser exposing (View)
 import Browser.Navigation
 import Data.Article exposing (Slug)
 import Data.Session exposing (Session)
@@ -87,7 +87,7 @@ initialPage =
 -- VIEW --
 
 
-view : Model -> Html Msg
+view : Model -> View Msg
 view model =
     case model.pageState of
         Loaded page ->
@@ -97,7 +97,12 @@ view model =
             viewPage model.session True page
 
 
-viewPage : Session -> Bool -> Page -> Html Msg
+mapBody : (msgA -> msgB) -> View msgA -> View msgB
+mapBody transform record =
+    { record | body = List.map (Html.map transform) record.body }
+
+
+viewPage : Session -> Bool -> Page -> View Msg
 viewPage session isLoading page =
     let
         frame =
@@ -111,7 +116,7 @@ viewPage session isLoading page =
         Blank ->
             -- This is for the very initial page load, while we are loading
             -- data via HTTP. We could also render a spinner here.
-            Html.text ""
+            { title = "Loading", content = Html.text "" }
                 |> frame Page.Other
 
         Errored subModel ->
@@ -121,32 +126,32 @@ viewPage session isLoading page =
         Settings subModel ->
             Settings.view session subModel
                 |> frame Page.Other
-                |> Html.map SettingsMsg
+                |> mapBody SettingsMsg
 
         Home subModel ->
             Home.view session subModel
                 |> frame Page.Home
-                |> Html.map HomeMsg
+                |> mapBody HomeMsg
 
         Login subModel ->
             Login.view session subModel
                 |> frame Page.Other
-                |> Html.map LoginMsg
+                |> mapBody LoginMsg
 
         Register subModel ->
             Register.view session subModel
                 |> frame Page.Other
-                |> Html.map RegisterMsg
+                |> mapBody RegisterMsg
 
         Profile username subModel ->
             Profile.view session subModel
                 |> frame (Page.Profile username)
-                |> Html.map ProfileMsg
+                |> mapBody ProfileMsg
 
         Article subModel ->
             Article.view session subModel
                 |> frame Page.Other
-                |> Html.map ArticleMsg
+                |> mapBody ArticleMsg
 
         Editor maybeSlug subModel ->
             let
@@ -158,7 +163,7 @@ viewPage session isLoading page =
             in
             Editor.view subModel
                 |> frame framePage
-                |> Html.map EditorMsg
+                |> mapBody EditorMsg
 
 
 

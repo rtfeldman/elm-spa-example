@@ -39,23 +39,26 @@ initialModel =
 -- VIEW --
 
 
-view : Session -> Model -> Html Msg
+view : Session -> Model -> { title : String, content : Html Msg }
 view session model =
-    div [ class "auth-page" ]
-        [ div [ class "container page" ]
-            [ div [ class "row" ]
-                [ div [ class "col-md-6 offset-md-3 col-xs-12" ]
-                    [ h1 [ class "text-xs-center" ] [ text "Sign in" ]
-                    , p [ class "text-xs-center" ]
-                        [ a [ Route.href Route.Register ]
-                            [ text "Need an account?" ]
+    { title = "Login"
+    , content =
+        div [ class "auth-page" ]
+            [ div [ class "container page" ]
+                [ div [ class "row" ]
+                    [ div [ class "col-md-6 offset-md-3 col-xs-12" ]
+                        [ h1 [ class "text-xs-center" ] [ text "Sign in" ]
+                        , p [ class "text-xs-center" ]
+                            [ a [ Route.href Route.Register ]
+                                [ text "Need an account?" ]
+                            ]
+                        , Form.viewErrors model.errors
+                        , viewForm
                         ]
-                    , Form.viewErrors model.errors
-                    , viewForm
                     ]
                 ]
             ]
-        ]
+    }
 
 
 viewForm : Html Msg

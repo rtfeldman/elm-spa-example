@@ -9,10 +9,13 @@ import Views.Assets as Assets
 -- VIEW --
 
 
-view : Session -> Html msg
+view : Session -> { title : String, content : Html msg }
 view session =
-    main_ [ id "content", class "container", tabindex -1 ]
-        [ h1 [] [ text "Not Found" ]
-        , div [ class "row" ]
-            [ img [ Assets.src Assets.error, alt "giant laser walrus wreaking havoc" ] [] ]
-        ]
+    { title = "Page Not Found"
+    , content =
+        main_ [ id "content", class "container", tabindex -1 ]
+            [ h1 [] [ text "Not Found" ]
+            , div [ class "row" ]
+                [ img [ Assets.src Assets.error, alt "giant laser walrus wreaking havoc" ] [] ]
+            ]
+    }

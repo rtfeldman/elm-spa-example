@@ -66,7 +66,7 @@ init session slug =
 -- VIEW --
 
 
-view : Session -> Model -> Html Msg
+view : Session -> Model -> { title : String, content : Html Msg }
 view session model =
     let
         article =
@@ -81,32 +81,35 @@ view session model =
         postingDisabled =
             model.commentInFlight
     in
-    div [ class "article-page" ]
-        [ viewBanner model.errors article author session.user
-        , div [ class "container page" ]
-            [ div [ class "row article-content" ]
-                [ div [ class "col-md-12" ]
-                    [ Article.bodyToHtml article.body [] ]
-                ]
-            , hr [] []
-            , div [ class "article-actions" ]
-                [ div [ class "article-meta" ] <|
-                    [ a [ Route.href (Route.Profile author.username) ]
-                        [ img [ UserPhoto.src author.image ] [] ]
-                    , div [ class "info" ]
-                        [ Views.Author.view author.username
-                        , Views.Article.viewTimestamp article
-                        ]
+    { title = article.title
+    , content =
+        div [ class "article-page" ]
+            [ viewBanner model.errors article author session.user
+            , div [ class "container page" ]
+                [ div [ class "row article-content" ]
+                    [ div [ class "col-md-12" ]
+                        [ Article.bodyToHtml article.body [] ]
                     ]
-                        ++ buttons
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-xs-12 col-md-8 offset-md-2" ] <|
-                    viewAddComment postingDisabled session.user
-                        :: List.map (viewComment session.user) model.comments
+                , hr [] []
+                , div [ class "article-actions" ]
+                    [ div [ class "article-meta" ] <|
+                        [ a [ Route.href (Route.Profile author.username) ]
+                            [ img [ UserPhoto.src author.image ] [] ]
+                        , div [ class "info" ]
+                            [ Views.Author.view author.username
+                            , Views.Article.viewTimestamp article
+                            ]
+                        ]
+                            ++ buttons
+                    ]
+                , div [ class "row" ]
+                    [ div [ class "col-xs-12 col-md-8 offset-md-2" ] <|
+                        viewAddComment postingDisabled session.user
+                            :: List.map (viewComment session.user) model.comments
+                    ]
                 ]
             ]
-        ]
+    }
 
 
 viewBanner : List String -> Article a -> Author -> Maybe User -> Html Msg

@@ -4,6 +4,7 @@ import Html exposing (Attribute, Html)
 import Html.Events exposing (stopPropagationOn)
 import ISO8601
 import Json.Decode as Decode exposing (Decoder, fail, succeed)
+import Parser
 import Time exposing (Posix)
 
 
@@ -45,14 +46,14 @@ appendErrors model errors =
 dateStringDecoder : Decoder Posix
 dateStringDecoder =
     Decode.string
-        |> Decode.andThen (ISO8601.fromString >> Result.map ISO8601.toPosix >> fromResult)
+        |> Decode.andThen (ISO8601.toPosix >> fromResult)
 
 
-fromResult : Result String a -> Decoder a
+fromResult : Result Parser.Error a -> Decoder a
 fromResult result =
     case result of
         Ok successValue ->
             succeed successValue
 
-        Err errorMessage ->
-            fail errorMessage
+        Err { source } ->
+            fail ("Failed to parse: " ++ source)

@@ -13,6 +13,7 @@
         "elm-lang/html": "3.0.0",
         "elm-lang/http": "2.0.0",
         "elm-lang/json": "1.0.0",
+        "elm-lang/parser": "1.0.0",
         "elm-lang/regex": "1.0.0",
         "elm-lang/time": "1.0.0",
         "elm-lang/url": "1.0.0",

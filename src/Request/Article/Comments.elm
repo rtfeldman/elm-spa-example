@@ -4,7 +4,7 @@ import Data.Article as Article exposing (Article, Tag, slugToString)
 import Data.Article.Comment as Comment exposing (Comment, CommentId)
 import Data.AuthToken exposing (AuthToken, withAuthorization)
 import Http
-import HttpBuilder exposing (RequestBuilder, withExpect, withQueryParams)
+import HttpBuilder exposing (RequestBuilder, withExpect, withQueryParameters)
 import Json.Decode as Decode
 import Json.Encode as Encode exposing (Value)
 import Request.Helpers exposing (apiUrl)

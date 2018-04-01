@@ -194,7 +194,7 @@ create config token =
                 [ ( "title", Encode.string config.title )
                 , ( "description", Encode.string config.description )
                 , ( "body", Encode.string config.body )
-                , ( "tagList", Encode.list (List.map Encode.string config.tags) )
+                , ( "tagList", Encode.list Encode.string config.tags )
                 ]
 
         body =

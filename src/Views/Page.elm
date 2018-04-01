@@ -63,12 +63,12 @@ viewHeader page user isLoading =
 
 
 viewSignIn : ActivePage -> Maybe User -> List (Html msg)
-viewSignIn page user =
+viewSignIn page maybeUser =
     let
         linkTo =
             navbarLink page
     in
-    case user of
+    case maybeUser of
         Nothing ->
             [ linkTo Route.Login [ text "Sign in" ]
             , linkTo Route.Register [ text "Sign up" ]

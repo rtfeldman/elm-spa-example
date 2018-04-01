@@ -179,7 +179,7 @@ pageLink page isActive =
             , href "javascript:void(0);"
             , onClick (SelectPage page)
             ]
-            [ text (toString page) ]
+            [ text (String.fromInt page) ]
         ]
 
 

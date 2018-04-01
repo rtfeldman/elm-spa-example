@@ -41,7 +41,7 @@ view toggleFavorite article =
                 toggleFavorite
                 article
                 [ class "pull-xs-right" ]
-                [ text (" " ++ toString article.favoritesCount) ]
+                [ text (" " ++ String.fromInt article.favoritesCount) ]
             ]
         , a [ class "preview-link", Route.href (Route.Article article.slug) ]
             [ h1 [] [ text article.title ]

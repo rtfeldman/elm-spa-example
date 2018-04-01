@@ -383,7 +383,7 @@ favoriteButton : Article a -> Html Msg
 favoriteButton article =
     let
         favoriteText =
-            " Favorite Article (" ++ toString article.favoritesCount ++ ")"
+            " Favorite Article (" ++ String.fromInt article.favoritesCount ++ ")"
     in
     Favorite.button (\_ -> ToggleFavorite) article [] [ text favoriteText ]
 

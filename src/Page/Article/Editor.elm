@@ -70,18 +70,21 @@ initEdit session slug =
 -- VIEW --
 
 
-view : Model -> Html Msg
+view : Model -> { title : String, content : Html Msg }
 view model =
-    div [ class "editor-page" ]
-        [ div [ class "container page" ]
-            [ div [ class "row" ]
-                [ div [ class "col-md-10 offset-md-1 col-xs-12" ]
-                    [ Form.viewErrors model.errors
-                    , viewForm model
+    { title = "Edit Article"
+    , content =
+        div [ class "editor-page" ]
+            [ div [ class "container page" ]
+                [ div [ class "row" ]
+                    [ div [ class "col-md-10 offset-md-1 col-xs-12" ]
+                        [ Form.viewErrors model.errors
+                        , viewForm model
+                        ]
                     ]
                 ]
             ]
-        ]
+    }
 
 
 viewForm : Model -> Html Msg

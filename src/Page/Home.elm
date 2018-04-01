@@ -53,22 +53,25 @@ init session =
 -- VIEW --
 
 
-view : Session -> Model -> Html Msg
+view : Session -> Model -> { title : String, content : Html Msg }
 view session model =
-    div [ class "home-page" ]
-        [ viewBanner
-        , div [ class "container page" ]
-            [ div [ class "row" ]
-                [ div [ class "col-md-9" ] (viewFeed model.feed)
-                , div [ class "col-md-3" ]
-                    [ div [ class "sidebar" ]
-                        [ p [] [ text "Popular Tags" ]
-                        , viewTags model.tags
+    { title = "Conduit"
+    , content =
+        div [ class "home-page" ]
+            [ viewBanner
+            , div [ class "container page" ]
+                [ div [ class "row" ]
+                    [ div [ class "col-md-9" ] (viewFeed model.feed)
+                    , div [ class "col-md-3" ]
+                        [ div [ class "sidebar" ]
+                            [ p [] [ text "Popular Tags" ]
+                            , viewTags model.tags
+                            ]
                         ]
                     ]
                 ]
             ]
-        ]
+    }
 
 
 viewBanner : Html msg

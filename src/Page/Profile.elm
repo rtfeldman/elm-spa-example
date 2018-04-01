@@ -62,7 +62,7 @@ init session username =
 -- VIEW --
 
 
-view : Session -> Model -> Html Msg
+view : Session -> Model -> { title : String, content : Html Msg }
 view session model =
     let
         profile =
@@ -73,17 +73,29 @@ view session model =
                 |> Maybe.map (\{ username } -> username == profile.username)
                 |> Maybe.withDefault False
     in
-    div [ class "profile-page" ]
-        [ Errors.view DismissErrors model.errors
-        , div [ class "user-info" ]
-            [ div [ class "container" ]
-                [ div [ class "row" ]
-                    [ viewProfileInfo isMyProfile profile ]
+    { title =
+        if isMyProfile then
+            "My Profile"
+        else
+            case session.user of
+                Just { username } ->
+                    "Profile — " ++ User.usernameToString username
+
+                Nothing ->
+                    "Profile"
+    , content =
+        div [ class "profile-page" ]
+            [ Errors.view DismissErrors model.errors
+            , div [ class "user-info" ]
+                [ div [ class "container" ]
+                    [ div [ class "row" ]
+                        [ viewProfileInfo isMyProfile profile ]
+                    ]
                 ]
+            , div [ class "container" ]
+                [ div [ class "row" ] [ viewFeed model.feed ] ]
             ]
-        , div [ class "container" ]
-            [ div [ class "row" ] [ viewFeed model.feed ] ]
-        ]
+    }
 
 
 viewProfileInfo : Bool -> Profile -> Html Msg

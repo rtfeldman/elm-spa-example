@@ -36,10 +36,13 @@ pageLoadError activePage errorMessage =
 -- VIEW --
 
 
-view : Session -> PageLoadError -> Html msg
+view : Session -> PageLoadError -> { title : String, content : Html msg }
 view session (PageLoadError model) =
-    main_ [ id "content", class "container", tabindex -1 ]
-        [ h1 [] [ text "Error Loading Page" ]
-        , div [ class "row" ]
-            [ p [] [ text model.errorMessage ] ]
-        ]
+    { title = "Error"
+    , content =
+        main_ [ id "content", class "container", tabindex -1 ]
+            [ h1 [] [ text "Error Loading Page" ]
+            , div [ class "row" ]
+                [ p [] [ text model.errorMessage ] ]
+            ]
+    }

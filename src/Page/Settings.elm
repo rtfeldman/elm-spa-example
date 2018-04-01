@@ -44,19 +44,22 @@ init user =
 -- VIEW --
 
 
-view : Session -> Model -> Html Msg
+view : Session -> Model -> { title : String, content : Html Msg }
 view session model =
-    div [ class "settings-page" ]
-        [ div [ class "container page" ]
-            [ div [ class "row" ]
-                [ div [ class "col-md-6 offset-md-3 col-xs-12" ]
-                    [ h1 [ class "text-xs-center" ] [ text "Your Settings" ]
-                    , Form.viewErrors model.errors
-                    , viewForm model
+    { title = "Settings"
+    , content =
+        div [ class "settings-page" ]
+            [ div [ class "container page" ]
+                [ div [ class "row" ]
+                    [ div [ class "col-md-6 offset-md-3 col-xs-12" ]
+                        [ h1 [ class "text-xs-center" ] [ text "Your Settings" ]
+                        , Form.viewErrors model.errors
+                        , viewForm model
+                        ]
                     ]
                 ]
             ]
-        ]
+    }
 
 
 viewForm : Model -> Html Msg

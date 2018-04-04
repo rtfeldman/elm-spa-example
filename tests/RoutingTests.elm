@@ -58,8 +58,8 @@ makeHashLocation hash =
 
 
 -- CONSTRUCTING UNEXPOSED VALUES --
--- By decoding values that are not intended to be exposed directly - and crashing
--- if they cannot be decoded, since crashing is harmless in tests - we can let
+-- By decoding values that are not intended to be exposed directly - and erroring
+-- if they cannot be decoded, since this is harmless in tests - we can let
 -- our internal modules continue to expose only the intended ways of
 -- constructing those, while still being able to test them.
 
@@ -71,7 +71,7 @@ usernameFromStr str =
             username
 
         Err err ->
-            Debug.crash ("Error decoding Username from \"" ++ str ++ "\": " ++ err)
+            Username ("Error decoding Username from \"" ++ str ++ "\": " ++ err)
 
 
 slugFromStr : String -> Slug

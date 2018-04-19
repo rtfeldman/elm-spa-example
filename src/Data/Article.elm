@@ -14,6 +14,7 @@ module Data.Article
         )
 
 import Data.Article.Author as Author exposing (Author)
+import Data.Article.Author.Slug as Slug exposing (Slug)
 import Html exposing (Attribute, Html)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, required)
@@ -80,7 +81,7 @@ baseArticleDecoder : Decoder (a -> Article a)
 baseArticleDecoder =
     decode Article
         |> required "description" (Decode.map (Maybe.withDefault "") (Decode.nullable Decode.string))
-        |> required "slug" (Decode.map Slug Decode.string)
+        |> required "slug" Slug.decoder
         |> required "title" Decode.string
         |> required "tagList" (Decode.list Decode.string)
         |> required "createdAt" Util.dateStringDecoder
@@ -88,24 +89,6 @@ baseArticleDecoder =
         |> required "favorited" Decode.bool
         |> required "favoritesCount" Decode.int
         |> required "author" Author.decoder
-
-
-
--- IDENTIFIERS --
-
-
-type Slug
-    = Slug String
-
-
-slugParser : Url.Parser.Parser (Slug -> a) a
-slugParser =
-    Url.Parser.custom "SLUG" (Just << Slug)
-
-
-slugToString : Slug -> String
-slugToString (Slug slug) =
-    slug
 
 
 

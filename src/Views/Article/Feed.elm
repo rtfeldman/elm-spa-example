@@ -20,6 +20,7 @@ import Browser
 import Data.Article as Article exposing (Article, Tag)
 import Data.Article.Feed exposing (Feed)
 import Data.Article.Feed.Source as FeedSource
+import Data.Article.Slug as ArticleSlug
 import Data.AuthToken exposing (AuthToken)
 import Data.Session exposing (Session)
 import Data.User exposing (Username)

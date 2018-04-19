@@ -1,4 +1,4 @@
-module Views.Article.Feed exposing (FeedSource, Model, Msg, authorFeed, favoritedFeed, globalFeed, init, selectTag, tagFeed, update, viewArticles, viewFeedSources, yourFeed)
+module Views.Article.Feed exposing (Model, Msg, init, selectTag, update, viewArticles, viewFeedSources)
 
 {-| NOTE: This module has its own Model, view, and update. This is not normal!
 If you find yourself doing this often, please watch <https://www.youtube.com/watch?v=DoA4Txr4GUs>
@@ -19,6 +19,7 @@ overkill, so we use simpler APIs instead.
 import Browser
 import Data.Article as Article exposing (Article, Tag)
 import Data.Article.Feed exposing (Feed)
+import Data.Article.Feed.Source as FeedSource
 import Data.AuthToken exposing (AuthToken)
 import Data.Session exposing (Session)
 import Data.User exposing (Username)
@@ -380,40 +381,3 @@ isTagFeed source =
 
         _ ->
             False
-
-
-
--- FEEDSOURCE --
-
-
-type FeedSource
-    = YourFeed
-    | GlobalFeed
-    | TagFeed Tag
-    | FavoritedFeed Username
-    | AuthorFeed Username
-
-
-yourFeed : FeedSource
-yourFeed =
-    YourFeed
-
-
-globalFeed : FeedSource
-globalFeed =
-    GlobalFeed
-
-
-tagFeed : Tag -> FeedSource
-tagFeed =
-    TagFeed
-
-
-favoritedFeed : Username -> FeedSource
-favoritedFeed =
-    FavoritedFeed
-
-
-authorFeed : Username -> FeedSource
-authorFeed =
-    AuthorFeed

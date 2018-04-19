@@ -1,6 +1,7 @@
 module Data.Article.Slug exposing (Slug, decoder, parser, toString)
 
 import Json.Decode as Decode exposing (Decoder)
+import StringEq as String
 import Url.Parser
 
 

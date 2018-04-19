@@ -1,6 +1,7 @@
 module Data.Article.Tag exposing (Tag, decoder, toString)
 
 import Json.Decode as Decode exposing (Decoder)
+import StringEq as String
 
 
 type Tag

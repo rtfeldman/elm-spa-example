@@ -4,7 +4,8 @@ module Views.Page exposing (ActivePage(..), bodyId, frame)
 -}
 
 import Browser exposing (Page)
-import Data.User as User exposing (User, Username)
+import Data.User as User exposing (User)
+import Data.User.Username as Username exposing (Username)
 import Data.UserPhoto as UserPhoto exposing (UserPhoto)
 import Html exposing (..)
 import Html.Attributes exposing (..)

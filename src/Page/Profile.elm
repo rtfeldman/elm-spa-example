@@ -5,7 +5,8 @@ module Page.Profile exposing (Model, Msg, init, update, view)
 
 import Data.Profile exposing (Profile)
 import Data.Session exposing (Session)
-import Data.User as User exposing (Username)
+import Data.User as User
+import Data.User.Username as Username exposing (Username)
 import Data.UserPhoto as UserPhoto exposing (UserPhoto)
 import Html exposing (..)
 import Html.Attributes exposing (..)

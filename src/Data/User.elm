@@ -1,6 +1,7 @@
 module Data.User exposing (User, Username, decoder, encode, usernameDecoder, usernameParser, usernameToHtml, usernameToString)
 
 import Data.AuthToken as AuthToken exposing (AuthToken)
+import Data.User.Username as Username exposing (Username)
 import Data.UserPhoto as UserPhoto exposing (UserPhoto)
 import Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
@@ -29,7 +30,7 @@ decoder =
     decode User
         |> required "email" Decode.string
         |> required "token" AuthToken.decoder
-        |> required "username" usernameDecoder
+        |> required "username" Username.decoder
         |> required "bio" (Decode.nullable Decode.string)
         |> required "image" UserPhoto.decoder
         |> required "createdAt" Decode.string
@@ -41,42 +42,9 @@ encode user =
     Encode.object
         [ ( "email", Encode.string user.email )
         , ( "token", AuthToken.encode user.token )
-        , ( "username", encodeUsername user.username )
+        , ( "username", Username.encode user.username )
         , ( "bio", Maybe.withDefault Encode.null (Maybe.map Encode.string user.bio) )
         , ( "image", UserPhoto.encode user.image )
         , ( "createdAt", Encode.string user.createdAt )
         , ( "updatedAt", Encode.string user.updatedAt )
         ]
-
-
-
--- IDENTIFIERS --
-
-
-type Username
-    = Username String
-
-
-usernameToString : Username -> String
-usernameToString (Username username) =
-    username
-
-
-usernameParser : Url.Parser.Parser (Username -> a) a
-usernameParser =
-    Url.Parser.custom "USERNAME" (Just << Username)
-
-
-usernameDecoder : Decoder Username
-usernameDecoder =
-    Decode.map Username Decode.string
-
-
-encodeUsername : Username -> Value
-encodeUsername (Username username) =
-    Encode.string username
-
-
-usernameToHtml : Username -> Html msg
-usernameToHtml (Username username) =
-    Html.text username

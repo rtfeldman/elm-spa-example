@@ -31,13 +31,15 @@ button toggleFavorite article extraAttributes extraChildren =
                 "btn-outline-primary"
 
         attributes =
-            [ class ("btn btn-sm " ++ favoriteButtonClass)
-            , onClickStopPropagation (toggleFavorite article)
-            ]
-                ++ extraAttributes
+            List.append
+                [ class ("btn btn-sm " ++ favoriteButtonClass)
+                , onClickStopPropagation (toggleFavorite article)
+                ]
+                extraAttributes
 
         children =
-            [ i [ class "ion-heart" ] [] ]
-                ++ extraChildren
+            List.append
+                [ i [ class "ion-heart" ] [] ]
+                extraChildren
     in
     Html.button attributes children

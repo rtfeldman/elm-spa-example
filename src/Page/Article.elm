@@ -96,14 +96,15 @@ view session model =
                 , hr [] []
                 , div [ class "article-actions" ]
                     [ div [ class "article-meta" ] <|
-                        [ a [ Route.href (Route.Profile author.username) ]
-                            [ img [ UserPhoto.src author.image ] [] ]
-                        , div [ class "info" ]
-                            [ Views.Author.view author.username
-                            , Views.Article.viewTimestamp article
+                        List.append
+                            [ a [ Route.href (Route.Profile author.username) ]
+                                [ img [ UserPhoto.src author.image ] [] ]
+                            , div [ class "info" ]
+                                [ Views.Author.view author.username
+                                , Views.Article.viewTimestamp article
+                                ]
                             ]
-                        ]
-                            ++ buttons
+                            buttons
                     ]
                 , div [ class "row" ]
                     [ div [ class "col-xs-12 col-md-8 offset-md-2" ] <|
@@ -125,14 +126,15 @@ viewBanner errors article author maybeUser =
         [ div [ class "container" ]
             [ h1 [] [ text article.title ]
             , div [ class "article-meta" ] <|
-                [ a [ Route.href (Route.Profile author.username) ]
-                    [ img [ UserPhoto.src author.image ] [] ]
-                , div [ class "info" ]
-                    [ Views.Author.view author.username
-                    , Views.Article.viewTimestamp article
+                List.append
+                    [ a [ Route.href (Route.Profile author.username) ]
+                        [ img [ UserPhoto.src author.image ] [] ]
+                    , div [ class "info" ]
+                        [ Views.Author.view author.username
+                        , Views.Article.viewTimestamp article
+                        ]
                     ]
-                ]
-                    ++ buttons
+                    buttons
             , Views.Errors.view DismissErrors errors
             ]
         ]
@@ -333,7 +335,7 @@ update session msg model =
             )
 
         CommentPosted (Err error) ->
-            ( { model | errors = model.errors ++ [ "Server error while trying to post comment." ] }
+            ( { model | errors = List.append model.errors [ "Server error while trying to post comment." ] }
             , Cmd.none
             )
 
@@ -354,7 +356,7 @@ update session msg model =
             )
 
         CommentDeleted id (Err error) ->
-            ( { model | errors = model.errors ++ [ "Server error while trying to delete comment." ] }
+            ( { model | errors = List.append model.errors [ "Server error while trying to delete comment." ] }
             , Cmd.none
             )
 
@@ -373,7 +375,7 @@ update session msg model =
             ( model, Route.replaceUrl Route.Home )
 
         ArticleDeleted (Err error) ->
-            ( { model | errors = model.errors ++ [ "Server error while trying to delete article." ] }
+            ( { model | errors = List.append model.errors [ "Server error while trying to delete article." ] }
             , Cmd.none
             )
 

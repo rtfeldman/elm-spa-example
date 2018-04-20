@@ -39,7 +39,7 @@ onClickStopPropagation msg =
 
 appendErrors : { model | errors : List error } -> List error -> { model | errors : List error }
 appendErrors model errors =
-    { model | errors = model.errors ++ errors }
+    { model | errors = List.append model.errors errors }
 
 
 {-| Decode an ISO-8601 date string.

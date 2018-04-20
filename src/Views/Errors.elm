@@ -23,5 +23,6 @@ view dismissErrors errors =
             , style "border" "1px solid"
             ]
         <|
-            List.map (\error -> p [] [ text error ]) errors
-                ++ [ button [ onClick dismissErrors ] [ text "Ok" ] ]
+            List.append
+                (List.map (\error -> p [] [ text error ]) errors)
+                [ button [ onClick dismissErrors ] [ text "Ok" ] ]

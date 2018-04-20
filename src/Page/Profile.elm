@@ -147,7 +147,7 @@ update session msg model =
         ToggleFollow ->
             case session.user of
                 Nothing ->
-                    ( { model | errors = model.errors ++ [ "You are currently signed out. You must be signed in to follow people." ] }
+                    ( { model | errors = List.append model.errors [ "You are currently signed out. You must be signed in to follow people." ] }
                     , Cmd.none
                     )
 

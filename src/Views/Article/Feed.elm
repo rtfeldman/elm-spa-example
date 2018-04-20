@@ -87,15 +87,17 @@ init session feedSources =
 
 viewArticles : Model -> List (Html Msg)
 viewArticles (Model { activePage, feed, feedSources }) =
-    List.map (Views.Article.view ToggleFavorite) feed.articles
-        ++ [ pagination activePage feed (SelectList.selected feedSources) ]
+    List.append
+        (List.map (Views.Article.view ToggleFavorite) feed.articles)
+        [ pagination activePage feed (SelectList.selected feedSources) ]
 
 
 viewFeedSources : Model -> Html Msg
 viewFeedSources (Model { feedSources, isLoading, errors }) =
     ul [ class "nav nav-pills outline-active" ] <|
-        SelectList.toList (SelectList.mapBy viewFeedSource feedSources)
-            ++ [ Errors.view DismissErrors errors, viewIf isLoading spinner ]
+        List.append
+            (SelectList.toList (SelectList.mapBy viewFeedSource feedSources))
+            [ Errors.view DismissErrors errors, viewIf isLoading spinner ]
 
 
 viewFeedSource : Position -> FeedSource -> Html Msg
@@ -232,7 +234,7 @@ updateInternal session msg model =
 
         FeedLoadCompleted _ (Err error) ->
             ( { model
-                | errors = model.errors ++ [ "Server error while trying to load feed" ]
+                | errors = List.append model.errors [ "Server error while trying to load feed" ]
                 , isLoading = False
               }
             , Cmd.none
@@ -241,7 +243,7 @@ updateInternal session msg model =
         ToggleFavorite article ->
             case session.user of
                 Nothing ->
-                    ( { model | errors = model.errors ++ [ "You are currently signed out. You must sign in to favorite articles." ] }
+                    ( { model | errors = List.append model.errors [ "You are currently signed out. You must sign in to favorite articles." ] }
                     , Cmd.none
                     )
 
@@ -261,7 +263,7 @@ updateInternal session msg model =
             ( { model | feed = newFeed }, Cmd.none )
 
         FavoriteCompleted (Err error) ->
-            ( { model | errors = model.errors ++ [ "Server error while trying to favorite article." ] }
+            ( { model | errors = List.append model.errors [ "Server error while trying to favorite article." ] }
             , Cmd.none
             )
 
@@ -366,7 +368,7 @@ selectFeedSource source sources =
                     withoutTags
 
                 TagFeed _ ->
-                    withoutTags ++ [ source ]
+                    List.append withoutTags [ source ]
     in
     case newSources of
         [] ->

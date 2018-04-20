@@ -2,9 +2,10 @@ module Main exposing (main)
 
 import Browser exposing (Page)
 import Browser.Navigation
-import Data.Article exposing (Slug)
+import Data.Article.Slug exposing (Slug)
 import Data.Session exposing (Session)
-import Data.User as User exposing (User, Username)
+import Data.User as User exposing (User)
+import Data.User.Username as Username exposing (Username)
 import Html exposing (..)
 import Json.Decode as Decode exposing (Value)
 import Page.Article as Article

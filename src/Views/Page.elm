@@ -84,7 +84,7 @@ viewSignIn page maybeUser =
             , linkTo
                 (Route.Profile user.username)
                 [ img [ class "user-pic", UserPhoto.src user.image ] []
-                , User.usernameToHtml user.username
+                , Username.toHtml user.username
                 ]
             , linkTo Route.Logout [ text "Sign out" ]
             ]

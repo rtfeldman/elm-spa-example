@@ -17,7 +17,8 @@ import Request.Profile
 import SelectList exposing (SelectList)
 import Task exposing (Task)
 import Util exposing (pair, viewIf)
-import Views.Article.Feed as Feed exposing (FeedSource, authorFeed, favoritedFeed)
+import Views.Article.Feed as Feed
+import Views.Article.Feed.Source as FeedSource exposing (FeedSource, authorFeed, favoritedFeed)
 import Views.Errors as Errors
 import Views.Page as Page
 import Views.User.Follow as Follow
@@ -80,7 +81,7 @@ view session model =
         else
             case session.user of
                 Just { username } ->
-                    "Profile — " ++ User.usernameToString username
+                    "Profile — " ++ Username.toString username
 
                 Nothing ->
                     "Profile"
@@ -103,7 +104,7 @@ viewProfileInfo : Bool -> Profile -> Html Msg
 viewProfileInfo isMyProfile profile =
     div [ class "col-xs-12 col-md-10 offset-md-1" ]
         [ img [ class "user-img", UserPhoto.src profile.image ] []
-        , h4 [] [ User.usernameToHtml profile.username ]
+        , h4 [] [ Username.toHtml profile.username ]
         , p [] [ text (Maybe.withDefault "" profile.bio) ]
         , viewIf (not isMyProfile) (followButton profile)
         ]

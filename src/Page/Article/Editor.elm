@@ -1,6 +1,7 @@
 module Page.Article.Editor exposing (Model, Msg, initEdit, initNew, update, view)
 
 import Data.Article as Article exposing (Article, Body)
+import Data.Article.Slug as Slug exposing (Slug)
 import Data.Session exposing (Session)
 import Data.User exposing (User)
 import Html exposing (..)
@@ -22,7 +23,7 @@ import Views.Page as Page
 
 type alias Model =
     { errors : List Error
-    , editingArticle : Maybe Article.Slug
+    , editingArticle : Maybe Slug
     , title : String
     , body : String
     , description : String
@@ -43,7 +44,7 @@ initNew =
     }
 
 
-initEdit : Session -> Article.Slug -> Task PageLoadError Model
+initEdit : Session -> Slug -> Task PageLoadError Model
 initEdit session slug =
     let
         maybeAuthToken =
@@ -242,6 +243,6 @@ tagsFromString str =
         |> List.filter (not << String.isEmpty)
 
 
-redirectToArticle : Article.Slug -> Cmd msg
+redirectToArticle : Slug -> Cmd msg
 redirectToArticle =
     Route.replaceUrl << Route.Article

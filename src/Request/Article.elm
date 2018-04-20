@@ -14,10 +14,13 @@ module Request.Article
         , update
         )
 
-import Data.Article as Article exposing (Article, Body, Tag, slugToString)
+import Data.Article as Article exposing (Article, Body)
 import Data.Article.Feed as Feed exposing (Feed)
+import Data.Article.Slug as Slug exposing (Slug)
+import Data.Article.Tag as Tag exposing (Tag)
 import Data.AuthToken exposing (AuthToken, withAuthorization)
-import Data.User as User exposing (Username)
+import Data.User as User
+import Data.User.Username as Username exposing (Username)
 import Http
 import HttpBuilder exposing (RequestBuilder, withBody, withExpect, withQueryParameters)
 import Json.Decode as Decode
@@ -29,7 +32,7 @@ import Url exposing (QueryParameter)
 -- SINGLE --
 
 
-get : Maybe AuthToken -> Article.Slug -> Http.Request (Article Body)
+get : Maybe AuthToken -> Slug -> Http.Request (Article Body)
 get maybeToken slug =
     let
         expect =
@@ -37,7 +40,7 @@ get maybeToken slug =
                 |> Decode.field "article"
                 |> Http.expectJson
     in
-    apiUrl ("/articles/" ++ Article.slugToString slug)
+    apiUrl ("/articles/" ++ Slug.toString slug)
         |> HttpBuilder.get
         |> HttpBuilder.withExpect expect
         |> withAuthorization maybeToken
@@ -69,9 +72,9 @@ defaultListConfig =
 
 list : ListConfig -> Maybe AuthToken -> Http.Request Feed
 list config maybeToken =
-    [ Maybe.map (Article.tagToString >> Url.string "tag") config.tag
-    , Maybe.map (User.usernameToString >> Url.string "author") config.author
-    , Maybe.map (User.usernameToString >> Url.string "favorited") config.favorited
+    [ Maybe.map (Tag.toString >> Url.string "tag") config.tag
+    , Maybe.map (Username.toString >> Url.string "author") config.author
+    , Maybe.map (Username.toString >> Url.string "favorited") config.favorited
     , Just (Url.int "limit" config.limit)
     , Just (Url.int "offset" config.offset)
     ]
@@ -114,7 +117,7 @@ feed config token =
 
 tags : Http.Request (List Tag)
 tags =
-    Decode.field "tags" (Decode.list Article.tagDecoder)
+    Decode.field "tags" (Decode.list Tag.decoder)
         |> Http.get (apiUrl "/tags")
 
 
@@ -130,19 +133,19 @@ toggleFavorite article authToken =
         favorite article.slug authToken
 
 
-favorite : Article.Slug -> AuthToken -> Http.Request (Article ())
+favorite : Slug -> AuthToken -> Http.Request (Article ())
 favorite =
     buildFavorite HttpBuilder.post
 
 
-unfavorite : Article.Slug -> AuthToken -> Http.Request (Article ())
+unfavorite : Slug -> AuthToken -> Http.Request (Article ())
 unfavorite =
     buildFavorite HttpBuilder.delete
 
 
 buildFavorite :
     (String -> RequestBuilder a)
-    -> Article.Slug
+    -> Slug
     -> AuthToken
     -> Http.Request (Article ())
 buildFavorite builderFromUrl slug token =
@@ -152,7 +155,7 @@ buildFavorite builderFromUrl slug token =
                 |> Decode.field "article"
                 |> Http.expectJson
     in
-    [ apiUrl "/articles", slugToString slug, "favorite" ]
+    [ apiUrl "/articles", Slug.toString slug, "favorite" ]
         |> String.join "/"
         |> builderFromUrl
         |> withAuthorization (Just token)
@@ -209,7 +212,7 @@ create config token =
         |> HttpBuilder.toRequest
 
 
-update : Article.Slug -> EditConfig record -> AuthToken -> Http.Request (Article Body)
+update : Slug -> EditConfig record -> AuthToken -> Http.Request (Article Body)
 update slug config token =
     let
         expect =
@@ -228,7 +231,7 @@ update slug config token =
             Encode.object [ ( "article", article ) ]
                 |> Http.jsonBody
     in
-    apiUrl ("/articles/" ++ slugToString slug)
+    apiUrl ("/articles/" ++ Slug.toString slug)
         |> HttpBuilder.put
         |> withAuthorization (Just token)
         |> withBody body
@@ -240,9 +243,9 @@ update slug config token =
 -- DELETE --
 
 
-delete : Article.Slug -> AuthToken -> Http.Request ()
+delete : Slug -> AuthToken -> Http.Request ()
 delete slug token =
-    apiUrl ("/articles/" ++ Article.slugToString slug)
+    apiUrl ("/articles/" ++ Slug.toString slug)
         |> HttpBuilder.delete
         |> withAuthorization (Just token)
         |> HttpBuilder.toRequest

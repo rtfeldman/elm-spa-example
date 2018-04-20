@@ -2,7 +2,8 @@ module Request.Profile exposing (get, toggleFollow)
 
 import Data.AuthToken exposing (AuthToken, withAuthorization)
 import Data.Profile as Profile exposing (Profile)
-import Data.User as User exposing (Username)
+import Data.User as User
+import Data.User.Username as Username exposing (Username)
 import Http
 import HttpBuilder exposing (RequestBuilder, withExpect)
 import Json.Decode as Decode
@@ -14,7 +15,7 @@ import Request.Helpers exposing (apiUrl)
 
 get : Username -> Maybe AuthToken -> Http.Request Profile
 get username maybeToken =
-    apiUrl ("/profiles/" ++ User.usernameToString username)
+    apiUrl ("/profiles/" ++ Username.toString username)
         |> HttpBuilder.get
         |> HttpBuilder.withExpect (Http.expectJson (Decode.field "profile" Profile.decoder))
         |> withAuthorization maybeToken
@@ -49,7 +50,7 @@ buildFollow :
     -> AuthToken
     -> Http.Request Profile
 buildFollow builderFromUrl username token =
-    [ apiUrl "/profiles", User.usernameToString username, "follow" ]
+    [ apiUrl "/profiles", Username.toString username, "follow" ]
         |> String.join "/"
         |> builderFromUrl
         |> withAuthorization (Just token)

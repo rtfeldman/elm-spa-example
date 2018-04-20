@@ -6,6 +6,7 @@ module Page.Article exposing (Model, Msg, init, update, view)
 import Data.Article as Article exposing (Article, Body)
 import Data.Article.Author exposing (Author)
 import Data.Article.Comment exposing (Comment, CommentId)
+import Data.Article.Slug as Slug exposing (Slug)
 import Data.Session as Session exposing (Session)
 import Data.User as User exposing (User)
 import Data.User.Username as Username exposing (Username)
@@ -42,7 +43,7 @@ type alias Model =
     }
 
 
-init : Session -> Article.Slug -> Task PageLoadError Model
+init : Session -> Slug -> Task PageLoadError Model
 init session slug =
     let
         maybeAuthToken =
@@ -206,7 +207,7 @@ viewComment user comment =
                 ]
             , text " "
             , a [ class "comment-author", Route.href (Route.Profile author.username) ]
-                [ text (User.usernameToString comment.author.username) ]
+                [ text (Username.toString comment.author.username) ]
             , span [ class "date-posted" ] [ text (formatCommentTimestamp comment.createdAt) ]
             , viewIf isAuthor <|
                 span

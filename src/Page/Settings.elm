@@ -2,6 +2,7 @@ module Page.Settings exposing (ExternalMsg(..), Model, Msg, init, update, view)
 
 import Data.Session exposing (Session)
 import Data.User as User exposing (User)
+import Data.User.Username as Username exposing (Username)
 import Data.UserPhoto as UserPhoto
 import Html exposing (Html, button, div, fieldset, h1, input, text, textarea)
 import Html.Attributes exposing (attribute, class, defaultValue, placeholder, type_)
@@ -35,7 +36,7 @@ init user =
     , image = UserPhoto.toMaybeString user.image
     , email = user.email
     , bio = Maybe.withDefault "" user.bio
-    , username = User.usernameToString user.username
+    , username = Username.toString user.username
     , password = Nothing
     }
 

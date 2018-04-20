@@ -4,7 +4,8 @@ module Views.Author exposing (view)
 profile, and that's it.
 -}
 
-import Data.User as User exposing (Username)
+import Data.User as User
+import Data.User.Username as Username exposing (Username)
 import Html exposing (Html, a)
 import Html.Attributes exposing (attribute, class, href, id, placeholder)
 import Route exposing (Route)
@@ -13,4 +14,4 @@ import Route exposing (Route)
 view : Username -> Html msg
 view username =
     a [ class "author", Route.href (Route.Profile username) ]
-        [ User.usernameToHtml username ]
+        [ Username.toHtml username ]

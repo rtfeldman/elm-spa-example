@@ -3,7 +3,7 @@ module Views.Page exposing (ActivePage(..), bodyId, frame)
 {-| The frame around a typical page - that is, the header and footer.
 -}
 
-import Browser exposing (View)
+import Browser exposing (Page)
 import Data.User as User exposing (User, Username)
 import Data.UserPhoto as UserPhoto exposing (UserPhoto)
 import Html exposing (..)
@@ -40,7 +40,7 @@ isLoading is for determining whether we should show a loading spinner
 in the header. (This comes up during slow page transitions.)
 
 -}
-frame : Bool -> Maybe User -> ActivePage -> { title : String, content : Html msg } -> View msg
+frame : Bool -> Maybe User -> ActivePage -> { title : String, content : Html msg } -> Page msg
 frame isLoading user page { title, content } =
     { title = title ++ " — Conduit"
     , body =

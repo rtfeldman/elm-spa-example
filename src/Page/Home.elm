@@ -33,11 +33,12 @@ init : Session -> Task PageLoadError Model
 init session =
     let
         feedSources =
-            if session.user == Nothing then
-                SelectList.singleton globalFeed
+            case session.user of
+                Nothing ->
+                    SelectList.singleton globalFeed
 
-            else
-                SelectList.fromLists [] yourFeed [ globalFeed ]
+                Just _ ->
+                    SelectList.fromLists [] yourFeed [ globalFeed ]
 
         loadTags =
             Request.Article.tags

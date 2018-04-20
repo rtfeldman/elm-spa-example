@@ -102,9 +102,18 @@ viewFeedSources (Model { feedSources, isLoading, errors }) =
 
 viewFeedSource : Position -> FeedSource -> Html Msg
 viewFeedSource position source =
+    let
+        isActive =
+            case position of
+                Selected ->
+                    True
+
+                _ ->
+                    False
+    in
     li [ class "nav-item" ]
         [ a
-            [ classList [ ( "nav-link", True ), ( "active", position == Selected ) ]
+            [ classList [ ( "nav-link", True ), ( "active", isActive ) ]
             , href "javascript:void(0);"
             , onClick (SelectFeedSource source)
             ]

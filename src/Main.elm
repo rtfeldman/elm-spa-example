@@ -29,7 +29,7 @@ import Views.Page as Page exposing (ActivePage)
 -- Avoid putting things in here unless there is no alternative!
 
 
-type Page
+type CurrentPage
     = Blank
     | NotFound
     | Errored PageLoadError
@@ -43,8 +43,8 @@ type Page
 
 
 type PageState
-    = Loaded Page
-    | TransitioningFrom Page
+    = Loaded CurrentPage
+    | TransitioningFrom CurrentPage
 
 
 
@@ -78,7 +78,7 @@ decodeUserFromJson json =
         |> Maybe.andThen (Decode.decodeString User.decoder >> Result.toMaybe)
 
 
-initialPage : Page
+initialPage : CurrentPage
 initialPage =
     Blank
 
@@ -91,10 +91,10 @@ view : Model -> Page Msg
 view model =
     case model.pageState of
         Loaded page ->
-            viewPage model.session False page
+            viewCurrentPage model.session False page
 
         TransitioningFrom page ->
-            viewPage model.session True page
+            viewCurrentPage model.session True page
 
 
 mapBody : (msgA -> msgB) -> Page msgA -> Page msgB
@@ -102,8 +102,8 @@ mapBody transform record =
     { record | body = List.map (Html.map transform) record.body }
 
 
-viewPage : Session -> Bool -> Page -> Page Msg
-viewPage session isLoading page =
+viewCurrentPage : Session -> Bool -> CurrentPage -> Page Msg
+viewCurrentPage session isLoading page =
     let
         frame =
             Page.frame isLoading session.user
@@ -176,7 +176,7 @@ viewPage session isLoading page =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ pageSubscriptions (getPage model.pageState)
+        [ pageSubscriptions (getCurrentPage model.pageState)
         , Sub.map SetUser sessionChange
         ]
 
@@ -186,8 +186,8 @@ sessionChange =
     Ports.onSessionChange (Decode.decodeValue User.decoder >> Result.toMaybe)
 
 
-getPage : PageState -> Page
-getPage pageState =
+getCurrentPage : PageState -> CurrentPage
+getCurrentPage pageState =
     case pageState of
         Loaded page ->
             page
@@ -196,7 +196,7 @@ getPage pageState =
             page
 
 
-pageSubscriptions : Page -> Sub Msg
+pageSubscriptions : CurrentPage -> Sub Msg
 pageSubscriptions page =
     case page of
         Blank ->
@@ -254,7 +254,7 @@ setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
 setRoute maybeRoute model =
     let
         transition toMsg task =
-            ( { model | pageState = TransitioningFrom (getPage model.pageState) }
+            ( { model | pageState = TransitioningFrom (getCurrentPage model.pageState) }
             , Task.attempt toMsg task
             )
 
@@ -331,11 +331,11 @@ pageErrored model activePage errorMessage =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    updatePage (getPage model.pageState) msg model
+    updateCurrentPage (getCurrentPage model.pageState) msg model
 
 
-updatePage : Page -> Msg -> Model -> ( Model, Cmd Msg )
-updatePage page msg model =
+updateCurrentPage : CurrentPage -> Msg -> Model -> ( Model, Cmd Msg )
+updateCurrentPage page msg model =
     let
         session =
             model.session

@@ -1,4 +1,4 @@
-module Data.Article.Tag exposing (Tag, decoder, toString)
+module Data.Article.Tag exposing (Tag, decoder, eq, toString)
 
 import Json.Decode as Decode exposing (Decoder)
 import StringEq as String
@@ -6,6 +6,11 @@ import StringEq as String
 
 type Tag
     = Tag String
+
+
+eq : Tag -> Tag -> Bool
+eq (Tag a) (Tag b) =
+    String.eq a b
 
 
 toString : Tag -> String

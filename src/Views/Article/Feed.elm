@@ -347,7 +347,7 @@ fetch token page feedSource =
 
 replaceArticle : Article a -> Article a -> Article a
 replaceArticle newArticle oldArticle =
-    if newArticle.slug == oldArticle.slug then
+    if Slug.eq newArticle.slug oldArticle.slug then
         newArticle
 
     else
@@ -387,7 +387,7 @@ selectFeedSource source sources =
 
         first :: rest ->
             SelectList.fromLists [] first rest
-                |> SelectList.select ((==) source)
+                |> SelectList.select (FeedSource.eq source)
 
 
 isTagFeed : FeedSource -> Bool

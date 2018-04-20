@@ -1,4 +1,4 @@
-module Data.User.Username exposing (Username, decoder, encode, parser, toHtml, toString)
+module Data.User.Username exposing (Username, decoder, encode, eq, parser, toHtml, toString)
 
 import Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
@@ -9,6 +9,11 @@ import Url.Parser
 
 type Username
     = Username String
+
+
+eq : Username -> Username -> Bool
+eq (Username a) (Username b) =
+    String.eq a b
 
 
 toString : Username -> String

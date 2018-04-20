@@ -126,7 +126,7 @@ isActive page route =
             True
 
         ( Profile pageUsername, Route.Profile routeUsername ) ->
-            pageUsername == routeUsername
+            Username.eq pageUsername routeUsername
 
         ( NewArticle, Route.NewArticle ) ->
             True

@@ -74,7 +74,7 @@ view session model =
         isMyProfile =
             case session.user of
                 Just user ->
-                    user.username == profile.username
+                    Username.eq user.username profile.username
 
                 Nothing ->
                     False

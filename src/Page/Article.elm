@@ -177,7 +177,12 @@ viewButtons : Article a -> Author -> Maybe User -> List (Html Msg)
 viewButtons article author maybeUser =
     let
         isMyArticle =
-            Maybe.map .username maybeUser == Just author.username
+            case maybeUser of
+                Just { username } ->
+                    Username.eq username author.username
+
+                Nothing ->
+                    False
     in
     if isMyArticle then
         [ editButton article
@@ -199,7 +204,12 @@ viewComment user comment =
             comment.author
 
         isAuthor =
-            Maybe.map .username user == Just comment.author.username
+            case user of
+                Just { username } ->
+                    Username.eq username comment.author.username
+
+                Nothing ->
+                    False
     in
     div [ class "card" ]
         [ div [ class "card-block" ]

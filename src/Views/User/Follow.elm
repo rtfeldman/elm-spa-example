@@ -11,7 +11,8 @@ and for no benefit.
 
 -}
 
-import Data.User as User exposing (Username)
+import Data.User as User
+import Data.User.Username as Username exposing (Username)
 import Html exposing (Html, i, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
@@ -37,5 +38,5 @@ button toggleFollow { following, username } =
     in
     Html.button [ classes, onClick (toggleFollow username) ]
         [ i [ class "ion-plus-round" ] []
-        , text (" " ++ prefix ++ " " ++ User.usernameToString username)
+        , text (" " ++ prefix ++ " " ++ Username.toString username)
         ]

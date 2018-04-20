@@ -1,6 +1,7 @@
 module Data.Article.Author exposing (Author, decoder)
 
-import Data.User as User exposing (Username)
+import Data.User as User
+import Data.User.Username as Username exposing (Username)
 import Data.UserPhoto as UserPhoto exposing (UserPhoto)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (custom, decode, required)
@@ -9,7 +10,7 @@ import Json.Decode.Pipeline exposing (custom, decode, required)
 decoder : Decoder Author
 decoder =
     decode Author
-        |> required "username" User.usernameDecoder
+        |> required "username" Username.decoder
         |> required "bio" (Decode.nullable Decode.string)
         |> required "image" UserPhoto.decoder
         |> required "following" Decode.bool

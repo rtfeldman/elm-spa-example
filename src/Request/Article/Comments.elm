@@ -1,7 +1,8 @@
 module Request.Article.Comments exposing (delete, list, post)
 
-import Data.Article as Article exposing (Article, Tag, slugToString)
+import Data.Article as Article exposing (Article)
 import Data.Article.Comment as Comment exposing (Comment, CommentId)
+import Data.Article.Slug as Slug exposing (Slug)
 import Data.AuthToken exposing (AuthToken, withAuthorization)
 import Http
 import HttpBuilder exposing (RequestBuilder, withExpect, withQueryParameters)
@@ -13,9 +14,9 @@ import Request.Helpers exposing (apiUrl)
 -- LIST --
 
 
-list : Maybe AuthToken -> Article.Slug -> Http.Request (List Comment)
+list : Maybe AuthToken -> Slug -> Http.Request (List Comment)
 list maybeToken slug =
-    apiUrl ("/articles/" ++ Article.slugToString slug ++ "/comments")
+    apiUrl ("/articles/" ++ Slug.toString slug ++ "/comments")
         |> HttpBuilder.get
         |> HttpBuilder.withExpect (Http.expectJson (Decode.field "comments" (Decode.list Comment.decoder)))
         |> withAuthorization maybeToken
@@ -26,9 +27,9 @@ list maybeToken slug =
 -- POST --
 
 
-post : Article.Slug -> String -> AuthToken -> Http.Request Comment
+post : Slug -> String -> AuthToken -> Http.Request Comment
 post slug body token =
-    apiUrl ("/articles/" ++ Article.slugToString slug ++ "/comments")
+    apiUrl ("/articles/" ++ Slug.toString slug ++ "/comments")
         |> HttpBuilder.post
         |> HttpBuilder.withBody (Http.jsonBody (encodeCommentBody body))
         |> HttpBuilder.withExpect (Http.expectJson (Decode.field "comment" Comment.decoder))
@@ -45,9 +46,9 @@ encodeCommentBody body =
 -- DELETE --
 
 
-delete : Article.Slug -> CommentId -> AuthToken -> Http.Request ()
+delete : Slug -> CommentId -> AuthToken -> Http.Request ()
 delete slug commentId token =
-    apiUrl ("/articles/" ++ Article.slugToString slug ++ "/comments/" ++ Comment.idToString commentId)
+    apiUrl ("/articles/" ++ Slug.toString slug ++ "/comments/" ++ Comment.idToString commentId)
         |> HttpBuilder.delete
         |> withAuthorization (Just token)
         |> HttpBuilder.toRequest

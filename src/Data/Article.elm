@@ -2,19 +2,14 @@ module Data.Article
     exposing
         ( Article
         , Body
-        , Slug
         , bodyToHtml
         , bodyToMarkdownString
         , decoder
         , decoderWithBody
-        , slugParser
-        , slugToString
-        , tagDecoder
-        , tagToString
         )
 
 import Data.Article.Author as Author exposing (Author)
-import Data.Article.Author.Slug as Slug exposing (Slug)
+import Data.Article.Slug as Slug exposing (Slug)
 import Html exposing (Attribute, Html)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, required)

@@ -17,13 +17,14 @@ overkill, so we use simpler APIs instead.
 -}
 
 import Browser
-import Data.Article as Article exposing (Article, Tag)
+import Data.Article as Article exposing (Article)
 import Data.Article.Feed exposing (Feed)
-import Data.Article.Feed.Source as FeedSource
 import Data.Article.Slug as ArticleSlug
+import Data.Article.Tag as Tag exposing (Tag)
 import Data.AuthToken exposing (AuthToken)
 import Data.Session exposing (Session)
-import Data.User exposing (Username)
+import Data.User
+import Data.User.Username as Username exposing (Username)
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, classList, href, id, placeholder, src)
 import Html.Events exposing (onClick)
@@ -33,6 +34,7 @@ import SelectList exposing (Position(..), SelectList)
 import Task exposing (Task)
 import Util exposing (onClickStopPropagation, pair, viewIf)
 import Views.Article
+import Views.Article.Feed.Source as FeedSource exposing (FeedSource(..), tagFeed)
 import Views.Errors as Errors
 import Views.Page exposing (bodyId)
 import Views.Spinner exposing (spinner)
@@ -128,7 +130,7 @@ sourceName source =
             "Global Feed"
 
         TagFeed tagName ->
-            "#" ++ Article.tagToString tagName
+            "#" ++ Tag.toString tagName
 
         FavoritedFeed username ->
             "Favorited Articles"

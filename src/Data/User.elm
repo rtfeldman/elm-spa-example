@@ -1,4 +1,4 @@
-module Data.User exposing (User, Username, decoder, encode, usernameDecoder, usernameParser, usernameToHtml, usernameToString)
+module Data.User exposing (User, decoder, encode)
 
 import Data.AuthToken as AuthToken exposing (AuthToken)
 import Data.User.Username as Username exposing (Username)

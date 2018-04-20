@@ -2,7 +2,9 @@ module Route exposing (Route(..), fromUrl, href, replaceUrl)
 
 import Browser.Navigation as Nav
 import Data.Article as Article
-import Data.User as User exposing (Username)
+import Data.Article.Slug as Slug exposing (Slug)
+import Data.User as User
+import Data.User.Username as Username exposing (Username)
 import Html exposing (Attribute)
 import Html.Attributes as Attr
 import Url.Parser as Url exposing ((</>), Parser, Url, oneOf, s, string)
@@ -18,10 +20,10 @@ type Route
     | Logout
     | Register
     | Settings
-    | Article Article.Slug
+    | Article Slug
     | Profile Username
     | NewArticle
-    | EditArticle Article.Slug
+    | EditArticle Slug
 
 
 route : Parser (Route -> a) a
@@ -31,11 +33,11 @@ route =
         , Url.map Login (s "login")
         , Url.map Logout (s "logout")
         , Url.map Settings (s "settings")
-        , Url.map Profile (s "profile" </> User.usernameParser)
+        , Url.map Profile (s "profile" </> Username.parser)
         , Url.map Register (s "register")
-        , Url.map Article (s "article" </> Article.slugParser)
+        , Url.map Article (s "article" </> Slug.parser)
         , Url.map NewArticle (s "editor")
-        , Url.map EditArticle (s "editor" </> Article.slugParser)
+        , Url.map EditArticle (s "editor" </> Slug.parser)
         ]
 
 
@@ -67,16 +69,16 @@ routeToString page =
                     [ "settings" ]
 
                 Article slug ->
-                    [ "article", Article.slugToString slug ]
+                    [ "article", Slug.toString slug ]
 
                 Profile username ->
-                    [ "profile", User.usernameToString username ]
+                    [ "profile", Username.toString username ]
 
                 NewArticle ->
                     [ "editor" ]
 
                 EditArticle slug ->
-                    [ "editor", Article.slugToString slug ]
+                    [ "editor", Slug.toString slug ]
     in
     "#/" ++ String.join "/" pieces
 

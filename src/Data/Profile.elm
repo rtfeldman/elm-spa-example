@@ -1,8 +1,8 @@
 module Data.Profile exposing (Profile, decoder)
 
 import Data.User as User
-import Data.User.Username as Username exposing (Username)
 import Data.User.Photo as UserPhoto exposing (UserPhoto)
+import Data.User.Username as Username exposing (Username)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (decode, required)
 

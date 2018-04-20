@@ -1,8 +1,8 @@
 module Data.User exposing (User, decoder, encode)
 
 import Data.AuthToken as AuthToken exposing (AuthToken)
-import Data.User.Username as Username exposing (Username)
 import Data.User.Photo as UserPhoto exposing (UserPhoto)
+import Data.User.Username as Username exposing (Username)
 import Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (decode, required)

@@ -1,4 +1,4 @@
-module Data.UserPhoto exposing (UserPhoto, decoder, encode, src, toMaybeString)
+module Data.User.Photo exposing (UserPhoto, decoder, encode, src, toMaybeString)
 
 import Html exposing (Attribute)
 import Html.Attributes

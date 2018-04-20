@@ -7,7 +7,7 @@ import Data.Profile exposing (Profile)
 import Data.Session exposing (Session)
 import Data.User as User
 import Data.User.Username as Username exposing (Username)
-import Data.UserPhoto as UserPhoto exposing (UserPhoto)
+import Data.User.Photo as UserPhoto exposing (UserPhoto)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http

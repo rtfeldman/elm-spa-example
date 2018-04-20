@@ -3,7 +3,7 @@ module Page.Settings exposing (ExternalMsg(..), Model, Msg, init, update, view)
 import Data.Session exposing (Session)
 import Data.User as User exposing (User)
 import Data.User.Username as Username exposing (Username)
-import Data.UserPhoto as UserPhoto
+import Data.User.Photo as UserPhoto
 import Html exposing (Html, button, div, fieldset, h1, input, text, textarea)
 import Html.Attributes exposing (attribute, class, defaultValue, placeholder, type_)
 import Html.Events exposing (onInput, onSubmit)

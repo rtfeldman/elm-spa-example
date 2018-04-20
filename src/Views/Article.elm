@@ -4,7 +4,7 @@ module Views.Article exposing (view, viewTimestamp)
 -}
 
 import Data.Article exposing (Article)
-import Data.UserPhoto as UserPhoto exposing (UserPhoto)
+import Data.User.Photo as UserPhoto exposing (UserPhoto)
 import DateFormat
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, classList, href, id, placeholder, src)

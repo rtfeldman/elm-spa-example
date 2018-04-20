@@ -6,12 +6,12 @@ import Html.Attributes exposing (class, type_)
 
 password : List (Attribute msg) -> List (Html msg) -> Html msg
 password attrs =
-    control Html.input ([ type_ "password" ] ++ attrs)
+    control Html.input (type_ "password" :: attrs)
 
 
 input : List (Attribute msg) -> List (Html msg) -> Html msg
 input attrs =
-    control Html.input ([ type_ "text" ] ++ attrs)
+    control Html.input (type_ "text" :: attrs)
 
 
 textarea : List (Attribute msg) -> List (Html msg) -> Html msg

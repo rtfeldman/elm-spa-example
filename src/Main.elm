@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import Browser exposing (View)
+import Browser exposing (Page)
 import Browser.Navigation
 import Data.Article exposing (Slug)
 import Data.Session exposing (Session)
@@ -87,7 +87,7 @@ initialPage =
 -- VIEW --
 
 
-view : Model -> View Msg
+view : Model -> Page Msg
 view model =
     case model.pageState of
         Loaded page ->
@@ -97,12 +97,12 @@ view model =
             viewPage model.session True page
 
 
-mapBody : (msgA -> msgB) -> View msgA -> View msgB
+mapBody : (msgA -> msgB) -> Page msgA -> Page msgB
 mapBody transform record =
     { record | body = List.map (Html.map transform) record.body }
 
 
-viewPage : Session -> Bool -> Page -> View Msg
+viewPage : Session -> Bool -> Page -> Page Msg
 viewPage session isLoading page =
     let
         frame =

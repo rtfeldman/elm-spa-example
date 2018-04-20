@@ -9,8 +9,8 @@ import Data.Article.Comment exposing (Comment, CommentId)
 import Data.Article.Slug as Slug exposing (Slug)
 import Data.Session as Session exposing (Session)
 import Data.User as User exposing (User)
-import Data.User.Username as Username exposing (Username)
 import Data.User.Photo as UserPhoto
+import Data.User.Username as Username exposing (Username)
 import DateFormat
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, disabled, href, id, placeholder)

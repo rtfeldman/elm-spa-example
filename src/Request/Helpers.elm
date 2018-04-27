@@ -3,4 +3,4 @@ module Request.Helpers exposing (apiUrl)
 
 apiUrl : String -> String
 apiUrl str =
-    "https://conduit.productionready.io/api" ++ str
+    "http://0.0.0.0:3000/api" ++ str

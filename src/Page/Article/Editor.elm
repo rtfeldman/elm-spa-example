@@ -5,7 +5,7 @@ import Data.Article.Slug as Slug exposing (Slug)
 import Data.Session exposing (Session)
 import Data.User exposing (User)
 import Html exposing (..)
-import Html.Attributes exposing (attribute, class, defaultValue, disabled, href, id, placeholder, type_)
+import Html.Attributes exposing (attribute, class, value, disabled, href, id, placeholder, type_)
 import Html.Events exposing (onInput, onSubmit)
 import Http
 import Page.Errored exposing (PageLoadError, pageLoadError)
@@ -106,26 +106,26 @@ viewForm model =
                 [ class "form-control-lg"
                 , placeholder "Article Title"
                 , onInput SetTitle
-                , defaultValue model.title
+                , value model.title
                 ]
                 []
             , Form.input
                 [ placeholder "What's this article about?"
                 , onInput SetDescription
-                , defaultValue model.description
+                , value model.description
                 ]
                 []
             , Form.textarea
                 [ placeholder "Write your article (in markdown)"
                 , attribute "rows" "8"
                 , onInput SetBody
-                , defaultValue model.body
+                , value model.body
                 ]
                 []
             , Form.input
                 [ placeholder "Enter tags"
                 , onInput SetTags
-                , defaultValue (String.join " " model.tags)
+                , value (String.join " " model.tags)
                 ]
                 []
             , button [ class "btn btn-lg pull-xs-right btn-primary", disabled model.isSaving ]

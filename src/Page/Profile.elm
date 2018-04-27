@@ -133,12 +133,37 @@ update session msg model =
                     )
 
                 Just user ->
-                    user.token
-                        |> Request.Profile.toggleFollow
-                            profile.username
-                            profile.following
-                        |> Http.send FollowCompleted
-                        |> pair model
+                    let
+                        -- TODO
+                        -- 1) head over to the Request.Profile module and look up
+                        --    what arguments the `toggleFollow` function takes.
+                        --
+                        -- 2) call Request.Profile.toggleFollow here,
+                        --    to get back a Request.
+                        --
+                        -- 3) pass that Request to Http.send to get a Cmd.
+                        --    Use that Cmd here.
+                        --
+                        -- Here's the documentation for Http.send:
+                        -- http://package.elm-lang.org/packages/elm-lang/http/1.0.0/Http#send
+                        --
+                        -- Here are some hepful values that are in scope:
+                        --
+                        --     user.token : Maybe AuthToken
+                        --
+                        --     profile : Profile  [look in the Data.Profile module!]
+                        --
+                        --     FollowCompleted : Result Http.Error Profile -> Msg
+                        --
+                        cmd : Cmd Msg
+                        cmd =
+                            Request.Profile.toggleFollow
+                                profile.username
+                                profile.following
+                                user.token
+                                |> Http.send FollowCompleted
+                    in
+                    ( model, cmd )
 
         FollowCompleted (Ok newProfile) ->
             ( { model | profile = newProfile }, Cmd.none )

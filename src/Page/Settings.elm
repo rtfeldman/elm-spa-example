@@ -4,7 +4,7 @@ import Data.Session exposing (Session)
 import Data.User as User exposing (User)
 import Data.UserPhoto as UserPhoto
 import Html exposing (Html, button, div, fieldset, h1, input, text, textarea)
-import Html.Attributes exposing (attribute, class, defaultValue, placeholder, type_)
+import Html.Attributes exposing (attribute, class, value, placeholder, type_)
 import Html.Events exposing (onInput, onSubmit)
 import Http
 import Json.Decode as Decode exposing (Decoder, decodeString, field, list, string)
@@ -65,14 +65,14 @@ viewForm model =
         [ fieldset []
             [ Form.input
                 [ placeholder "URL of profile picture"
-                , defaultValue (Maybe.withDefault "" model.image)
+                , value (Maybe.withDefault "" model.image)
                 , onInput SetImage
                 ]
                 []
             , Form.input
                 [ class "form-control-lg"
                 , placeholder "Username"
-                , defaultValue model.username
+                , value model.username
                 , onInput SetUsername
                 ]
                 []
@@ -80,21 +80,21 @@ viewForm model =
                 [ class "form-control-lg"
                 , placeholder "Short bio about you"
                 , attribute "rows" "8"
-                , defaultValue model.bio
+                , value model.bio
                 , onInput SetBio
                 ]
                 []
             , Form.input
                 [ class "form-control-lg"
                 , placeholder "Email"
-                , defaultValue model.email
+                , value model.email
                 , onInput SetEmail
                 ]
                 []
             , Form.password
                 [ class "form-control-lg"
                 , placeholder "Password"
-                , defaultValue (Maybe.withDefault "" model.password)
+                , value (Maybe.withDefault "" model.password)
                 , onInput SetPassword
                 ]
                 []

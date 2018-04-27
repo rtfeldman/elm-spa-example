@@ -99,9 +99,12 @@ viewForm model =
     Html.form [ onSubmit Save ]
         [ fieldset []
             [ Form.input
+                -- TODO when the user enters some input in here,
+                -- we want to update the `title` field in the Model.
+                --
+                --    HINT: look at how the model.description field works.
                 [ class "form-control-lg"
                 , placeholder "Article Title"
-                , onInput SetTitle
                 , value model.title
                 ]
                 []
@@ -119,8 +122,11 @@ viewForm model =
                 ]
                 []
             , Form.input
+                -- TODO when the user enters some input in here,
+                -- we want to update the `tags` field in the Model.
+                --
+                --    HINT: this will have the same `view` logic as `title` did.
                 [ placeholder "Enter tags"
-                , onInput SetTags
                 , value (String.join " " model.tags)
                 ]
                 []
@@ -136,9 +142,7 @@ viewForm model =
 
 type Msg
     = Save
-    | SetTitle String
     | SetDescription String
-    | SetTags String
     | SetBody String
     | CreateCompleted (Result Http.Error (Article Body))
     | EditCompleted (Result Http.Error (Article Body))
@@ -166,15 +170,18 @@ update user msg model =
                 errors ->
                     ( { model | errors = errors }, Cmd.none )
 
-        SetTitle title ->
-            ( { model | title = title }, Cmd.none )
-
+        -- TODO add something here that sets the title based on user input.
+        --
+        --    HINT: take a look at how SetDescription does something similar!
+        --
         SetDescription description ->
             ( { model | description = description }, Cmd.none )
 
-        SetTags tags ->
-            ( { model | tags = tagsFromString tags }, Cmd.none )
-
+        -- TODO add something here that sets the tags based on user input.
+        --
+        --     HINT: take a look at the tagsFromString function,
+        --           which is at the end of this file!
+        --
         SetBody body ->
             ( { model | body = body }, Cmd.none )
 
@@ -231,14 +238,14 @@ modelValidator =
 -- INTERNAL --
 
 
+redirectToArticle : Article.Slug -> Cmd msg
+redirectToArticle =
+    Route.modifyUrl << Route.Article
+
+
 tagsFromString : String -> List String
 tagsFromString str =
     str
         |> String.split " "
         |> List.map String.trim
         |> List.filter (not << String.isEmpty)
-
-
-redirectToArticle : Article.Slug -> Cmd msg
-redirectToArticle =
-    Route.modifyUrl << Route.Article

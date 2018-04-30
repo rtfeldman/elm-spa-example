@@ -35,7 +35,7 @@ view toggleFavorite article =
                 [ img [ UserPhoto.src author.image ] [] ]
             , div [ class "info" ]
                 [ Views.Author.view author.username
-                , span [ class "date" ] [ text (formattedTimestamp article) ]
+                , viewTimestamp article
                 ]
             , Favorite.button
                 toggleFavorite

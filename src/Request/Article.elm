@@ -154,10 +154,15 @@ buildFavorite builderFromUrl slug token =
             Article.decoder
                 |> Decode.field "article"
                 |> Http.expectJson
+
+        url =
+            String.join "/"
+                [ apiUrl "/articles"
+                , Slug.toString slug
+                , "favorite"
+                ]
     in
-    [ apiUrl "/articles", Slug.toString slug, "favorite" ]
-        |> String.join "/"
-        |> builderFromUrl
+    builderFromUrl url
         |> withAuthorization (Just token)
         |> withExpect expect
         |> HttpBuilder.toRequest

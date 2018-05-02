@@ -2,6 +2,7 @@ module Data.Article
     exposing
         ( Article
         , Body
+        , addBody
         , bodyToHtml
         , bodyToMarkdownString
         , decoder
@@ -111,3 +112,18 @@ bodyToMarkdownString (Body markdown) =
 bodyDecoder : Decoder Body
 bodyDecoder =
     Decode.map Body Decode.string
+
+
+addBody : Body -> Article () -> Article Body
+addBody body article =
+    { description = article.description
+    , slug = article.slug
+    , title = article.title
+    , tags = article.tags
+    , createdAt = article.createdAt
+    , updatedAt = article.updatedAt
+    , favorited = article.favorited
+    , favoritesCount = article.favoritesCount
+    , author = article.author
+    , body = body
+    }

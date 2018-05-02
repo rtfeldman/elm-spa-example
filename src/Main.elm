@@ -99,8 +99,10 @@ view model =
 
 
 mapBody : (msgA -> msgB) -> Page msgA -> Page msgB
-mapBody transform record =
-    { record | body = List.map (Html.map transform) record.body }
+mapBody transform { body, title } =
+    { title = title
+    , body = List.map (Html.map transform) body
+    }
 
 
 viewCurrentPage : Session -> Bool -> CurrentPage -> Page Msg

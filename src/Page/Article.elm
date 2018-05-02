@@ -261,7 +261,7 @@ update session msg model =
                 cmdFromAuth authToken =
                     Request.Article.toggleFavorite model.article authToken
                         |> Http.toTask
-                        |> Task.map (\newArticle -> { newArticle | body = article.body })
+                        |> Task.map (Article.addBody article.body)
                         |> Task.attempt FavoriteCompleted
             in
             session

@@ -17,7 +17,7 @@
         "elm-lang/regex": "1.0.0",
         "elm-lang/time": "1.0.0",
         "elm-lang/url": "1.0.0",
-        "lukewestby/http-builder": "1.0.0",
+        "lukewestby/http-builder": "1.0.1",
         "rtfeldman/elm-validate": "2.0.0",
         "rtfeldman/selectlist": "1.0.1"
     },

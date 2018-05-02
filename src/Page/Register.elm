@@ -189,8 +189,21 @@ modelValidator =
     Validate.all
         [ ifBlank .username ( Username, "username can't be blank." )
         , ifBlank .email ( Email, "email can't be blank." )
-        , ifBlank .password ( Password, "password can't be blank." )
+        , Validate.fromErrors passwordLength
         ]
+
+
+minPasswordChars : Int
+minPasswordChars =
+    6
+
+
+passwordLength : Model -> List Error
+passwordLength { password } =
+    if String.length password < minPasswordChars then
+        [ ( Password, "password must be at least " ++ String.fromInt minPasswordChars ++ " characters long." ) ]
+    else
+        []
 
 
 errorsDecoder : Decoder (List String)

@@ -40,7 +40,15 @@ photoToUrl : UserPhoto -> String
 photoToUrl (UserPhoto maybeUrl) =
     case maybeUrl of
         Nothing ->
-            "https://static.productionready.io/images/smiley-cyrus.jpg"
+            defaultPhotoUrl
+
+        Just "" ->
+            defaultPhotoUrl
 
         Just url ->
             url
+
+
+defaultPhotoUrl : String
+defaultPhotoUrl =
+    "https://static.productionready.io/images/smiley-cyrus.jpg"

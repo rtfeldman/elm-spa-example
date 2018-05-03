@@ -8,6 +8,7 @@ import Data.User exposing (User)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.Keyed as Keyed
 import Http
 import Json.Decode as Decode exposing (Decoder, decodeString, field, string)
 import Json.Decode.Pipeline exposing (decode, optional)
@@ -61,22 +62,32 @@ view session model =
 
 viewForm : Html Msg
 viewForm =
-    Html.form [ onSubmit SubmitForm ]
-        [ Form.input
-            [ class "form-control-lg"
-            , placeholder "Email"
-            , onInput SetEmail
+    let
+        keyedForm =
+            Keyed.node "form"
+    in
+        keyedForm [ onSubmit SubmitForm ]
+            [ ( "login-form-email"
+              , Form.input
+                    [ class "form-control-lg"
+                    , placeholder "Email"
+                    , onInput SetEmail
+                    ]
+                    []
+              )
+            , ( "login-form-password"
+              , Form.password
+                    [ class "form-control-lg"
+                    , placeholder "Password"
+                    , onInput SetPassword
+                    ]
+                    []
+              )
+            , ( "login-form-sign-in"
+              , button [ class "btn btn-lg btn-primary pull-xs-right" ]
+                    [ text "Sign in" ]
+              )
             ]
-            []
-        , Form.password
-            [ class "form-control-lg"
-            , placeholder "Password"
-            , onInput SetPassword
-            ]
-            []
-        , button [ class "btn btn-lg btn-primary pull-xs-right" ]
-            [ text "Sign in" ]
-        ]
 
 
 
@@ -132,9 +143,9 @@ update msg model =
                         _ ->
                             [ "unable to perform login" ]
             in
-            { model | errors = List.map (\errorMessage -> Form => errorMessage) errorMessages }
-                => Cmd.none
-                => NoOp
+                { model | errors = List.map (\errorMessage -> Form => errorMessage) errorMessages }
+                    => Cmd.none
+                    => NoOp
 
         LoginCompleted (Ok user) ->
             model
@@ -200,4 +211,4 @@ optionalError fieldName =
         errorToString errorMessage =
             String.join " " [ fieldName, errorMessage ]
     in
-    optional fieldName (Decode.list (Decode.map errorToString string)) []
+        optional fieldName (Decode.list (Decode.map errorToString string)) []

@@ -1,5 +1,7 @@
 # ![RealWorld Example App](https://cloud.githubusercontent.com/assets/556934/25448178/3e7dc5c0-2a7d-11e7-8069-06da5169dae6.png)
 
+[![Build Status](https://travis-ci.org/rtfeldman/elm-spa-example.svg?branch=master)](https://travis-ci.org/rtfeldman/elm-spa-example)
+
 👉 I gave a talk, [**Scaling Elm Apps**](https://www.youtube.com/watch?v=DoA4Txr4GUs),
 to explain the principles I used to build this. I highly recommend [watching it](https://www.youtube.com/watch?v=DoA4Txr4GUs)!
 

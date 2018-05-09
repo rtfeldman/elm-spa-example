@@ -5,7 +5,7 @@ import Data.Article.Slug as Slug exposing (Slug)
 import Data.Session exposing (Session)
 import Data.User exposing (User)
 import Html exposing (..)
-import Html.Attributes exposing (attribute, class, value, disabled, href, id, placeholder, type_)
+import Html.Attributes exposing (attribute, class, disabled, href, id, placeholder, type_, value)
 import Html.Events exposing (onInput, onSubmit)
 import Http
 import Page.Errored exposing (PageLoadError, pageLoadError)
@@ -16,6 +16,7 @@ import Util exposing (pair, viewIf)
 import Validate exposing (Validator, ifBlank, validate)
 import Views.Form as Form
 import Views.Page as Page
+
 
 
 -- MODEL --
@@ -97,6 +98,7 @@ viewForm model =
         saveButtonText =
             if isEditing then
                 "Update Article"
+
             else
                 "Publish Article"
     in

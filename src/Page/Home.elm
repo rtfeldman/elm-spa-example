@@ -19,6 +19,7 @@ import Views.Article.Feed.Source as FeedSource exposing (FeedSource, globalFeed,
 import Views.Page as Page
 
 
+
 -- MODEL --
 
 
@@ -34,6 +35,7 @@ init session =
         feedSources =
             if session.user == Nothing then
                 SelectList.singleton globalFeed
+
             else
                 SelectList.fromLists [] yourFeed [ globalFeed ]
 

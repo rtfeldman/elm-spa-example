@@ -14,6 +14,7 @@ import Validate exposing (Validator, ifBlank, validate)
 import Views.Form as Form
 
 
+
 -- MODEL --
 
 
@@ -202,6 +203,7 @@ passwordLength : Model -> List Error
 passwordLength { password } =
     if String.length password < minPasswordChars then
         [ ( Password, "password must be at least " ++ String.fromInt minPasswordChars ++ " characters long." ) ]
+
     else
         []
 

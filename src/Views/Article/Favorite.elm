@@ -26,6 +26,7 @@ button toggleFavorite article extraAttributes extraChildren =
         favoriteButtonClass =
             if article.favorited then
                 "btn-primary"
+
             else
                 "btn-outline-primary"
 

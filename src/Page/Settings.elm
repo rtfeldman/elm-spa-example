@@ -5,7 +5,7 @@ import Data.User as User exposing (User)
 import Data.User.Photo as UserPhoto
 import Data.User.Username as Username exposing (Username)
 import Html exposing (Html, button, div, fieldset, h1, input, text, textarea)
-import Html.Attributes exposing (attribute, class, value, placeholder, type_)
+import Html.Attributes exposing (attribute, class, placeholder, type_, value)
 import Html.Events exposing (onInput, onSubmit)
 import Http
 import Json.Decode as Decode exposing (Decoder, decodeString, field, list, string)
@@ -15,6 +15,7 @@ import Route
 import Util exposing (pair)
 import Validate exposing (Validator, ifBlank, validate)
 import Views.Form as Form
+
 
 
 -- MODEL --
@@ -168,6 +169,7 @@ update session msg model =
                 password =
                     if String.isEmpty passwordStr then
                         Nothing
+
                     else
                         Just passwordStr
             in
@@ -189,6 +191,7 @@ update session msg model =
                 image =
                     if String.isEmpty imageStr then
                         Nothing
+
                     else
                         Just imageStr
             in

@@ -24,6 +24,7 @@ import Url.Parser exposing (Url)
 import Views.Page as Page exposing (ActivePage)
 
 
+
 -- WARNING: Based on discussions around how asset management features
 -- like code splitting and lazy loading have been shaping up, I expect
 -- most of this file to become unnecessary in a future release of Elm.
@@ -161,6 +162,7 @@ viewCurrentPage session isLoading page =
                 framePage =
                     if maybeSlug == Nothing then
                         Page.NewArticle
+
                     else
                         Page.Other
             in
@@ -387,6 +389,7 @@ updateCurrentPage page msg model =
                     -- If we just signed out, then redirect to Home.
                     if session.user /= Nothing && user == Nothing then
                         Route.replaceUrl Route.Home
+
                     else
                         Cmd.none
             in
@@ -460,6 +463,7 @@ updateCurrentPage page msg model =
                     if slug == Nothing then
                         errored Page.NewArticle
                             "You must be signed in to post articles."
+
                     else
                         errored Page.Other
                             "You must be signed in to edit articles."

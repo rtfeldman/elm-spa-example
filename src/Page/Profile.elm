@@ -24,6 +24,7 @@ import Views.Page as Page
 import Views.User.Follow as Follow
 
 
+
 -- MODEL --
 
 
@@ -78,6 +79,7 @@ view session model =
     { title =
         if isMyProfile then
             "My Profile"
+
         else
             case session.user of
                 Just { username } ->

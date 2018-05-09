@@ -40,6 +40,7 @@ import Views.Page exposing (bodyId)
 import Views.Spinner exposing (spinner)
 
 
+
 -- MODEL --
 
 
@@ -171,6 +172,7 @@ pagination activePage feed feedSource =
         List.range 1 totalPages
             |> List.map (\page -> pageLink page (page == activePage))
             |> ul [ class "pagination" ]
+
     else
         Html.text ""
 
@@ -336,6 +338,7 @@ replaceArticle : Article a -> Article a -> Article a
 replaceArticle newArticle oldArticle =
     if newArticle.slug == oldArticle.slug then
         newArticle
+
     else
         oldArticle
 

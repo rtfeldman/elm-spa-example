@@ -15,7 +15,7 @@ For example, if an ISO-8601 date string specifies "9am in UTC+2", this function
 will return 7am UTC. The UTC offset is automatically factored in, then discarded.
 
 -}
-toPosix : String -> Result Parser.Error Time.Posix
+toPosix : String -> Result (List Parser.DeadEnd) Time.Posix
 toPosix str =
     Parser.run iso8601 str
 

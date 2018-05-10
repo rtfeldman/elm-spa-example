@@ -47,14 +47,14 @@ appendErrors model errors =
 dateStringDecoder : Decoder Posix
 dateStringDecoder =
     Decode.string
-        |> Decode.andThen (ISO8601.toPosix >> fromResult)
+        |> Decode.andThen (\str -> fromResult str (ISO8601.toPosix str))
 
 
-fromResult : Result Parser.Error a -> Decoder a
-fromResult result =
+fromResult : String -> Result (List Parser.DeadEnd) a -> Decoder a
+fromResult source result =
     case result of
         Ok successValue ->
             succeed successValue
 
-        Err { source } ->
+        Err _ ->
             fail ("Failed to parse: " ++ source)

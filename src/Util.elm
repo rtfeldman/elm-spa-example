@@ -2,7 +2,7 @@ module Util exposing (appendErrors, dateStringDecoder, onClickStopPropagation, p
 
 import Html exposing (Attribute, Html)
 import Html.Events exposing (stopPropagationOn)
-import ISO8601
+import Iso8601
 import Json.Decode as Decode exposing (Decoder, fail, succeed)
 import Parser
 import Time exposing (Posix)
@@ -47,7 +47,7 @@ appendErrors model errors =
 dateStringDecoder : Decoder Posix
 dateStringDecoder =
     Decode.string
-        |> Decode.andThen (\str -> fromResult str (ISO8601.toPosix str))
+        |> Decode.andThen (\str -> fromResult str (Iso8601.toTime str))
 
 
 fromResult : String -> Result (List Parser.DeadEnd) a -> Decoder a

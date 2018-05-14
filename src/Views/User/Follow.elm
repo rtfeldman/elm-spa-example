@@ -28,6 +28,7 @@ button toggleFollow { following, username } =
         ( prefix, secondaryClass ) =
             if following then
                 ( "Unfollow", "btn-secondary" )
+
             else
                 ( "Follow", "btn-outline-secondary" )
 

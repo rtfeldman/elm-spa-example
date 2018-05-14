@@ -29,6 +29,7 @@ import Request.Helpers exposing (apiUrl)
 import Url exposing (QueryParameter)
 
 
+
 -- SINGLE --
 
 
@@ -129,6 +130,7 @@ toggleFavorite : Article a -> AuthToken -> Http.Request (Article ())
 toggleFavorite article authToken =
     if article.favorited then
         unfavorite article.slug authToken
+
     else
         favorite article.slug authToken
 

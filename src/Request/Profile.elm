@@ -10,6 +10,7 @@ import Json.Decode as Decode
 import Request.Helpers exposing (apiUrl)
 
 
+
 -- GET --
 
 
@@ -30,6 +31,7 @@ toggleFollow : Username -> Bool -> AuthToken -> Http.Request Profile
 toggleFollow username following authToken =
     if following then
         unfollow username authToken
+
     else
         follow username authToken
 

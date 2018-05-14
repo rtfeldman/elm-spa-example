@@ -18,6 +18,7 @@ import Views.Form as Form
 import Views.Page as Page
 
 
+
 -- MODEL --
 
 
@@ -97,6 +98,7 @@ viewForm model =
         saveButtonText =
             if isEditing then
                 "Update Article"
+
             else
                 "Publish Article"
     in

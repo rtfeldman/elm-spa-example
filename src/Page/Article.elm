@@ -31,6 +31,7 @@ import Views.Page as Page
 import Views.User.Follow as Follow
 
 
+
 -- MODEL --
 
 
@@ -181,6 +182,7 @@ viewButtons article author maybeUser =
         , text " "
         , deleteButton article
         ]
+
     else
         [ followButton author
         , text " "
@@ -310,6 +312,7 @@ update session msg model =
             in
             if model.commentInFlight || String.isEmpty comment then
                 ( model, Cmd.none )
+
             else
                 let
                     cmdFromAuth authToken =

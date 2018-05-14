@@ -17,6 +17,7 @@ import Validate exposing (Validator, ifBlank, validate)
 import Views.Form as Form
 
 
+
 -- MODEL --
 
 
@@ -168,6 +169,7 @@ update session msg model =
                 password =
                     if String.isEmpty passwordStr then
                         Nothing
+
                     else
                         Just passwordStr
             in
@@ -189,6 +191,7 @@ update session msg model =
                 image =
                     if String.isEmpty imageStr then
                         Nothing
+
                     else
                         Just imageStr
             in

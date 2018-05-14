@@ -12,6 +12,7 @@ view : msg -> List String -> Html msg
 view dismissErrors errors =
     if List.isEmpty errors then
         Html.text ""
+
     else
         div
             [ class "error-messages"

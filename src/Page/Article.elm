@@ -178,8 +178,8 @@ viewButtons article author maybeUser =
     let
         isMyArticle =
             case maybeUser of
-                Just { username } ->
-                    Username.eq username author.username
+                Just user ->
+                    Username.eq user.username author.username
 
                 Nothing ->
                     False
@@ -205,8 +205,8 @@ viewComment user comment =
 
         isAuthor =
             case user of
-                Just { username } ->
-                    Username.eq username comment.author.username
+                Just user ->
+                    Username.eq user.username comment.author.username
 
                 Nothing ->
                     False

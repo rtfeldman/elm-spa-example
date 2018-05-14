@@ -72,9 +72,12 @@ view session model =
             model.profile
 
         isMyProfile =
-            session.user
-                |> Maybe.map (\{ username } -> username == profile.username)
-                |> Maybe.withDefault False
+            case session.user of
+                Just user ->
+                    user.username == profile.username
+
+                Nothing ->
+                    False
     in
     { title =
         if isMyProfile then

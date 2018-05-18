@@ -114,7 +114,7 @@ viewPage session isLoading page =
 
         Settings subModel ->
             Settings.view session subModel
-                |> frame Page.Other
+                |> frame Page.Settings
                 |> Html.map SettingsMsg
 
         Home subModel ->
@@ -124,12 +124,12 @@ viewPage session isLoading page =
 
         Login subModel ->
             Login.view session subModel
-                |> frame Page.Other
+                |> frame Page.Login
                 |> Html.map LoginMsg
 
         Register subModel ->
             Register.view session subModel
-                |> frame Page.Other
+                |> frame Page.Register
                 |> Html.map RegisterMsg
 
         Profile username subModel ->

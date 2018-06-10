@@ -19,7 +19,7 @@ overkill, so we use simpler APIs instead.
 import Browser
 import Data.Article as Article exposing (Article)
 import Data.Article.Feed exposing (Feed)
-import Data.Article.Slug as ArticleSlug
+import Data.Article.Slug as Slug
 import Data.Article.Tag as Tag exposing (Tag)
 import Data.AuthToken exposing (AuthToken)
 import Data.Session exposing (Session)

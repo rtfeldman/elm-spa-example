@@ -286,7 +286,7 @@ scrollToTop =
 
 
 fetch : Maybe AuthToken -> Int -> FeedSource -> Task Http.Error ( Int, Feed )
-fetch token page feedSource =
+fetch authToken page feedSource =
     let
         defaultListConfig =
             Request.Article.defaultListConfig
@@ -303,31 +303,36 @@ fetch token page feedSource =
         task =
             case feedSource of
                 YourFeed ->
-                    let
-                        defaultFeedConfig =
-                            Request.Article.defaultFeedConfig
+                    case authToken of
+                        Just token ->
+                            let
+                                defaultFeedConfig =
+                                    Request.Article.defaultFeedConfig
 
-                        feedConfig =
-                            { defaultFeedConfig | offset = offset, limit = articlesPerPage }
-                    in
-                    token
-                        |> Maybe.map (Request.Article.feed feedConfig >> Http.toTask)
-                        |> Maybe.withDefault (Task.fail (Http.BadUrl "You need to be signed in to view your feed."))
+                                feedConfig =
+                                    { defaultFeedConfig | offset = offset, limit = articlesPerPage }
+                            in
+                            Request.Article.feed feedConfig token
+                                |> Http.toTask
+
+                        Nothing ->
+                            Http.BadUrl "You need to be signed in to view your feed."
+                                |> Task.fail
 
                 GlobalFeed ->
-                    Request.Article.list listConfig token
+                    Request.Article.list listConfig authToken
                         |> Http.toTask
 
                 TagFeed tagName ->
-                    Request.Article.list { listConfig | tag = Just tagName } token
+                    Request.Article.list { listConfig | tag = Just tagName } authToken
                         |> Http.toTask
 
                 FavoritedFeed username ->
-                    Request.Article.list { listConfig | favorited = Just username } token
+                    Request.Article.list { listConfig | favorited = Just username } authToken
                         |> Http.toTask
 
                 AuthorFeed username ->
-                    Request.Article.list { listConfig | author = Just username } token
+                    Request.Article.list { listConfig | author = Just username } authToken
                         |> Http.toTask
     in
     task

@@ -10,7 +10,7 @@ type Slug
 
 parser : Url.Parser.Parser (Slug -> a) a
 parser =
-    Url.Parser.custom "SLUG" (Just << Slug)
+    Url.Parser.custom "SLUG" (\str -> Just (Slug str))
 
 
 decoder : Decoder Slug
@@ -19,5 +19,5 @@ decoder =
 
 
 toString : Slug -> String
-toString (Slug slug) =
-    slug
+toString (Slug str) =
+    str

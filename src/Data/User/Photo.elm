@@ -11,8 +11,8 @@ type UserPhoto
 
 
 src : UserPhoto -> Attribute msg
-src =
-    photoToUrl >> Html.Attributes.src
+src photo =
+    Html.Attributes.src (photoToUrl photo)
 
 
 decoder : Decoder UserPhoto

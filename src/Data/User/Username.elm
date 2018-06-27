@@ -17,7 +17,7 @@ toString (Username username) =
 
 parser : Url.Parser.Parser (Username -> a) a
 parser =
-    Url.Parser.custom "USERNAME" (Just << Username)
+    Url.Parser.custom "USERNAME" (\str -> Just (Username str))
 
 
 decoder : Decoder Username

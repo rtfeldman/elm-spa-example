@@ -94,8 +94,8 @@ href targetRoute =
 
 
 replaceUrl : Route -> Cmd msg
-replaceUrl =
-    routeToString >> Nav.replaceUrl
+replaceUrl route =
+    Nav.replaceUrl (routeToString route)
 
 
 fromUrl : Url -> Maybe Route

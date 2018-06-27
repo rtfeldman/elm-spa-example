@@ -246,5 +246,5 @@ tagsFromString str =
 
 
 redirectToArticle : Slug -> Cmd msg
-redirectToArticle =
-    Route.replaceUrl << Route.Article
+redirectToArticle slug =
+    Route.replaceUrl (Route.Article slug)

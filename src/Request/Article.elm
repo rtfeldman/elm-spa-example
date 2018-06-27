@@ -73,9 +73,9 @@ defaultListConfig =
 
 list : ListConfig -> Maybe AuthToken -> Http.Request Feed
 list config maybeToken =
-    [ Maybe.map (Tag.toString >> Url.string "tag") config.tag
-    , Maybe.map (Username.toString >> Url.string "author") config.author
-    , Maybe.map (Username.toString >> Url.string "favorited") config.favorited
+    [ Maybe.map (\tag -> Url.string "tag" (Tag.toString tag)) config.tag
+    , Maybe.map (\author -> Url.string "author" (Username.toString author)) config.author
+    , Maybe.map (\favorited -> Url.string "favorited" (Username.toString favorited)) config.favorited
     , Just (Url.int "limit" config.limit)
     , Just (Url.int "offset" config.offset)
     ]

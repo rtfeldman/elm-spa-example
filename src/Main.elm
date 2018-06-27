@@ -195,7 +195,8 @@ subscriptions model =
 
 sessionChange : Sub (Maybe User)
 sessionChange =
-    Ports.onSessionChange (Decode.decodeValue User.decoder >> Result.toMaybe)
+    Ports.onSessionChange
+        (value -> Result.toMaybe (Decode.decodeValue User.decoder value))
 
 
 getCurrentPage : PageState -> CurrentPage

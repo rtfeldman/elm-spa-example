@@ -74,10 +74,17 @@ onNavigation url =
 
 decodeUserFromJson : Value -> Maybe User
 decodeUserFromJson json =
-    json
-        |> Decode.decodeValue Decode.string
-        |> Result.toMaybe
-        |> Maybe.andThen (Decode.decodeString User.decoder >> Result.toMaybe)
+    case Decode.decodeValue Decode.string json of
+        Ok str ->
+            case Decode.decodeString User.decoder str of
+                Ok user ->
+                    Just user
+
+                Err _ ->
+                    Nothing
+
+        Err _ ->
+            Nothing
 
 
 initialPage : CurrentPage

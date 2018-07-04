@@ -4,12 +4,12 @@ import Data.User as User
 import Data.User.Photo as UserPhoto exposing (UserPhoto)
 import Data.User.Username as Username exposing (Username)
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (custom, decode, required)
+import Json.Decode.Pipeline exposing (custom, required)
 
 
 decoder : Decoder Author
 decoder =
-    decode Author
+    Decode.succeed Author
         |> required "username" Username.decoder
         |> required "bio" (Decode.nullable Decode.string)
         |> required "image" UserPhoto.decoder

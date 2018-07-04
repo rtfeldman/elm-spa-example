@@ -2,7 +2,7 @@ module Data.Article.Comment exposing (Comment, CommentId, commentIdDecoder, deco
 
 import Data.Article.Author as Author exposing (Author)
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (custom, decode, required)
+import Json.Decode.Pipeline exposing (custom, required)
 import Time exposing (Posix)
 import Util
 
@@ -17,12 +17,12 @@ type alias Comment =
 
 
 
--- SERIALIZATION --
+-- SERIALIZATION
 
 
 decoder : Decoder Comment
 decoder =
-    decode Comment
+    Decode.succeed Comment
         |> required "id" commentIdDecoder
         |> required "body" Decode.string
         |> required "createdAt" Util.dateStringDecoder

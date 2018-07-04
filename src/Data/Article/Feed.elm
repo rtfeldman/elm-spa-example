@@ -2,7 +2,7 @@ module Data.Article.Feed exposing (Feed, decoder)
 
 import Data.Article as Article exposing (Article)
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (decode, required)
+import Json.Decode.Pipeline exposing (required)
 
 
 type alias Feed =
@@ -12,11 +12,11 @@ type alias Feed =
 
 
 
--- SERIALIZATION --
+-- SERIALIZATION
 
 
 decoder : Decoder Feed
 decoder =
-    decode Feed
+    Decode.succeed Feed
         |> required "articles" (Decode.list Article.decoder)
         |> required "articlesCount" Decode.int

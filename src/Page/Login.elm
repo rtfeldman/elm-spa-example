@@ -10,7 +10,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
 import Json.Decode as Decode exposing (Decoder, decodeString, field, string)
-import Json.Decode.Pipeline exposing (decode, optional)
+import Json.Decode.Pipeline exposing (optional)
 import Request.User exposing (storeSession)
 import Route exposing (Route)
 import Validate exposing (Validator, ifBlank, validate)
@@ -202,7 +202,7 @@ modelValidator =
 
 errorsDecoder : Decoder (List String)
 errorsDecoder =
-    decode (\emailOrPassword email username password -> List.concat [ emailOrPassword, email, username, password ])
+    Decode.succeed (\emailOrPassword email username password -> List.concat [ emailOrPassword, email, username, password ])
         |> optionalError "email or password"
         |> optionalError "email"
         |> optionalError "username"

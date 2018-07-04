@@ -13,7 +13,7 @@ import Data.Article.Author as Author exposing (Author)
 import Data.Article.Slug as Slug exposing (Slug)
 import Html exposing (Attribute, Html)
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (custom, decode, hardcoded, required)
+import Json.Decode.Pipeline exposing (custom, hardcoded, required)
 import Markdown
 import Time exposing (Posix)
 import Url.Parser
@@ -58,7 +58,7 @@ type alias Article a =
 
 
 
--- SERIALIZATION --
+-- SERIALIZATION
 
 
 decoder : Decoder (Article ())
@@ -75,7 +75,7 @@ decoderWithBody =
 
 baseArticleDecoder : Decoder (a -> Article a)
 baseArticleDecoder =
-    decode Article
+    Decode.succeed Article
         |> required "description" (Decode.map (Maybe.withDefault "") (Decode.nullable Decode.string))
         |> required "slug" Slug.decoder
         |> required "title" Decode.string

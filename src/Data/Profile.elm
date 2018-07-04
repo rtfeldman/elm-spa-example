@@ -4,7 +4,7 @@ import Data.User as User
 import Data.User.Photo as UserPhoto exposing (UserPhoto)
 import Data.User.Username as Username exposing (Username)
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (decode, required)
+import Json.Decode.Pipeline exposing (required)
 
 
 type alias Profile =
@@ -17,7 +17,7 @@ type alias Profile =
 
 decoder : Decoder Profile
 decoder =
-    decode Profile
+    Decode.succeed Profile
         |> required "username" Username.decoder
         |> required "bio" (Decode.nullable Decode.string)
         |> required "image" UserPhoto.decoder

@@ -6,25 +6,25 @@
     ],
     "elm-version": "0.19.0",
     "dependencies": {
-        "NoRedInk/json-decode-pipeline": "1.0.2",
-        "elm-explorations/markdown": "1.0.0",
-        "elm-lang/browser": "1.0.0",
-        "elm-lang/core": "6.0.0",
-        "elm-lang/html": "3.0.0",
-        "elm-lang/http": "2.0.0",
-        "elm-lang/json": "1.0.0",
-        "elm-lang/parser": "1.0.0",
-        "elm-lang/regex": "1.0.0",
-        "elm-lang/time": "1.0.0",
-        "elm-lang/url": "1.0.0",
-        "lukewestby/http-builder": "1.0.1",
-        "rtfeldman/elm-validate": "2.0.0",
-        "rtfeldman/selectlist": "1.0.1"
-    },
-    "test-dependencies": {},
-    "do-not-edit-this-by-hand": {
-        "transitive-dependencies": {
-            "elm-lang/virtual-dom": "3.0.0"
+        "direct": {
+            "NoRedInk/json-decode-pipeline": "1.0.0",
+            "elm/browser": "1.0.0",
+            "elm/core": "1.0.0",
+            "elm/html": "1.0.0",
+            "elm/http": "1.0.0",
+            "elm/json": "1.0.0",
+            "elm/parser": "1.0.0",
+            "elm/regex": "1.0.0",
+            "elm/time": "1.0.0",
+            "elm/url": "1.0.0",
+            "elm-explorations/markdown": "1.0.0"
+        },
+        "indirect": {
+            "elm/virtual-dom": "1.0.0"
         }
+    },
+    "test-dependencies": {
+        "direct": {},
+        "indirect": {}
     }
 }

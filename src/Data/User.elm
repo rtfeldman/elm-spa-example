@@ -5,7 +5,7 @@ import Data.User.Photo as UserPhoto exposing (UserPhoto)
 import Data.User.Username as Username exposing (Username)
 import Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (decode, required)
+import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode exposing (Value)
 import Url.Parser
 
@@ -22,12 +22,12 @@ type alias User =
 
 
 
--- SERIALIZATION --
+-- SERIALIZATION
 
 
 decoder : Decoder User
 decoder =
-    decode User
+    Decode.succeed User
         |> required "email" Decode.string
         |> required "token" AuthToken.decoder
         |> required "username" Username.decoder

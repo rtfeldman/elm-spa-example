@@ -3,6 +3,7 @@ module Page.Profile exposing (Model, Msg, init, update, view)
 {-| Viewing a user's profile.
 -}
 
+import Data.Article.FeedSources exposing (FeedSources, Source(..))
 import Data.Profile exposing (Profile)
 import Data.Session exposing (Session)
 import Data.User as User
@@ -14,11 +15,9 @@ import Http
 import Page.Errored exposing (PageLoadError, pageLoadError)
 import Request.Article exposing (ListConfig, defaultListConfig)
 import Request.Profile
-import SelectList exposing (SelectList)
 import Task exposing (Task)
 import Util exposing (pair, viewIf)
 import Views.Article.Feed as Feed
-import Views.Article.Feed.Source as FeedSource exposing (FeedSource, authorFeed, favoritedFeed)
 import Views.Errors as Errors
 import Views.Page as Page
 import Views.User.Follow as Follow
@@ -179,6 +178,6 @@ followButton =
 -- INTERNAL --
 
 
-defaultFeedSources : Username -> SelectList FeedSource
+defaultFeedSources : Username -> FeedSources
 defaultFeedSources username =
-    SelectList.fromLists [] (authorFeed username) [ favoritedFeed username ]
+    FeedSources.fromLists (AuthorFeed username) [ FavoritedFeed username ]

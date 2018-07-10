@@ -19,6 +19,7 @@ overkill, so we use simpler APIs instead.
 import Browser
 import Data.Article as Article exposing (Article)
 import Data.Article.Feed exposing (Feed)
+import Data.Article.FeedSources exposing (FeedSources, Sources(..))
 import Data.Article.Slug as ArticleSlug
 import Data.Article.Tag as Tag exposing (Tag)
 import Data.AuthToken exposing (AuthToken)
@@ -30,11 +31,9 @@ import Html.Attributes exposing (attribute, class, classList, href, id, placehol
 import Html.Events exposing (onClick)
 import Http
 import Request.Article
-import SelectList exposing (Position(..), SelectList)
 import Task exposing (Task)
 import Util exposing (onClickStopPropagation, pair, viewIf)
 import Views.Article
-import Views.Article.Feed.Source as FeedSource exposing (FeedSource(..), tagFeed)
 import Views.Errors as Errors
 import Views.Page exposing (bodyId)
 import Views.Spinner exposing (spinner)
@@ -50,22 +49,29 @@ type Model
 
 {-| This should not be exposed! We want to benefit from the guarantee that only
 this module can create or alter this model. This way if it ever ends up in
-a surprising state, we know exactly where to look: this file.
+a surprising state, we know exactly where to look: this module.
 -}
 type alias InternalModel =
     { errors : List String
     , feed : Feed
-    , feedSources : SelectList FeedSource
+    , feedSources : FeedSources
     , activePage : Int
     , isLoading : Bool
     }
 
 
-init : Session -> SelectList FeedSource -> Task Http.Error Model
+type alias FeedSources =
+    { before : List FeedSource
+    , selected : FeedSource
+    , after : List FeedSource
+    }
+
+
+init : Session -> FeedSources -> Task Http.Error Model
 init session feedSources =
     let
         source =
-            SelectList.selected feedSources
+            FeedSources.selected feedSources
 
         toModel ( activePage, feed ) =
             Model
@@ -88,14 +94,28 @@ init session feedSources =
 viewArticles : Model -> List (Html Msg)
 viewArticles (Model { activePage, feed, feedSources }) =
     List.map (Views.Article.view ToggleFavorite) feed.articles
-        ++ [ pagination activePage feed (SelectList.selected feedSources) ]
+        ++ [ pagination activePage feed (FeedSources.selected feedSources) ]
 
 
 viewFeedSources : Model -> Html Msg
 viewFeedSources (Model { feedSources, isLoading, errors }) =
+    let
+        sourcesHtml =
+            FeedSources.toList feedSources
+                |> List.map viewFeedSource
+
+        errorsHtml =
+            Errors.view DismissErrors errors
+
+        spinnerHtml =
+            if isLoading then
+                spinner
+
+            else
+                text ""
+    in
     ul [ class "nav nav-pills outline-active" ] <|
-        SelectList.toList (SelectList.mapBy viewFeedSource feedSources)
-            ++ [ Errors.view DismissErrors errors, viewIf isLoading spinner ]
+        List.append (sourcesHtml [ errorsHtml, spinnerHtml ])
 
 
 viewFeedSource : Position -> FeedSource -> Html Msg
@@ -114,14 +134,14 @@ selectTag : Maybe AuthToken -> Tag -> Cmd Msg
 selectTag maybeAuthToken tagName =
     let
         source =
-            tagFeed tagName
+            TagFeed tagName
     in
     source
         |> fetch maybeAuthToken 1
         |> Task.attempt (FeedLoadCompleted source)
 
 
-sourceName : FeedSource -> String
+sourceName : Source -> String
 sourceName source =
     case source of
         YourFeed ->
@@ -268,7 +288,7 @@ updateInternal session msg model =
         SelectPage page ->
             let
                 source =
-                    SelectList.selected model.feedSources
+                    FeedSources.selected model.feedSources
             in
             source
                 |> fetch (Maybe.map .token session.user) page
@@ -346,49 +366,3 @@ replaceArticle newArticle oldArticle =
 
     else
         oldArticle
-
-
-selectFeedSource : FeedSource -> SelectList FeedSource -> SelectList FeedSource
-selectFeedSource source sources =
-    let
-        withoutTags =
-            sources
-                |> SelectList.toList
-                |> List.filter (not << isTagFeed)
-
-        newSources =
-            case source of
-                YourFeed ->
-                    withoutTags
-
-                GlobalFeed ->
-                    withoutTags
-
-                FavoritedFeed _ ->
-                    withoutTags
-
-                AuthorFeed _ ->
-                    withoutTags
-
-                TagFeed _ ->
-                    withoutTags ++ [ source ]
-    in
-    case newSources of
-        [] ->
-            -- This should never happen. If we had a logging service set up,
-            -- we would definitely want to report if it somehow did happen!
-            sources
-
-        first :: rest ->
-            SelectList.fromLists [] first rest
-                |> SelectList.select ((==) source)
-
-
-isTagFeed : FeedSource -> Bool
-isTagFeed source =
-    case source of
-        TagFeed _ ->
-            True
-
-        _ ->
-            False

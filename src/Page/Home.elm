@@ -4,6 +4,7 @@ module Page.Home exposing (Model, Msg, init, update, view)
 -}
 
 import Data.Article as Article
+import Data.Article.FeedSources exposing (FeedSources)
 import Data.Article.Tag as Tag exposing (Tag)
 import Data.Session exposing (Session)
 import Html exposing (..)
@@ -12,10 +13,8 @@ import Html.Events exposing (onClick)
 import Http
 import Page.Errored exposing (PageLoadError, pageLoadError)
 import Request.Article
-import SelectList exposing (SelectList)
 import Task exposing (Task)
 import Views.Article.Feed as Feed
-import Views.Article.Feed.Source as FeedSource exposing (FeedSource, globalFeed, tagFeed, yourFeed)
 import Views.Page as Page
 
 
@@ -34,10 +33,10 @@ init session =
     let
         feedSources =
             if session.user == Nothing then
-                SelectList.singleton globalFeed
+                FeedSources.fromLists globalFeed []
 
             else
-                SelectList.fromLists [] yourFeed [ globalFeed ]
+                FeedSources.fromLists yourFeed [ globalFeed ]
 
         loadTags =
             Request.Article.tags

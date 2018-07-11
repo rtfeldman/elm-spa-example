@@ -23,7 +23,7 @@ import Request.Profile
 import Route
 import Task exposing (Task)
 import Time
-import Util exposing (pair, viewIf)
+import Util
 import Views.Article
 import Views.Article.Favorite as Favorite
 import Views.Author
@@ -212,12 +212,15 @@ viewComment timeZone user comment =
             , a [ class "comment-author", Route.href (Route.Profile author.username) ]
                 [ text (Username.toString comment.author.username) ]
             , span [ class "date-posted" ] [ text (Util.formatTimestamp timeZone comment.createdAt) ]
-            , viewIf isAuthor <|
+            , if isAuthor then
                 span
                     [ class "mod-options"
                     , onClick (DeleteComment comment.id)
                     ]
                     [ i [ class "ion-trash-a" ] [] ]
+
+              else
+                text ""
             ]
         ]
 

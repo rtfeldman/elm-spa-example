@@ -17,7 +17,6 @@ import Request.Article exposing (ListConfig, defaultListConfig)
 import Request.Profile
 import Task exposing (Task)
 import Time
-import Util exposing (pair, viewIf)
 import Views.Article.Feed as Feed
 import Views.Errors as Errors
 import Views.Page as Page
@@ -108,7 +107,11 @@ viewProfileInfo isMyProfile profile =
         [ img [ class "user-img", UserPhoto.src profile.image ] []
         , h4 [] [ Username.toHtml profile.username ]
         , p [] [ text (Maybe.withDefault "" profile.bio) ]
-        , viewIf (not isMyProfile) (followButton profile)
+        , if isMyProfile then
+            text ""
+
+          else
+            followButton profile
         ]
 
 
@@ -154,7 +157,7 @@ update session msg model =
                             profile.username
                             profile.following
                         |> Http.send FollowCompleted
-                        |> pair model
+                        |> Tuple.pair model
 
         FollowCompleted (Ok newProfile) ->
             ( { model | profile = newProfile }, Cmd.none )

@@ -9,7 +9,6 @@ import Data.User.Photo as UserPhoto exposing (UserPhoto)
 import Data.User.Username as Username exposing (Username)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Lazy exposing (lazy2)
 import Route exposing (Route)
 import Util
 import Views.Spinner exposing (spinner)
@@ -59,7 +58,12 @@ viewHeader page user isLoading =
             [ a [ class "navbar-brand", Route.href Route.Home ]
                 [ text "conduit" ]
             , ul [ class "nav navbar-nav pull-xs-right" ] <|
-                lazy2 Util.viewIf isLoading spinner
+                (if isLoading then
+                    spinner
+
+                 else
+                    text ""
+                )
                     :: navbarLink page Route.Home [ text "Home" ]
                     :: viewSignIn page user
             ]

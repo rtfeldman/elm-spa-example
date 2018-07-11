@@ -33,7 +33,7 @@ import Http
 import Request.Article
 import Task exposing (Task)
 import Time
-import Util exposing (onClickStopPropagation, pair, viewIf)
+import Util exposing (onClickStopPropagation)
 import Views.Article
 import Views.Errors as Errors
 import Views.Page
@@ -233,7 +233,7 @@ updateInternal session msg model =
             source
                 |> fetch (Maybe.map .token session.user) 1
                 |> Task.attempt (FeedLoadCompleted source)
-                |> pair { model | isLoading = True }
+                |> Tuple.pair { model | isLoading = True }
 
         FeedLoadCompleted source (Ok ( activePage, feed )) ->
             ( { model
@@ -263,7 +263,7 @@ updateInternal session msg model =
                 Just user ->
                     Request.Article.toggleFavorite article user.token
                         |> Http.send FavoriteCompleted
-                        |> pair model
+                        |> Tuple.pair model
 
         FavoriteCompleted (Ok article) ->
             let
@@ -289,7 +289,7 @@ updateInternal session msg model =
                 |> fetch (Maybe.map .token session.user) page
                 |> Task.andThen (\feed -> Task.map (\_ -> feed) scrollToTop)
                 |> Task.attempt (FeedLoadCompleted source)
-                |> pair model
+                |> Tuple.pair model
 
 
 scrollToTop : Task x ()

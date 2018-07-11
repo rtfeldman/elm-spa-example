@@ -13,7 +13,6 @@ import Json.Decode as Decode exposing (Decoder, decodeString, field, list, strin
 import Json.Decode.Pipeline exposing (optional)
 import Request.User exposing (storeSession)
 import Route
-import Util exposing (pair)
 import Validate exposing (Validator, ifBlank, validate)
 import Views.Form as Form
 
@@ -140,7 +139,7 @@ update navKey session msg model =
                         |> Maybe.map .token
                         |> Request.User.edit model
                         |> Http.send SaveCompleted
-                        |> pair { model | errors = [] }
+                        |> Tuple.pair { model | errors = [] }
                     , NoOp
                     )
 

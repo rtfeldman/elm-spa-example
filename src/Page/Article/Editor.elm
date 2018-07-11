@@ -13,7 +13,6 @@ import Page.Errored exposing (PageLoadError, pageLoadError)
 import Request.Article
 import Route
 import Task exposing (Task)
-import Util exposing (pair, viewIf)
 import Validate exposing (Validator, ifBlank, validate)
 import Views.Form as Form
 import Views.Page as Page
@@ -162,13 +161,13 @@ update user navKey msg model =
                             user.token
                                 |> Request.Article.create model
                                 |> Http.send CreateCompleted
-                                |> pair { model | errors = [], isSaving = True }
+                                |> Tuple.pair { model | errors = [], isSaving = True }
 
                         Just slug ->
                             user.token
                                 |> Request.Article.update slug model
                                 |> Http.send EditCompleted
-                                |> pair { model | errors = [], isSaving = True }
+                                |> Tuple.pair { model | errors = [], isSaving = True }
 
                 errors ->
                     ( { model | errors = errors }, Cmd.none )
@@ -188,7 +187,7 @@ update user navKey msg model =
         CreateCompleted (Ok article) ->
             Route.Article article.slug
                 |> Route.replaceUrl navKey
-                |> pair model
+                |> Tuple.pair model
 
         CreateCompleted (Err error) ->
             ( { model
@@ -201,7 +200,7 @@ update user navKey msg model =
         EditCompleted (Ok article) ->
             Route.Article article.slug
                 |> Route.replaceUrl navKey
-                |> pair model
+                |> Tuple.pair model
 
         EditCompleted (Err error) ->
             ( { model

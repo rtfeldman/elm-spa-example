@@ -16,10 +16,10 @@ overkill, so we use simpler APIs instead.
 
 -}
 
-import Browser
+import Browser.Dom as Dom
 import Data.Article as Article exposing (Article)
 import Data.Article.Feed exposing (Feed)
-import Data.Article.FeedSources exposing (FeedSources, Sources(..))
+import Data.Article.FeedSources as FeedSources exposing (FeedSources, Source(..))
 import Data.Article.Slug as ArticleSlug
 import Data.Article.Tag as Tag exposing (Tag)
 import Data.AuthToken exposing (AuthToken)
@@ -35,7 +35,7 @@ import Task exposing (Task)
 import Util exposing (onClickStopPropagation, pair, viewIf)
 import Views.Article
 import Views.Errors as Errors
-import Views.Page exposing (bodyId)
+import Views.Page
 import Views.Spinner exposing (spinner)
 
 
@@ -57,13 +57,6 @@ type alias InternalModel =
     , feedSources : FeedSources
     , activePage : Int
     , isLoading : Bool
-    }
-
-
-type alias FeedSources =
-    { before : List FeedSource
-    , selected : FeedSource
-    , after : List FeedSource
     }
 
 
@@ -100,10 +93,6 @@ viewArticles (Model { activePage, feed, feedSources }) =
 viewFeedSources : Model -> Html Msg
 viewFeedSources (Model { feedSources, isLoading, errors }) =
     let
-        sourcesHtml =
-            FeedSources.toList feedSources
-                |> List.map viewFeedSource
-
         errorsHtml =
             Errors.view DismissErrors errors
 
@@ -115,14 +104,19 @@ viewFeedSources (Model { feedSources, isLoading, errors }) =
                 text ""
     in
     ul [ class "nav nav-pills outline-active" ] <|
-        List.append (sourcesHtml [ errorsHtml, spinnerHtml ])
+        List.concat
+            [ List.map (viewFeedSource False) (FeedSources.before feedSources)
+            , [ viewFeedSource True (FeedSources.selected feedSources) ]
+            , List.map (viewFeedSource False) (FeedSources.after feedSources)
+            , [ errorsHtml, spinnerHtml ]
+            ]
 
 
-viewFeedSource : Position -> FeedSource -> Html Msg
-viewFeedSource position source =
+viewFeedSource : Bool -> Source -> Html Msg
+viewFeedSource isSelected source =
     li [ class "nav-item" ]
         [ a
-            [ classList [ ( "nav-link", True ), ( "active", position == Selected ) ]
+            [ classList [ ( "nav-link", True ), ( "active", isSelected ) ]
             , href "javascript:void(0);"
             , onClick (SelectFeedSource source)
             ]
@@ -160,7 +154,7 @@ sourceName source =
             "My Articles"
 
 
-limit : FeedSource -> Int
+limit : Source -> Int
 limit feedSource =
     case feedSource of
         YourFeed ->
@@ -179,7 +173,7 @@ limit feedSource =
             5
 
 
-pagination : Int -> Feed -> FeedSource -> Html Msg
+pagination : Int -> Feed -> Source -> Html Msg
 pagination activePage feed feedSource =
     let
         articlesPerPage =
@@ -215,8 +209,8 @@ pageLink page isActive =
 
 type Msg
     = DismissErrors
-    | SelectFeedSource FeedSource
-    | FeedLoadCompleted FeedSource (Result Http.Error ( Int, Feed ))
+    | SelectFeedSource Source
+    | FeedLoadCompleted Source (Result Http.Error ( Int, Feed ))
     | ToggleFavorite (Article ())
     | FavoriteCompleted (Result Http.Error (Article ()))
     | SelectPage Int
@@ -243,7 +237,7 @@ updateInternal session msg model =
         FeedLoadCompleted source (Ok ( activePage, feed )) ->
             ( { model
                 | feed = feed
-                , feedSources = selectFeedSource source model.feedSources
+                , feedSources = FeedSources.select source model.feedSources
                 , activePage = activePage
                 , isLoading = False
               }
@@ -299,13 +293,13 @@ updateInternal session msg model =
 
 scrollToTop : Task x ()
 scrollToTop =
-    Browser.setScrollTop bodyId 0
+    Dom.setViewport 0 0
         -- It's not worth showing the user anything special if scrolling fails.
         -- If anything, we'd log this to an error recording service.
         |> Task.onError (\_ -> Task.succeed ())
 
 
-fetch : Maybe AuthToken -> Int -> FeedSource -> Task Http.Error ( Int, Feed )
+fetch : Maybe AuthToken -> Int -> Source -> Task Http.Error ( Int, Feed )
 fetch authToken page feedSource =
     let
         defaultListConfig =

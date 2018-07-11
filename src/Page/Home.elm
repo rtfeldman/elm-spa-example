@@ -4,7 +4,7 @@ module Page.Home exposing (Model, Msg, init, update, view)
 -}
 
 import Data.Article as Article
-import Data.Article.FeedSources exposing (FeedSources)
+import Data.Article.FeedSources as FeedSources exposing (FeedSources, Source(..))
 import Data.Article.Tag as Tag exposing (Tag)
 import Data.Session exposing (Session)
 import Html exposing (..)
@@ -33,10 +33,10 @@ init session =
     let
         feedSources =
             if session.user == Nothing then
-                FeedSources.fromLists globalFeed []
+                FeedSources.fromLists GlobalFeed []
 
             else
-                FeedSources.fromLists yourFeed [ globalFeed ]
+                FeedSources.fromLists YourFeed [ GlobalFeed ]
 
         loadTags =
             Request.Article.tags

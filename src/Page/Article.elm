@@ -3,6 +3,7 @@ module Page.Article exposing (Model, Msg, init, update, view)
 {-| Viewing an individual article.
 -}
 
+import Browser.Navigation as Nav
 import Data.Article as Article exposing (Article, Body)
 import Data.Article.Author exposing (Author)
 import Data.Article.Comment exposing (Comment, CommentId)
@@ -245,8 +246,8 @@ type Msg
     | ArticleDeleted (Result Http.Error ())
 
 
-update : Session -> Msg -> Model -> ( Model, Cmd Msg )
-update session msg model =
+update : Nav.Key -> Session -> Msg -> Model -> ( Model, Cmd Msg )
+update navKey session msg model =
     let
         article =
             model.article
@@ -370,7 +371,7 @@ update session msg model =
                 |> Tuple.mapFirst (Util.appendErrors model)
 
         ArticleDeleted (Ok ()) ->
-            ( model, Route.replaceUrl Route.Home )
+            ( model, Route.replaceUrl navKey Route.Home )
 
         ArticleDeleted (Err error) ->
             ( { model | errors = model.errors ++ [ "Server error while trying to delete article." ] }

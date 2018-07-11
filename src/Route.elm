@@ -7,7 +7,8 @@ import Data.User as User
 import Data.User.Username as Username exposing (Username)
 import Html exposing (Attribute)
 import Html.Attributes as Attr
-import Url.Parser as Url exposing ((</>), Parser, Url, oneOf, s, string)
+import Url exposing (Url)
+import Url.Parser as Parser exposing ((</>), Parser, oneOf, s, string)
 
 
 
@@ -27,18 +28,18 @@ type Route
     | EditArticle Slug
 
 
-route : Parser (Route -> a) a
-route =
+parser : Parser (Route -> a) a
+parser =
     oneOf
-        [ Url.map Home (s "")
-        , Url.map Login (s "login")
-        , Url.map Logout (s "logout")
-        , Url.map Settings (s "settings")
-        , Url.map Profile (s "profile" </> Username.parser)
-        , Url.map Register (s "register")
-        , Url.map Article (s "article" </> Slug.parser)
-        , Url.map NewArticle (s "editor")
-        , Url.map EditArticle (s "editor" </> Slug.parser)
+        [ Parser.map Home (s "")
+        , Parser.map Login (s "login")
+        , Parser.map Logout (s "logout")
+        , Parser.map Settings (s "settings")
+        , Parser.map Profile (s "profile" </> Username.parser)
+        , Parser.map Register (s "register")
+        , Parser.map Article (s "article" </> Slug.parser)
+        , Parser.map NewArticle (s "editor")
+        , Parser.map EditArticle (s "editor" </> Slug.parser)
         ]
 
 
@@ -93,9 +94,9 @@ href targetRoute =
     Attr.href (routeToString targetRoute)
 
 
-replaceUrl : Route -> Cmd msg
-replaceUrl route =
-    Nav.replaceUrl (routeToString route)
+replaceUrl : Nav.Key -> Route -> Cmd msg
+replaceUrl key route =
+    Nav.replaceUrl key (routeToString route)
 
 
 fromUrl : Url -> Maybe Route
@@ -110,9 +111,9 @@ fromUrl url =
 
 fragmentToRoute : String -> Maybe Route
 fragmentToRoute fragment =
-    case Url.toUrl fragment of
+    case Url.fromString fragment of
         Nothing ->
             Nothing
 
         Just segments ->
-            Url.parse route segments
+            Parser.parse parser segments

@@ -1,5 +1,6 @@
 module Page.Register exposing (ExternalMsg(..), Model, Msg, initialModel, update, view)
 
+import Browser.Navigation as Nav
 import Data.Session exposing (Session)
 import Data.User exposing (User)
 import Html exposing (..)
@@ -104,8 +105,8 @@ type ExternalMsg
     | SetUser User
 
 
-update : Msg -> Model -> ( ( Model, Cmd Msg ), ExternalMsg )
-update msg model =
+update : Nav.Key -> Msg -> Model -> ( ( Model, Cmd Msg ), ExternalMsg )
+update navKey msg model =
     case msg of
         SubmitForm ->
             case validate modelValidator model of
@@ -164,7 +165,7 @@ update msg model =
 
         RegisterCompleted (Ok user) ->
             ( ( model
-              , Cmd.batch [ storeSession user, Route.replaceUrl Route.Home ]
+              , Cmd.batch [ storeSession user, Route.replaceUrl navKey Route.Home ]
               )
             , SetUser user
             )

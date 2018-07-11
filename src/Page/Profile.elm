@@ -3,7 +3,7 @@ module Page.Profile exposing (Model, Msg, init, update, view)
 {-| Viewing a user's profile.
 -}
 
-import Data.Article.FeedSources exposing (FeedSources, Source(..))
+import Data.Article.FeedSources as FeedSources exposing (FeedSources, Source(..))
 import Data.Profile exposing (Profile)
 import Data.Session exposing (Session)
 import Data.User as User

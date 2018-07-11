@@ -1,5 +1,6 @@
 module Page.Article.Editor exposing (Model, Msg, initEdit, initNew, update, view)
 
+import Browser.Navigation as Nav
 import Data.Article as Article exposing (Article, Body)
 import Data.Article.Slug as Slug exposing (Slug)
 import Data.Session exposing (Session)
@@ -150,8 +151,8 @@ type Msg
     | EditCompleted (Result Http.Error (Article Body))
 
 
-update : User -> Msg -> Model -> ( Model, Cmd Msg )
-update user msg model =
+update : User -> Nav.Key -> Msg -> Model -> ( Model, Cmd Msg )
+update user navKey msg model =
     case msg of
         Save ->
             case validate modelValidator model of
@@ -186,7 +187,7 @@ update user msg model =
 
         CreateCompleted (Ok article) ->
             Route.Article article.slug
-                |> Route.replaceUrl
+                |> Route.replaceUrl navKey
                 |> pair model
 
         CreateCompleted (Err error) ->
@@ -199,7 +200,7 @@ update user msg model =
 
         EditCompleted (Ok article) ->
             Route.Article article.slug
-                |> Route.replaceUrl
+                |> Route.replaceUrl navKey
                 |> pair model
 
         EditCompleted (Err error) ->
@@ -243,8 +244,3 @@ tagsFromString str =
         |> String.split " "
         |> List.map String.trim
         |> List.filter (not << String.isEmpty)
-
-
-redirectToArticle : Slug -> Cmd msg
-redirectToArticle slug =
-    Route.replaceUrl (Route.Article slug)

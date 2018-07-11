@@ -1,4 +1,4 @@
-module Data.Article.FeedSources exposing (FeedSources, Source(..), fromLists, selected)
+module Data.Article.FeedSources exposing (FeedSources, Source(..), after, before, fromLists, select, selected)
 
 import Data.Article as Article
 import Data.Article.Feed as Feed
@@ -99,6 +99,11 @@ selected (FeedSources record) =
     record.selected
 
 
-toList : FeedSources -> List Source
-toList (FeedSources sources) =
-    List.append sources.before (sources.selected :: sources.after)
+before : FeedSources -> List Source
+before (FeedSources record) =
+    record.before
+
+
+after : FeedSources -> List Source
+after (FeedSources record) =
+    record.after

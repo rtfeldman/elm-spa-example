@@ -1,5 +1,6 @@
 module Page.Settings exposing (ExternalMsg(..), Model, Msg, init, update, view)
 
+import Browser.Navigation as Nav
 import Data.Session exposing (Session)
 import Data.User as User exposing (User)
 import Data.User.Photo as UserPhoto
@@ -129,8 +130,8 @@ type ExternalMsg
     | SetUser User
 
 
-update : Session -> Msg -> Model -> ( ( Model, Cmd Msg ), ExternalMsg )
-update session msg model =
+update : Nav.Key -> Session -> Msg -> Model -> ( ( Model, Cmd Msg ), ExternalMsg )
+update navKey session msg model =
     case msg of
         SubmitForm ->
             case validate modelValidator model of
@@ -225,7 +226,7 @@ update session msg model =
 
         SaveCompleted (Ok user) ->
             ( ( model
-              , Cmd.batch [ storeSession user, Route.replaceUrl Route.Home ]
+              , Cmd.batch [ storeSession user, Route.replaceUrl navKey Route.Home ]
               )
             , SetUser user
             )

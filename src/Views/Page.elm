@@ -1,9 +1,9 @@
-module Views.Page exposing (ActivePage(..), bodyId, frame)
+module Views.Page exposing (ActivePage(..), frame)
 
 {-| The frame around a typical page - that is, the header and footer.
 -}
 
-import Browser exposing (Page)
+import Browser exposing (Document)
 import Data.User as User exposing (User)
 import Data.User.Photo as UserPhoto exposing (UserPhoto)
 import Data.User.Username as Username exposing (Username)
@@ -41,7 +41,7 @@ isLoading is for determining whether we should show a loading spinner
 in the header. (This comes up during slow page transitions.)
 
 -}
-frame : Bool -> Maybe User -> ActivePage -> { title : String, content : Html msg } -> Page msg
+frame : Bool -> Maybe User -> ActivePage -> { title : String, content : Html msg } -> Document msg
 frame isLoading user page { title, content } =
     { title = title ++ " — Conduit"
     , body =
@@ -133,14 +133,3 @@ isActive page route =
 
         _ ->
             False
-
-
-{-| This id comes from index.html.
-
-The Feed uses it to scroll to the top of the page (by ID) when switching pages
-in the pagination sense.
-
--}
-bodyId : String
-bodyId =
-    "page-body"

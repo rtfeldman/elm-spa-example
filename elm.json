@@ -18,6 +18,7 @@
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
             "elm-explorations/markdown": "1.0.0",
+            "lukewestby/elm-http-builder": "6.0.0",
             "rtfeldman/elm-validate": "3.0.1"
         },
         "indirect": {

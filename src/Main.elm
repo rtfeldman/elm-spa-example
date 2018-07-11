@@ -1,7 +1,8 @@
 module Main exposing (main)
 
-import Browser exposing (Page)
-import Browser.Navigation
+import Browser exposing (Document)
+import Browser.Navigation as Nav
+import Data.Article.FeedSources as FeedSources
 import Data.Article.Slug exposing (Slug)
 import Data.Session exposing (Session)
 import Data.User as User exposing (User)
@@ -20,7 +21,7 @@ import Page.Settings as Settings
 import Ports
 import Route exposing (Route)
 import Task
-import Url.Parser exposing (Url)
+import Url exposing (Url)
 import Views.Page as Page exposing (ActivePage)
 
 
@@ -55,14 +56,16 @@ type PageState
 
 type alias Model =
     { session : Session
+    , navKey : Nav.Key
     , pageState : PageState
     }
 
 
-init : Browser.Env Value -> ( Model, Cmd Msg )
-init { url, flags } =
+init : Value -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url navKey =
     setRoute (Route.fromUrl url)
         { pageState = Loaded initialPage
+        , navKey = navKey
         , session = { user = decodeUserFromJson flags }
         }
 
@@ -96,7 +99,7 @@ initialPage =
 -- VIEW --
 
 
-view : Model -> Page Msg
+view : Model -> Document Msg
 view model =
     case model.pageState of
         Loaded page ->
@@ -106,14 +109,14 @@ view model =
             viewCurrentPage model.session True page
 
 
-mapBody : (msgA -> msgB) -> Page msgA -> Page msgB
+mapBody : (msgA -> msgB) -> Document msgA -> Document msgB
 mapBody transform { body, title } =
     { title = title
     , body = List.map (Html.map transform) body
     }
 
 
-viewCurrentPage : Session -> Bool -> CurrentPage -> Page Msg
+viewCurrentPage : Session -> Bool -> CurrentPage -> Document Msg
 viewCurrentPage session isLoading page =
     let
         frame =
@@ -196,7 +199,7 @@ subscriptions model =
 sessionChange : Sub (Maybe User)
 sessionChange =
     Ports.onSessionChange
-        (value -> Result.toMaybe (Decode.decodeValue User.decoder value))
+        (\value -> Result.toMaybe (Decode.decodeValue User.decoder value))
 
 
 getCurrentPage : PageState -> CurrentPage
@@ -249,6 +252,8 @@ pageSubscriptions page =
 
 type Msg
     = SetRoute (Maybe Route)
+    | LinkClicked Browser.UrlRequest
+    | UrlChanged Url
     | HomeLoaded (Result PageLoadError Home.Model)
     | ArticleLoaded (Result PageLoadError Article.Model)
     | ProfileLoaded Username (Result PageLoadError Profile.Model)
@@ -306,7 +311,7 @@ setRoute maybeRoute model =
             transition HomeLoaded (Home.init model.session)
 
         Just Route.Root ->
-            ( model, Route.replaceUrl Route.Home )
+            ( model, Route.replaceUrl model.navKey Route.Home )
 
         Just Route.Login ->
             ( { model | pageState = Loaded (Login Login.initialModel) }, Cmd.none )
@@ -319,7 +324,7 @@ setRoute maybeRoute model =
             ( { model | session = { session | user = Nothing } }
             , Cmd.batch
                 [ Ports.storeSession Nothing
-                , Route.replaceUrl Route.Home
+                , Route.replaceUrl model.navKey Route.Home
                 ]
             )
 
@@ -364,6 +369,21 @@ updateCurrentPage page msg model =
             pageErrored model
     in
     case ( msg, page ) of
+        ( LinkClicked urlRequest, _ ) ->
+            case urlRequest of
+                Browser.Internal url ->
+                    ( model
+                    , Nav.pushUrl model.navKey (Url.toString url)
+                    )
+
+                Browser.External href ->
+                    ( model
+                    , Nav.load href
+                    )
+
+        ( UrlChanged url, _ ) ->
+            setRoute (Route.fromUrl url) model
+
         ( SetRoute route, _ ) ->
             setRoute route model
 
@@ -396,7 +416,7 @@ updateCurrentPage page msg model =
                 cmd =
                     -- If we just signed out, then redirect to Home.
                     if session.user /= Nothing && user == Nothing then
-                        Route.replaceUrl Route.Home
+                        Route.replaceUrl model.navKey Route.Home
 
                     else
                         Cmd.none
@@ -408,7 +428,7 @@ updateCurrentPage page msg model =
         ( SettingsMsg subMsg, Settings subModel ) ->
             let
                 ( ( pageModel, cmd ), msgFromPage ) =
-                    Settings.update model.session subMsg subModel
+                    Settings.update model.navKey model.session subMsg subModel
 
                 newModel =
                     case msgFromPage of
@@ -425,7 +445,7 @@ updateCurrentPage page msg model =
         ( LoginMsg subMsg, Login subModel ) ->
             let
                 ( ( pageModel, cmd ), msgFromPage ) =
-                    Login.update subMsg subModel
+                    Login.update model.navKey subMsg subModel
 
                 newModel =
                     case msgFromPage of
@@ -442,7 +462,7 @@ updateCurrentPage page msg model =
         ( RegisterMsg subMsg, Register subModel ) ->
             let
                 ( ( pageModel, cmd ), msgFromPage ) =
-                    Register.update subMsg subModel
+                    Register.update model.navKey subMsg subModel
 
                 newModel =
                     case msgFromPage of
@@ -463,7 +483,7 @@ updateCurrentPage page msg model =
             toPage (Profile username) ProfileMsg (Profile.update model.session) subMsg subModel
 
         ( ArticleMsg subMsg, Article subModel ) ->
-            toPage Article ArticleMsg (Article.update model.session) subMsg subModel
+            toPage Article ArticleMsg (Article.update model.navKey model.session) subMsg subModel
 
         ( EditorMsg subMsg, Editor slug subModel ) ->
             case model.session.user of
@@ -477,7 +497,7 @@ updateCurrentPage page msg model =
                             "You must be signed in to edit articles."
 
                 Just user ->
-                    toPage (Editor slug) EditorMsg (Editor.update user) subMsg subModel
+                    toPage (Editor slug) EditorMsg (Editor.update user model.navKey) subMsg subModel
 
         ( _, NotFound ) ->
             -- Disregard incoming messages when we're on the
@@ -495,9 +515,10 @@ updateCurrentPage page msg model =
 
 main : Program Value Model Msg
 main =
-    Browser.fullscreen
+    Browser.application
         { init = init
-        , onNavigation = Just onNavigation
+        , onUrlChange = UrlChanged
+        , onUrlRequest = LinkClicked
         , subscriptions = subscriptions
         , update = update
         , view = view

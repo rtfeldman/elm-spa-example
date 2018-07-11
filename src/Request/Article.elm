@@ -22,11 +22,10 @@ import Data.AuthToken exposing (AuthToken, withAuthorization)
 import Data.User as User
 import Data.User.Username as Username exposing (Username)
 import Http
-import HttpBuilder exposing (RequestBuilder, withBody, withExpect, withQueryParameters)
+import HttpBuilder exposing (RequestBuilder, withBody, withExpect, withQueryParams)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Request.Helpers exposing (apiUrl)
-import Url exposing (QueryParameter)
 
 
 
@@ -73,11 +72,11 @@ defaultListConfig =
 
 list : ListConfig -> Maybe AuthToken -> Http.Request Feed
 list config maybeToken =
-    [ Maybe.map (\tag -> Url.string "tag" (Tag.toString tag)) config.tag
-    , Maybe.map (\author -> Url.string "author" (Username.toString author)) config.author
-    , Maybe.map (\favorited -> Url.string "favorited" (Username.toString favorited)) config.favorited
-    , Just (Url.int "limit" config.limit)
-    , Just (Url.int "offset" config.offset)
+    [ Maybe.map (\tag -> ( "tag", Tag.toString tag )) config.tag
+    , Maybe.map (\author -> ( "author", Username.toString author )) config.author
+    , Maybe.map (\favorited -> ( "favorited", Username.toString favorited )) config.favorited
+    , Just ( "limit", String.fromInt config.limit )
+    , Just ( "offset", String.fromInt config.offset )
     ]
         |> List.filterMap identity
         |> buildFromQueryParams "/articles"
@@ -104,8 +103,8 @@ defaultFeedConfig =
 
 feed : FeedConfig -> AuthToken -> Http.Request Feed
 feed config token =
-    [ Url.int "limit" config.limit
-    , Url.int "offset" config.offset
+    [ ( "limit", String.fromInt config.limit )
+    , ( "offset", String.fromInt config.offset )
     ]
         |> buildFromQueryParams "/articles/feed"
         |> withAuthorization (Just token)
@@ -262,10 +261,10 @@ delete slug token =
 -- HELPERS --
 
 
-buildFromQueryParams : String -> List QueryParameter -> RequestBuilder Feed
+buildFromQueryParams : String -> List ( String, String ) -> RequestBuilder Feed
 buildFromQueryParams url queryParams =
     url
         |> apiUrl
         |> HttpBuilder.get
         |> withExpect (Http.expectJson Feed.decoder)
-        |> withQueryParameters queryParams
+        |> withQueryParams queryParams

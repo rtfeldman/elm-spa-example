@@ -2,10 +2,13 @@ module Data.Session exposing (Session, attempt)
 
 import Data.AuthToken exposing (AuthToken)
 import Data.User exposing (User)
+import Time
 
 
 type alias Session =
-    { user : Maybe User }
+    { user : Maybe User
+    , timeZone : Time.Zone
+    }
 
 
 attempt : String -> (AuthToken -> Cmd msg) -> Session -> ( List String, Cmd msg )

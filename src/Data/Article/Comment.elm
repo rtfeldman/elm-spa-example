@@ -3,15 +3,15 @@ module Data.Article.Comment exposing (Comment, CommentId, commentIdDecoder, deco
 import Data.Article.Author as Author exposing (Author)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (custom, required)
-import Time exposing (Posix)
+import Time
 import Util
 
 
 type alias Comment =
     { id : CommentId
     , body : String
-    , createdAt : Posix
-    , updatedAt : Posix
+    , createdAt : Time.Posix
+    , updatedAt : Time.Posix
     , author : Author
     }
 

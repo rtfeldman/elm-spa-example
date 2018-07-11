@@ -5,38 +5,43 @@ module Views.Article exposing (view, viewTimestamp)
 
 import Data.Article exposing (Article)
 import Data.User.Photo as UserPhoto exposing (UserPhoto)
-import DateFormat
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, classList, href, id, placeholder, src)
 import Route exposing (Route)
+import Time
+import Util
 import Views.Article.Favorite as Favorite
 import Views.Author
 
 
 
--- VIEWS --
+-- TIMESTAMP ONLY
 
 
-{-| Some pages want to view just the timestamp, not the whole article.
+{-| Some pages want to view only the timestamp, not the entire article preview.
 -}
-viewTimestamp : Article a -> Html msg
-viewTimestamp article =
-    span [ class "date" ] [ text (formattedTimestamp article) ]
+viewTimestamp : Time.Zone -> Article a -> Html msg
+viewTimestamp timeZone article =
+    span [ class "date" ] [ text (Util.formatTimestamp timeZone article.createdAt) ]
 
 
-view : (Article a -> msg) -> Article a -> Html msg
-view toggleFavorite article =
+
+-- ARTICLE PREVIEW
+
+
+view : (Article a -> msg) -> Time.Zone -> Article a -> Html msg
+view toggleFavorite timeZone article =
     let
-        author =
+        { username, image } =
             article.author
     in
     div [ class "article-preview" ]
         [ div [ class "article-meta" ]
-            [ a [ Route.href (Route.Profile author.username) ]
-                [ img [ UserPhoto.src author.image ] [] ]
+            [ a [ Route.href (Route.Profile username) ]
+                [ img [ UserPhoto.src image ] [] ]
             , div [ class "info" ]
-                [ Views.Author.view author.username
-                , viewTimestamp article
+                [ Views.Author.view username
+                , viewTimestamp timeZone article
                 ]
             , Favorite.button
                 toggleFavorite
@@ -50,13 +55,3 @@ view toggleFavorite article =
             , span [] [ text "Read more..." ]
             ]
         ]
-
-
-
--- INTERNAL --
-
-
-formattedTimestamp : Article a -> String
-formattedTimestamp article =
-    -- Date.Format.format "%B %e, %Y" article.createdAt
-    "TODO"

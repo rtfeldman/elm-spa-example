@@ -16,6 +16,7 @@ import Page.Errored exposing (PageLoadError, pageLoadError)
 import Request.Article exposing (ListConfig, defaultListConfig)
 import Request.Profile
 import Task exposing (Task)
+import Time
 import Util exposing (pair, viewIf)
 import Views.Article.Feed as Feed
 import Views.Errors as Errors
@@ -96,7 +97,7 @@ view session model =
                     ]
                 ]
             , div [ class "container" ]
-                [ div [ class "row" ] [ viewFeed model.feed ] ]
+                [ div [ class "row" ] [ viewFeed session.timeZone model.feed ] ]
             ]
     }
 
@@ -111,12 +112,12 @@ viewProfileInfo isMyProfile profile =
         ]
 
 
-viewFeed : Feed.Model -> Html Msg
-viewFeed feed =
+viewFeed : Time.Zone -> Feed.Model -> Html Msg
+viewFeed timeZone feed =
     div [ class "col-xs-12 col-md-10 offset-md-1" ] <|
         div [ class "articles-toggle" ]
             [ Feed.viewFeedSources feed |> Html.map FeedMsg ]
-            :: (Feed.viewArticles feed |> List.map (Html.map FeedMsg))
+            :: (Feed.viewArticles timeZone feed |> List.map (Html.map FeedMsg))
 
 
 

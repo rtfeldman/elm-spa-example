@@ -14,6 +14,7 @@ import Http
 import Page.Errored exposing (PageLoadError, pageLoadError)
 import Request.Article
 import Task exposing (Task)
+import Time
 import Views.Article.Feed as Feed
 import Views.Page as Page
 
@@ -64,7 +65,7 @@ view session model =
             [ viewBanner
             , div [ class "container page" ]
                 [ div [ class "row" ]
-                    [ div [ class "col-md-9" ] (viewFeed model.feed)
+                    [ div [ class "col-md-9" ] (viewFeed session.timeZone model.feed)
                     , div [ class "col-md-3" ]
                         [ div [ class "sidebar" ]
                             [ p [] [ text "Popular Tags" ]
@@ -87,11 +88,11 @@ viewBanner =
         ]
 
 
-viewFeed : Feed.Model -> List (Html Msg)
-viewFeed feed =
+viewFeed : Time.Zone -> Feed.Model -> List (Html Msg)
+viewFeed timeZone feed =
     div [ class "feed-toggle" ]
         [ Feed.viewFeedSources feed |> Html.map FeedMsg ]
-        :: (Feed.viewArticles feed |> List.map (Html.map FeedMsg))
+        :: (Feed.viewArticles timeZone feed |> List.map (Html.map FeedMsg))
 
 
 viewTags : List Tag -> Html Msg

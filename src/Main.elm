@@ -21,6 +21,7 @@ import Page.Settings as Settings
 import Ports
 import Route exposing (Route)
 import Task
+import Time
 import Url exposing (Url)
 import Views.Page as Page exposing (ActivePage)
 
@@ -66,8 +67,13 @@ init flags url navKey =
     setRoute (Route.fromUrl url)
         { pageState = Loaded initialPage
         , navKey = navKey
-        , session = { user = decodeUserFromJson flags }
+        , session =
+            { user = decodeUserFromJson flags
+            , timeZone = Time.utc
+            }
         }
+        -- TODO load the time zone *before* rendering the page for the first time
+        |> Tuple.mapSecond (\cmd -> Cmd.batch [ cmd, Task.perform GotTimeZone Time.here ])
 
 
 onNavigation : Url -> Msg
@@ -254,6 +260,7 @@ type Msg
     = SetRoute (Maybe Route)
     | LinkClicked Browser.UrlRequest
     | UrlChanged Url
+    | GotTimeZone Time.Zone
     | HomeLoaded (Result PageLoadError Home.Model)
     | ArticleLoaded (Result PageLoadError Article.Model)
     | ProfileLoaded Username (Result PageLoadError Profile.Model)
@@ -436,7 +443,12 @@ updateCurrentPage page msg model =
                             model
 
                         Settings.SetUser user ->
-                            { model | session = { user = Just user } }
+                            { model
+                                | session =
+                                    { user = Just user
+                                    , timeZone = model.session.timeZone
+                                    }
+                            }
             in
             ( { newModel | pageState = Loaded (Settings pageModel) }
             , Cmd.map SettingsMsg cmd
@@ -453,7 +465,12 @@ updateCurrentPage page msg model =
                             model
 
                         Login.SetUser user ->
-                            { model | session = { user = Just user } }
+                            { model
+                                | session =
+                                    { user = Just user
+                                    , timeZone = model.session.timeZone
+                                    }
+                            }
             in
             ( { newModel | pageState = Loaded (Login pageModel) }
             , Cmd.map LoginMsg cmd
@@ -470,7 +487,12 @@ updateCurrentPage page msg model =
                             model
 
                         Register.SetUser user ->
-                            { model | session = { user = Just user } }
+                            { model
+                                | session =
+                                    { user = Just user
+                                    , timeZone = model.session.timeZone
+                                    }
+                            }
             in
             ( { newModel | pageState = Loaded (Register pageModel) }
             , Cmd.map RegisterMsg cmd

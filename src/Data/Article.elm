@@ -15,7 +15,7 @@ import Html exposing (Attribute, Html)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (custom, hardcoded, required)
 import Markdown
-import Time exposing (Posix)
+import Time
 import Url.Parser
 import Util
 
@@ -48,8 +48,8 @@ type alias Article a =
     , slug : Slug
     , title : String
     , tags : List String
-    , createdAt : Posix
-    , updatedAt : Posix
+    , createdAt : Time.Posix
+    , updatedAt : Time.Posix
     , favorited : Bool
     , favoritesCount : Int
     , author : Author

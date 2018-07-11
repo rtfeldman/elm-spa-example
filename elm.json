@@ -19,7 +19,7 @@
             "elm/url": "1.0.0",
             "elm-explorations/markdown": "1.0.0",
             "lukewestby/elm-http-builder": "6.0.0",
-            "rtfeldman/elm-validate": "3.0.1"
+            "rtfeldman/elm-validate": "3.0.2"
         },
         "indirect": {
             "elm/virtual-dom": "1.0.0"

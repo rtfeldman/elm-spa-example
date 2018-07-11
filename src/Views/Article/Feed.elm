@@ -32,6 +32,7 @@ import Html.Events exposing (onClick)
 import Http
 import Request.Article
 import Task exposing (Task)
+import Time
 import Util exposing (onClickStopPropagation, pair, viewIf)
 import Views.Article
 import Views.Errors as Errors
@@ -84,9 +85,9 @@ init session feedSources =
 -- VIEW --
 
 
-viewArticles : Model -> List (Html Msg)
-viewArticles (Model { activePage, feed, feedSources }) =
-    List.map (Views.Article.view ToggleFavorite) feed.articles
+viewArticles : Time.Zone -> Model -> List (Html Msg)
+viewArticles timeZone (Model { activePage, feed, feedSources }) =
+    List.map (Views.Article.view ToggleFavorite timeZone) feed.articles
         ++ [ pagination activePage feed (FeedSources.selected feedSources) ]
 
 

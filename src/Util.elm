@@ -1,11 +1,11 @@
-module Util exposing (appendErrors, dateStringDecoder, onClickStopPropagation, pair, viewIf)
+module Util exposing (appendErrors, dateStringDecoder, formatTimestamp, onClickStopPropagation, pair, viewIf)
 
 import Html exposing (Attribute, Html)
 import Html.Events exposing (stopPropagationOn)
 import Iso8601
 import Json.Decode as Decode exposing (Decoder, fail, succeed)
 import Parser
-import Time exposing (Posix)
+import Time exposing (Month(..))
 
 
 {-| Useful when building up a Cmd via a pipeline, and then pairing it with
@@ -44,7 +44,7 @@ appendErrors model errors =
 
 {-| Decode an ISO-8601 date string.
 -}
-dateStringDecoder : Decoder Posix
+dateStringDecoder : Decoder Time.Posix
 dateStringDecoder =
     Decode.string
         |> Decode.andThen (\str -> fromResult str (Iso8601.toTime str))
@@ -58,3 +58,54 @@ fromResult source result =
 
         Err _ ->
             fail ("Failed to parse: " ++ source)
+
+
+formatTimestamp : Time.Zone -> Time.Posix -> String
+formatTimestamp zone time =
+    let
+        -- This is where we'd do internationalization, if necessary!
+        month =
+            case Time.toMonth zone time of
+                Jan ->
+                    "January"
+
+                Feb ->
+                    "February"
+
+                Mar ->
+                    "March"
+
+                Apr ->
+                    "April"
+
+                May ->
+                    "May"
+
+                Jun ->
+                    "June"
+
+                Jul ->
+                    "July"
+
+                Aug ->
+                    "August"
+
+                Sep ->
+                    "September"
+
+                Oct ->
+                    "October"
+
+                Nov ->
+                    "November"
+
+                Dec ->
+                    "December"
+
+        day =
+            String.fromInt (Time.toDay zone time)
+
+        year =
+            String.fromInt (Time.toYear zone time)
+    in
+    month ++ " " ++ day ++ ", " ++ year

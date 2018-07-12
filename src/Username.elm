@@ -1,4 +1,4 @@
-module Data.User.Username exposing (Username, decoder, encode, parser, toHtml, toString)
+module Username exposing (Username, decoder, encode, toHtml, toString, urlParser)
 
 import Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
@@ -6,18 +6,16 @@ import Json.Encode as Encode exposing (Value)
 import Url.Parser
 
 
+
+-- TYPES
+
+
 type Username
     = Username String
 
 
-toString : Username -> String
-toString (Username username) =
-    username
 
-
-parser : Url.Parser.Parser (Username -> a) a
-parser =
-    Url.Parser.custom "USERNAME" (\str -> Just (Username str))
+-- CREATE
 
 
 decoder : Decoder Username
@@ -25,9 +23,23 @@ decoder =
     Decode.map Username Decode.string
 
 
+
+-- CONVERT
+
+
 encode : Username -> Value
 encode (Username username) =
     Encode.string username
+
+
+toString : Username -> String
+toString (Username username) =
+    username
+
+
+urlParser : Url.Parser.Parser (Username -> a) a
+urlParser =
+    Url.Parser.custom "USERNAME" (\str -> Just (Username str))
 
 
 toHtml : Username -> Html msg

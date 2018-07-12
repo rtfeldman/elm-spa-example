@@ -31,11 +31,11 @@ type alias Model =
     }
 
 
-init : User -> Model
-init user =
+init : User -> String -> Model
+init user email =
     { errors = []
     , image = UserPhoto.toMaybeString user.image
-    , email = user.email
+    , email = email
     , bio = Maybe.withDefault "" user.bio
     , username = Username.toString user.username
     , password = Nothing

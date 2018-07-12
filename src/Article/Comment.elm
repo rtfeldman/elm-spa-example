@@ -1,18 +1,68 @@
-module Request.Article.Comments exposing (delete, list, post)
+module Article.Comment
+    exposing
+        ( Comment
+        , author
+        , body
+        , createdAt
+        , id
+        )
 
+import CommentId exposing (CommentId)
 import Data.Article as Article exposing (Article)
-import Data.Article.Comment as Comment exposing (Comment, CommentId)
+import Data.Article.Author as Author exposing (Author)
 import Data.Article.Slug as Slug exposing (Slug)
 import Data.AuthToken exposing (AuthToken, withAuthorization)
 import Http
 import HttpBuilder exposing (RequestBuilder, withExpect, withQueryParams)
-import Json.Decode as Decode
+import Json.Decode as Decode exposing (Decoder)
+import Json.Decode.Pipeline exposing (custom, required)
 import Json.Encode as Encode exposing (Value)
-import Request.Helpers exposing (apiUrl)
+import Time
+import Util exposing (apiUrl)
 
 
 
--- LIST --
+-- TYPES
+
+
+type Comment
+    = Comment CommentRecord
+
+
+type alias CommentRecord =
+    { id : CommentId
+    , body : String
+    , createdAt : Time.Posix
+    , author : Author
+    }
+
+
+
+-- ACCESS
+
+
+id : Comment -> CommentId
+id (Comment comment) =
+    comment.id
+
+
+body : Comment -> String
+body (Comment comment) =
+    comment.body
+
+
+createdAt : Comment -> Time.Posix
+createdAt (Comment comment) =
+    comment.createdAt
+
+
+author : Comment -> Author
+author (Comment comment) =
+    comment.author
+
+
+
+-- LIST
 
 
 list : Maybe AuthToken -> Slug -> Http.Request (List Comment)
@@ -25,7 +75,7 @@ list maybeToken slug =
 
 
 
--- POST --
+-- POST
 
 
 post : Slug -> String -> AuthToken -> Http.Request Comment
@@ -44,7 +94,7 @@ encodeCommentBody body =
 
 
 
--- DELETE --
+-- DELETE
 
 
 delete : Slug -> CommentId -> AuthToken -> Http.Request ()
@@ -53,3 +103,16 @@ delete slug commentId token =
         |> HttpBuilder.delete
         |> withAuthorization (Just token)
         |> HttpBuilder.toRequest
+
+
+
+-- INTERNAL
+
+
+decoder : Decoder Comment
+decoder =
+    Decode.succeed CommentRecord
+        |> required "id" CommentId.decoder
+        |> required "body" Decode.string
+        |> required "createdAt" Util.dateStringDecoder
+        |> required "author" Author.decoder

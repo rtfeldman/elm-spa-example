@@ -1,12 +1,12 @@
-module Data.Session exposing (Session, attempt)
+port module Session exposing (Session, attempt, onSessionChange)
 
 import Data.AuthToken exposing (AuthToken)
-import Data.User exposing (User)
+import Data.User exposing (Me, User)
 import Time
 
 
 type alias Session =
-    { user : Maybe User
+    { user : Maybe (User Me)
     , timeZone : Time.Zone
     }
 
@@ -19,3 +19,6 @@ attempt attemptedAction toCmd session =
 
         Just token ->
             ( [], toCmd token )
+
+
+port onSessionChange : (Value -> msg) -> Sub msg

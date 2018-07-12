@@ -1,4 +1,4 @@
-module Data.User.Photo exposing (UserPhoto, decoder, encode, src, toMaybeString)
+module UserPhoto exposing (UserPhoto, decoder, encode, src, toMaybeString)
 
 import Html exposing (Attribute)
 import Html.Attributes
@@ -6,18 +6,25 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 
 
+
+-- TYPES
+
+
 type UserPhoto
     = UserPhoto (Maybe String)
 
 
-src : UserPhoto -> Attribute msg
-src photo =
-    Html.Attributes.src (photoToUrl photo)
+
+-- CREATE
 
 
 decoder : Decoder UserPhoto
 decoder =
     Decode.map UserPhoto (Decode.nullable Decode.string)
+
+
+
+-- CONVERT
 
 
 encode : UserPhoto -> Value
@@ -27,13 +34,18 @@ encode (UserPhoto maybeUrl) =
         |> Maybe.withDefault Encode.null
 
 
+src : UserPhoto -> Attribute msg
+src photo =
+    Html.Attributes.src (photoToUrl photo)
+
+
 toMaybeString : UserPhoto -> Maybe String
 toMaybeString (UserPhoto maybeUrl) =
     maybeUrl
 
 
 
--- INTERNAL --
+-- INTERNAL
 
 
 photoToUrl : UserPhoto -> String

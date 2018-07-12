@@ -1,4 +1,12 @@
-port module Me exposing (Me, bio, edit, email, following, image, login, profile, register, storeSession, toggleFollow, username)
+module Me exposing (Me, bio, edit, email, following, image, login, profile, register, toggleFollow, username)
+
+{-| The currently signed-in user.
+
+This is used for things like login, logout, and settings.
+
+Contrast with Profile, which is a user whose profile you're viewing.
+
+-}
 
 
 type Me
@@ -9,7 +17,6 @@ type alias MeRecord =
     { username : Username
     , bio : Maybe String
     , image : UserPhoto
-    , token : AuthToken
     , email : String
     }
 
@@ -55,18 +62,7 @@ token (User user) =
 -- SESSION MANAGEMENT
 
 
-storeSession : Me -> Cmd msg
-storeSession me =
-    encode me
-        |> Encode.encode 0
-        |> Just
-        |> Ports.sendSession
-
-
-port sendSession : Maybe String -> Cmd msg
-
-
-login : { r | email : String, password : String } -> Http.Request Me
+login : { r | email : String, password : String } -> Http.Request ( Me, AuthToken )
 login { email, password } =
     let
         user =
@@ -79,7 +75,7 @@ login { email, password } =
             Encode.object [ ( "user", user ) ]
                 |> Http.jsonBody
     in
-    Decode.field "user" User.selfDecoder
+    Decode.field "user" meAndTokenDecoder
         |> Http.post (apiUrl "/users/login") body
 
 
@@ -87,7 +83,7 @@ login { email, password } =
 -- REGISTER
 
 
-register : { r | username : String, email : String, password : String } -> Http.Request Me
+register : { r | username : String, email : String, password : String } -> Http.Request ( Me, AuthToken )
 register { username, email, password } =
     let
         user =
@@ -101,7 +97,7 @@ register { username, email, password } =
             Encode.object [ ( "user", user ) ]
                 |> Http.jsonBody
     in
-    Decode.field "user" User.selfDecoder
+    Decode.field "user" meAndTokenDecoder
         |> Http.post (apiUrl "/users") body
 
 
@@ -153,23 +149,18 @@ edit { username, email, bio, password, image } authToken =
 -- SERIALIZATION
 
 
-encode : User Me -> Value
-encode me =
-    Encode.object
-        [ ( "email", Encode.string (email me) )
-        , ( "token", AuthToken.encode (token me) )
-        , ( "username", Username.encode (username me) )
-        , ( "bio", Maybe.withDefault Encode.null (Maybe.map Encode.string (bio me)) )
-        , ( "image", UserPhoto.encode (image me) )
-        ]
-
-
 decoder : Decoder Me
 decoder =
     Decode.succeed MeRecord
         |> required "username" Username.decoder
         |> required "bio" (Decode.nullable Decode.string)
         |> required "image" UserPhoto.decoder
-        |> required "token" AuthToken.decoder
         |> required "email" Decode.string
         |> Decode.map Me
+
+
+meAndTokenDecoder : Decoder ( Me, AuthToken )
+meAndTokenDecoder =
+    Decode.succeed Tuple.pair
+        |> custom decoder
+        |> required "token" AuthToken.decoder

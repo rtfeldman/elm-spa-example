@@ -198,14 +198,8 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ pageSubscriptions (getCurrentPage model.pageState)
-        , Sub.map SetUser sessionChange
+        , Sub.map SetUser Session.changes
         ]
-
-
-sessionChange : Sub (Maybe User)
-sessionChange =
-    Ports.onSessionChange
-        (\value -> Result.toMaybe (Decode.decodeValue User.decoder value))
 
 
 getCurrentPage : PageState -> CurrentPage

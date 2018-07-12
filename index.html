@@ -28,7 +28,7 @@
     <script>
       var app = Elm.Main.init(localStorage.session || null);
 
-      app.ports.sendSession.subscribe(function(session) {
+      app.ports.storeSession.subscribe(function(session) {
         localStorage.session = session;
       });
 

@@ -1,5 +1,11 @@
 module Profile exposing (Profile, bio, edit, email, following, image, login, profile, register, storeSession, toggleFollow, username)
 
+{-| A user's profile - potentially your own!
+
+Contrast with Me, which is the currently signed-in user.
+
+-}
+
 import AuthToken exposing (AuthToken, withAuthorization)
 import Html exposing (Html)
 import Http

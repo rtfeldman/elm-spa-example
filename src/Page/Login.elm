@@ -3,17 +3,17 @@ module Page.Login exposing (ExternalMsg(..), Model, Msg, initialModel, update, v
 {-| The login page.
 -}
 
+import AuthToken exposing (AuthToken)
 import Browser.Navigation as Nav
-import Data.Session exposing (Session)
-import Data.User exposing (User)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
 import Json.Decode as Decode exposing (Decoder, decodeString, field, string)
 import Json.Decode.Pipeline exposing (optional)
-import Request.User exposing (storeSession)
+import Me exposing (Me)
 import Route exposing (Route)
+import Session exposing (Session)
 import Validate exposing (Validator, ifBlank, validate)
 import Views.Form as Form
 
@@ -91,12 +91,12 @@ type Msg
     = SubmitForm
     | SetEmail String
     | SetPassword String
-    | LoginCompleted (Result Http.Error User)
+    | LoginCompleted (Result Http.Error ( Me, AuthToken ))
 
 
 type ExternalMsg
     = NoOp
-    | SetUser User
+    | SetMeAndToken ( Me, AuthToken )
 
 
 update : Nav.Key -> Msg -> Model -> ( ( Model, Cmd Msg ), ExternalMsg )
@@ -106,7 +106,7 @@ update navKey msg model =
             case validate modelValidator model of
                 [] ->
                     ( ( { model | errors = [] }
-                      , Http.send LoginCompleted (Request.User.login model)
+                      , Http.send LoginCompleted (Me.login model)
                       )
                     , NoOp
                     )
@@ -150,11 +150,11 @@ update navKey msg model =
             , NoOp
             )
 
-        LoginCompleted (Ok user) ->
+        LoginCompleted (Ok (( me, authToken ) as pair)) ->
             ( ( model
-              , Cmd.batch [ storeSession user, Route.replaceUrl navKey Route.Home ]
+              , Cmd.batch [ Session.store me authToken, Route.replaceUrl navKey Route.Home ]
               )
-            , SetUser user
+            , SetMeAndToken pair
             )
 
 

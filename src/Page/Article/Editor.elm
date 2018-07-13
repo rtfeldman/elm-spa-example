@@ -1,17 +1,18 @@
 module Page.Article.Editor exposing (Model, Msg, initEdit, initNew, update, view)
 
+import Article exposing (Article, Full)
+import Article.Body exposing (Body)
+import Article.Slug as Slug exposing (Slug)
+import AuthToken exposing (AuthToken)
 import Browser.Navigation as Nav
-import Data.Article as Article exposing (Article, Body)
-import Data.Article.Slug as Slug exposing (Slug)
-import Data.Session exposing (Session)
-import Data.User exposing (User)
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, disabled, href, id, placeholder, type_, value)
 import Html.Events exposing (onInput, onSubmit)
 import Http
 import Page.Errored exposing (PageLoadError, pageLoadError)
-import Request.Article
+import Profile exposing (Profile)
 import Route
+import Session exposing (Session)
 import Task exposing (Task)
 import Validate exposing (Validator, ifBlank, validate)
 import Views.Form as Form
@@ -45,24 +46,19 @@ initNew =
     }
 
 
-initEdit : Session -> Slug -> Task PageLoadError Model
-initEdit session slug =
-    let
-        maybeAuthToken =
-            session.user
-                |> Maybe.map .token
-    in
-    Request.Article.get maybeAuthToken slug
+initEdit : Maybe AuthToken -> Slug -> Task PageLoadError Model
+initEdit maybeToken slug =
+    Article.get maybeToken slug
         |> Http.toTask
         |> Task.mapError (\_ -> pageLoadError Page.Other "Article is currently unavailable.")
         |> Task.map
             (\article ->
                 { errors = []
                 , editingArticle = Just slug
-                , title = article.title
-                , body = Article.bodyToMarkdownString article.body
-                , description = article.description
-                , tags = article.tags
+                , title = Article.title article
+                , body = Article.Body.toMarkdownString (Article.body article)
+                , description = Article.description article
+                , tags = Article.tags article
                 , isSaving = False
                 }
             )
@@ -146,26 +142,26 @@ type Msg
     | SetDescription String
     | SetTags String
     | SetBody String
-    | CreateCompleted (Result Http.Error (Article Body))
-    | EditCompleted (Result Http.Error (Article Body))
+    | CreateCompleted (Result Http.Error (Article Full))
+    | EditCompleted (Result Http.Error (Article Full))
 
 
-update : User -> Nav.Key -> Msg -> Model -> ( Model, Cmd Msg )
-update user navKey msg model =
+update : AuthToken -> Nav.Key -> Msg -> Model -> ( Model, Cmd Msg )
+update token navKey msg model =
     case msg of
         Save ->
             case validate modelValidator model of
                 [] ->
                     case model.editingArticle of
                         Nothing ->
-                            user.token
-                                |> Request.Article.create model
+                            token
+                                |> Article.create model
                                 |> Http.send CreateCompleted
                                 |> Tuple.pair { model | errors = [], isSaving = True }
 
                         Just slug ->
-                            user.token
-                                |> Request.Article.update slug model
+                            token
+                                |> Article.update slug model
                                 |> Http.send EditCompleted
                                 |> Tuple.pair { model | errors = [], isSaving = True }
 
@@ -185,7 +181,7 @@ update user navKey msg model =
             ( { model | body = body }, Cmd.none )
 
         CreateCompleted (Ok article) ->
-            Route.Article article.slug
+            Route.Article (Article.slug article)
                 |> Route.replaceUrl navKey
                 |> Tuple.pair model
 
@@ -198,7 +194,7 @@ update user navKey msg model =
             )
 
         EditCompleted (Ok article) ->
-            Route.Article article.slug
+            Route.Article (Article.slug article)
                 |> Route.replaceUrl navKey
                 |> Tuple.pair model
 

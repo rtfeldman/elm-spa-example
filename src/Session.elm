@@ -1,8 +1,12 @@
-port module Session exposing (Session, attempt, changes, me, store, timeZone, token, withTimeZone)
+port module Session exposing (Session, attempt, changes, clear, init, isLoggedIn, logout, me, store, timeZone, token, withTimeZone)
 
-import Data.AuthToken exposing (AuthToken)
-import Data.User exposing (Me, User)
+import AuthToken exposing (AuthToken)
+import Json.Decode as Decode
+import Json.Encode as Encode exposing (Value)
+import Me exposing (Me)
 import Time
+import UserPhoto
+import Username
 
 
 
@@ -17,31 +21,62 @@ type Session
 
 
 
+-- CREATE
+
+
+init : Time.Zone -> Maybe ( Me, AuthToken ) -> Session
+init zone user =
+    Session
+        { user = user
+        , timeZone = zone
+        }
+
+
+
 -- MODIFY
 
 
 withTimeZone : Time.Zone -> Session -> Session
-withTimeZone timeZone (Session session) =
-    Session { session | timeZone = timeZone }
+withTimeZone zone (Session info) =
+    Session { info | timeZone = zone }
 
 
 
 -- ACCESS
 
 
+isLoggedIn : Session -> Bool
+isLoggedIn (Session info) =
+    case info.user of
+        Just _ ->
+            True
+
+        Nothing ->
+            False
+
+
 me : Session -> Maybe Me
-me (Session session) =
-    Maybe.map Tuple.first session.user
+me (Session info) =
+    Maybe.map Tuple.first info.user
 
 
 token : Session -> Maybe AuthToken
-token (Session session) =
-    Maybe.map Tuple.second session.user
+token (Session info) =
+    Maybe.map Tuple.second info.user
 
 
 timeZone : Session -> Time.Zone
-timeZone (Session session) =
-    session.timeZone
+timeZone (Session info) =
+    info.timeZone
+
+
+
+-- MODIFY
+
+
+clear : Session -> Session
+clear (Session info) =
+    Session { info | user = Nothing }
 
 
 
@@ -52,10 +87,10 @@ attempt : String -> (AuthToken -> Cmd msg) -> Session -> Result String (Cmd msg)
 attempt attemptedCmd toCmd session =
     case token session of
         Nothing ->
-            ( [ "You are signed out. Please sign in to " ++ attemptedCmd ++ "." ], Cmd.none )
+            Err ("You are signed out. Please sign in to " ++ attemptedCmd ++ ".")
 
         Just authToken ->
-            ( [], toCmd authToken )
+            Ok (toCmd authToken)
 
 
 
@@ -63,17 +98,22 @@ attempt attemptedCmd toCmd session =
 
 
 store : Me -> AuthToken -> Cmd msg
-store me authToken =
+store myself authToken =
     Encode.object
-        [ ( "email", Encode.string (email me) )
-        , ( "username", Username.encode (username me) )
-        , ( "bio", Maybe.withDefault Encode.null (Maybe.map Encode.string (bio me)) )
-        , ( "image", UserPhoto.encode (image me) )
-        , ( "token", AuthToken.encode (token me) )
+        [ ( "email", Encode.string (Me.email myself) )
+        , ( "username", Username.encode (Me.username myself) )
+        , ( "bio", Maybe.withDefault Encode.null (Maybe.map Encode.string (Me.bio myself)) )
+        , ( "image", UserPhoto.encode (Me.image myself) )
+        , ( "token", AuthToken.encode authToken )
         ]
         |> Encode.encode 0
         |> Just
         |> storeSession
+
+
+logout : Cmd msg
+logout =
+    storeSession Nothing
 
 
 port storeSession : Maybe String -> Cmd msg
@@ -83,10 +123,17 @@ port storeSession : Maybe String -> Cmd msg
 -- CHANGES
 
 
-changes : Sub (Maybe Me)
-changes =
-    onSessionChange
-        (\value -> Result.toMaybe (Decode.decodeValue User.decoder value))
+changes : Time.Zone -> Sub Session
+changes zone =
+    onSessionChange (fromValue zone)
 
 
 port onSessionChange : (Value -> msg) -> Sub msg
+
+
+fromValue : Time.Zone -> Value -> Session
+fromValue zone value =
+    Session
+        { user = Result.toMaybe (Decode.decodeValue Me.decoderWithToken value)
+        , timeZone = zone
+        }

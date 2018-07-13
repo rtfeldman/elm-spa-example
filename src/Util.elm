@@ -1,4 +1,4 @@
-module Util exposing (apiUrl, appendErrors, dateStringDecoder, formatTimestamp, onClickStopPropagation)
+module Util exposing (apiUrl, dateStringDecoder, formatTimestamp, onClickStopPropagation, updateFromResult)
 
 import Html exposing (Attribute, Html)
 import Html.Events exposing (stopPropagationOn)
@@ -19,9 +19,14 @@ onClickStopPropagation msg =
         (Decode.succeed ( msg, True ))
 
 
-appendErrors : { model | errors : List error } -> List error -> { model | errors : List error }
-appendErrors model errors =
-    { model | errors = model.errors ++ errors }
+updateFromResult : { model | errors : List error } -> cmd -> Result error cmd -> ( { model | errors : List error }, cmd )
+updateFromResult model fallbackCmd result =
+    case result of
+        Ok cmd ->
+            ( model, cmd )
+
+        Err error ->
+            ( { model | errors = model.errors ++ [ error ] }, fallbackCmd )
 
 
 {-| Decode an ISO-8601 date string.

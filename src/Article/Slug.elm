@@ -1,21 +1,33 @@
-module Data.Article.Slug exposing (Slug, decoder, parser, toString)
+module Article.Slug exposing (Slug, decoder, toString, urlParser)
 
 import Json.Decode as Decode exposing (Decoder)
-import Url.Parser
+import Url.Parser exposing (Parser)
+
+
+
+-- TYPES
 
 
 type Slug
     = Slug String
 
 
-parser : Url.Parser.Parser (Slug -> a) a
-parser =
+
+-- CREATE
+
+
+urlParser : Parser (Slug -> a) a
+urlParser =
     Url.Parser.custom "SLUG" (\str -> Just (Slug str))
 
 
 decoder : Decoder Slug
 decoder =
     Decode.map Slug Decode.string
+
+
+
+-- CONVERT
 
 
 toString : Slug -> String

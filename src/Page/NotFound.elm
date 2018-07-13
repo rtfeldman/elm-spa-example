@@ -1,6 +1,5 @@
 module Page.NotFound exposing (view)
 
-import Data.Session exposing (Session)
 import Html exposing (Html, div, h1, img, main_, text)
 import Html.Attributes exposing (alt, class, id, src, tabindex)
 import Views.Assets as Assets
@@ -10,8 +9,8 @@ import Views.Assets as Assets
 -- VIEW --
 
 
-view : Session -> { title : String, content : Html msg }
-view session =
+view : { title : String, content : Html msg }
+view =
     { title = "Page Not Found"
     , content =
         main_ [ id "content", class "container", tabindex -1 ]

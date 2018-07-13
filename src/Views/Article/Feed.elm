@@ -16,27 +16,25 @@ overkill, so we use simpler APIs instead.
 
 -}
 
+import Article exposing (Article, Preview)
+import Article.Feed as Feed exposing (Feed)
+import Article.FeedSources as FeedSources exposing (FeedSources, Source(..))
+import Article.Slug as ArticleSlug
+import Article.Tag as Tag exposing (Tag)
+import AuthToken exposing (AuthToken)
 import Browser.Dom as Dom
-import Data.Article as Article exposing (Article)
-import Data.Article.Feed exposing (Feed)
-import Data.Article.FeedSources as FeedSources exposing (FeedSources, Source(..))
-import Data.Article.Slug as ArticleSlug
-import Data.Article.Tag as Tag exposing (Tag)
-import Data.AuthToken exposing (AuthToken)
-import Data.Session exposing (Session)
-import Data.User
-import Data.User.Username as Username exposing (Username)
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, classList, href, id, placeholder, src)
 import Html.Events exposing (onClick)
 import Http
-import Request.Article
+import Profile
+import Session exposing (Session)
 import Task exposing (Task)
 import Time
+import Username exposing (Username)
 import Util exposing (onClickStopPropagation)
 import Views.Article
 import Views.Errors as Errors
-import Views.Page
 import Views.Spinner exposing (spinner)
 
 
@@ -61,8 +59,8 @@ type alias InternalModel =
     }
 
 
-init : Session -> FeedSources -> Task Http.Error Model
-init session feedSources =
+init : Maybe AuthToken -> FeedSources -> Task Http.Error Model
+init maybeToken feedSources =
     let
         source =
             FeedSources.selected feedSources
@@ -77,7 +75,7 @@ init session feedSources =
                 }
     in
     source
-        |> fetch (Maybe.map .token session.user) 1
+        |> fetch maybeToken 1
         |> Task.map toModel
 
 
@@ -212,26 +210,26 @@ type Msg
     = DismissErrors
     | SelectFeedSource Source
     | FeedLoadCompleted Source (Result Http.Error ( Int, Feed ))
-    | ToggleFavorite (Article ())
-    | FavoriteCompleted (Result Http.Error (Article ()))
+    | ToggleFavorite (Article Preview)
+    | FavoriteCompleted (Result Http.Error (Article Preview))
     | SelectPage Int
 
 
-update : Session -> Msg -> Model -> ( Model, Cmd Msg )
-update session msg (Model internalModel) =
-    updateInternal session msg internalModel
+update : Maybe AuthToken -> Msg -> Model -> ( Model, Cmd Msg )
+update maybeToken msg (Model internalModel) =
+    updateInternal maybeToken msg internalModel
         |> Tuple.mapFirst Model
 
 
-updateInternal : Session -> Msg -> InternalModel -> ( InternalModel, Cmd Msg )
-updateInternal session msg model =
+updateInternal : Maybe AuthToken -> Msg -> InternalModel -> ( InternalModel, Cmd Msg )
+updateInternal maybeToken msg model =
     case msg of
         DismissErrors ->
             ( { model | errors = [] }, Cmd.none )
 
         SelectFeedSource source ->
             source
-                |> fetch (Maybe.map .token session.user) 1
+                |> fetch maybeToken 1
                 |> Task.attempt (FeedLoadCompleted source)
                 |> Tuple.pair { model | isLoading = True }
 
@@ -254,14 +252,14 @@ updateInternal session msg model =
             )
 
         ToggleFavorite article ->
-            case session.user of
+            case maybeToken of
                 Nothing ->
                     ( { model | errors = model.errors ++ [ "You are currently signed out. You must sign in to favorite articles." ] }
                     , Cmd.none
                     )
 
-                Just user ->
-                    Request.Article.toggleFavorite article user.token
+                Just token ->
+                    Article.toggleFavorite article token
                         |> Http.send FavoriteCompleted
                         |> Tuple.pair model
 
@@ -286,7 +284,7 @@ updateInternal session msg model =
                     FeedSources.selected model.feedSources
             in
             source
-                |> fetch (Maybe.map .token session.user) page
+                |> fetch maybeToken page
                 |> Task.andThen (\feed -> Task.map (\_ -> feed) scrollToTop)
                 |> Task.attempt (FeedLoadCompleted source)
                 |> Tuple.pair model
@@ -304,7 +302,7 @@ fetch : Maybe AuthToken -> Int -> Source -> Task Http.Error ( Int, Feed )
 fetch authToken page feedSource =
     let
         defaultListConfig =
-            Request.Article.defaultListConfig
+            Feed.defaultListConfig
 
         articlesPerPage =
             limit feedSource
@@ -322,12 +320,12 @@ fetch authToken page feedSource =
                         Just token ->
                             let
                                 defaultFeedConfig =
-                                    Request.Article.defaultFeedConfig
+                                    Feed.defaultFeedConfig
 
                                 feedConfig =
                                     { defaultFeedConfig | offset = offset, limit = articlesPerPage }
                             in
-                            Request.Article.feed feedConfig token
+                            Feed.feed feedConfig token
                                 |> Http.toTask
 
                         Nothing ->
@@ -335,19 +333,19 @@ fetch authToken page feedSource =
                                 |> Task.fail
 
                 GlobalFeed ->
-                    Request.Article.list listConfig authToken
+                    Feed.list listConfig authToken
                         |> Http.toTask
 
                 TagFeed tagName ->
-                    Request.Article.list { listConfig | tag = Just tagName } authToken
+                    Feed.list { listConfig | tag = Just tagName } authToken
                         |> Http.toTask
 
                 FavoritedFeed username ->
-                    Request.Article.list { listConfig | favorited = Just username } authToken
+                    Feed.list { listConfig | favorited = Just username } authToken
                         |> Http.toTask
 
                 AuthorFeed username ->
-                    Request.Article.list { listConfig | author = Just username } authToken
+                    Feed.list { listConfig | author = Just username } authToken
                         |> Http.toTask
     in
     task
@@ -356,7 +354,7 @@ fetch authToken page feedSource =
 
 replaceArticle : Article a -> Article a -> Article a
 replaceArticle newArticle oldArticle =
-    if newArticle.slug == oldArticle.slug then
+    if Article.slug newArticle == Article.slug oldArticle then
         newArticle
 
     else

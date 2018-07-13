@@ -1,4 +1,15 @@
-module Me exposing (Me, bio, edit, email, following, image, login, profile, register, toggleFollow, username)
+module Me exposing (Me, bio, decoder, decoderWithToken, edit, email, image, login, register, username)
+
+import AuthToken exposing (AuthToken, withAuthorization)
+import Http
+import HttpBuilder exposing (RequestBuilder, withExpect)
+import Json.Decode as Decode exposing (Decoder)
+import Json.Decode.Pipeline exposing (custom, required)
+import Json.Encode as Encode exposing (Value)
+import UserPhoto exposing (UserPhoto)
+import Username exposing (Username)
+import Util exposing (apiUrl)
+
 
 {-| The currently signed-in user.
 
@@ -7,8 +18,6 @@ This is used for things like login, logout, and settings.
 Contrast with Profile, which is a user whose profile you're viewing.
 
 -}
-
-
 type Me
     = Me MeRecord
 
@@ -26,36 +35,23 @@ type alias MeRecord =
 
 
 username : Me -> Username
-username (User user) =
-    user.username
+username (Me info) =
+    info.username
 
 
 bio : Me -> Maybe String
-bio (User user) =
-    user.bio
+bio (Me info) =
+    info.bio
 
 
 image : Me -> UserPhoto
-image (User user) =
-    user.image
+image (Me info) =
+    info.image
 
 
 email : Me -> String
-email (User user) =
-    let
-        (Me info) =
-            user.extraInfo
-    in
+email (Me info) =
     info.email
-
-
-token : Me -> AuthToken
-token (User user) =
-    let
-        (Me info) =
-            user.extraInfo
-    in
-    info.token
 
 
 
@@ -63,19 +59,19 @@ token (User user) =
 
 
 login : { r | email : String, password : String } -> Http.Request ( Me, AuthToken )
-login { email, password } =
+login params =
     let
         user =
             Encode.object
-                [ ( "email", Encode.string email )
-                , ( "password", Encode.string password )
+                [ ( "email", Encode.string params.email )
+                , ( "password", Encode.string params.password )
                 ]
 
         body =
             Encode.object [ ( "user", user ) ]
                 |> Http.jsonBody
     in
-    Decode.field "user" meAndTokenDecoder
+    Decode.field "user" decoderWithToken
         |> Http.post (apiUrl "/users/login") body
 
 
@@ -84,20 +80,20 @@ login { email, password } =
 
 
 register : { r | username : String, email : String, password : String } -> Http.Request ( Me, AuthToken )
-register { username, email, password } =
+register params =
     let
         user =
             Encode.object
-                [ ( "username", Encode.string username )
-                , ( "email", Encode.string email )
-                , ( "password", Encode.string password )
+                [ ( "username", Encode.string params.username )
+                , ( "email", Encode.string params.email )
+                , ( "password", Encode.string params.password )
                 ]
 
         body =
             Encode.object [ ( "user", user ) ]
                 |> Http.jsonBody
     in
-    Decode.field "user" meAndTokenDecoder
+    Decode.field "user" decoderWithToken
         |> Http.post (apiUrl "/users") body
 
 
@@ -106,23 +102,24 @@ register { username, email, password } =
 
 
 edit :
-    { r
-        | username : String
-        , email : String
-        , bio : String
-        , password : Maybe String
-        , image : Maybe String
-    }
-    -> AuthToken
+    AuthToken
+    ->
+        { r
+            | username : String
+            , email : String
+            , bio : String
+            , password : Maybe String
+            , image : Maybe String
+        }
     -> Http.Request Me
-edit { username, email, bio, password, image } authToken =
+edit authToken params =
     let
         updates =
-            [ Just ( "username", Encode.string username )
-            , Just ( "email", Encode.string email )
-            , Just ( "bio", Encode.string bio )
-            , Just ( "image", Maybe.withDefault Encode.null (Maybe.map Encode.string image) )
-            , Maybe.map (\pass -> ( "password", Encode.string pass )) password
+            [ Just ( "username", Encode.string params.username )
+            , Just ( "email", Encode.string params.email )
+            , Just ( "bio", Encode.string params.bio )
+            , Just ( "image", Maybe.withDefault Encode.null (Maybe.map Encode.string params.image) )
+            , Maybe.map (\pass -> ( "password", Encode.string pass )) params.password
             ]
                 |> List.filterMap identity
 
@@ -133,8 +130,7 @@ edit { username, email, bio, password, image } authToken =
                 |> Http.jsonBody
 
         expect =
-            User.selfDecoder
-                |> Decode.field "user"
+            Decode.field "user" decoder
                 |> Http.expectJson
     in
     apiUrl "/user"
@@ -159,8 +155,8 @@ decoder =
         |> Decode.map Me
 
 
-meAndTokenDecoder : Decoder ( Me, AuthToken )
-meAndTokenDecoder =
+decoderWithToken : Decoder ( Me, AuthToken )
+decoderWithToken =
     Decode.succeed Tuple.pair
         |> custom decoder
         |> required "token" AuthToken.decoder

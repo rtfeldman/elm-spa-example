@@ -4,12 +4,13 @@ module Views.Page exposing (ActivePage(..), frame)
 -}
 
 import Browser exposing (Document)
-import Data.User as User exposing (User)
-import Data.User.Photo as UserPhoto exposing (UserPhoto)
-import Data.User.Username as Username exposing (Username)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Me exposing (Me)
+import Profile exposing (Profile)
 import Route exposing (Route)
+import UserPhoto exposing (UserPhoto)
+import Username exposing (Username)
 import Util
 import Views.Spinner exposing (spinner)
 
@@ -40,18 +41,18 @@ isLoading is for determining whether we should show a loading spinner
 in the header. (This comes up during slow page transitions.)
 
 -}
-frame : Bool -> Maybe User -> ActivePage -> { title : String, content : Html msg } -> Document msg
-frame isLoading user page { title, content } =
+frame : Bool -> Maybe Me -> ActivePage -> { title : String, content : Html msg } -> Document msg
+frame isLoading maybeMe page { title, content } =
     { title = title ++ " — Conduit"
     , body =
-        [ viewHeader page user isLoading
+        [ viewHeader page maybeMe isLoading
         , content
         , viewFooter
         ]
     }
 
 
-viewHeader : ActivePage -> Maybe User -> Bool -> Html msg
+viewHeader : ActivePage -> Maybe Me -> Bool -> Html msg
 viewHeader page user isLoading =
     nav [ class "navbar navbar-light" ]
         [ div [ class "container" ]
@@ -70,25 +71,25 @@ viewHeader page user isLoading =
         ]
 
 
-viewSignIn : ActivePage -> Maybe User -> List (Html msg)
-viewSignIn page maybeUser =
+viewSignIn : ActivePage -> Maybe Me -> List (Html msg)
+viewSignIn page maybeMe =
     let
         linkTo =
             navbarLink page
     in
-    case maybeUser of
+    case maybeMe of
         Nothing ->
             [ linkTo Route.Login [ text "Sign in" ]
             , linkTo Route.Register [ text "Sign up" ]
             ]
 
-        Just user ->
+        Just me ->
             [ linkTo Route.NewArticle [ i [ class "ion-compose" ] [], text " New Post" ]
             , linkTo Route.Settings [ i [ class "ion-gear-a" ] [], text " Settings" ]
             , linkTo
-                (Route.Profile user.username)
-                [ img [ class "user-pic", UserPhoto.src user.image ] []
-                , Username.toHtml user.username
+                (Route.Profile (Me.username me))
+                [ img [ class "user-pic", UserPhoto.src (Me.image me) ] []
+                , Username.toHtml (Me.username me)
                 ]
             , linkTo Route.Logout [ text "Sign out" ]
             ]

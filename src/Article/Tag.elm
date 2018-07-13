@@ -1,6 +1,8 @@
 module Article.Tag exposing (Tag, list, toString)
 
+import Http
 import Json.Decode as Decode exposing (Decoder)
+import Util exposing (apiUrl)
 
 
 
@@ -12,7 +14,7 @@ type Tag
 
 
 
--- CONVERSIONS
+-- CONVERT
 
 
 toString : Tag -> String

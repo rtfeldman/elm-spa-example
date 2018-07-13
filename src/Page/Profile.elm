@@ -3,24 +3,24 @@ module Page.Profile exposing (Model, Msg, init, update, view)
 {-| Viewing a user's profile.
 -}
 
-import Data.Article.FeedSources as FeedSources exposing (FeedSources, Source(..))
-import Data.Profile exposing (Profile)
-import Data.Session exposing (Session)
-import Data.User as User
-import Data.User.Photo as UserPhoto exposing (UserPhoto)
-import Data.User.Username as Username exposing (Username)
+import Article.Feed as Feed exposing (ListConfig, defaultListConfig)
+import Article.FeedSources as FeedSources exposing (FeedSources, Source(..))
+import AuthToken exposing (AuthToken)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
+import Me exposing (Me)
 import Page.Errored exposing (PageLoadError, pageLoadError)
-import Request.Article exposing (ListConfig, defaultListConfig)
-import Request.Profile
+import Profile exposing (Profile)
+import Session exposing (Session)
 import Task exposing (Task)
 import Time
+import UserPhoto exposing (UserPhoto)
+import Username exposing (Username)
 import Views.Article.Feed as Feed
 import Views.Errors as Errors
+import Views.Follow as Follow
 import Views.Page as Page
-import Views.User.Follow as Follow
 
 
 
@@ -34,23 +34,19 @@ type alias Model =
     }
 
 
-init : Session -> Username -> Task PageLoadError Model
-init session username =
+init : Maybe AuthToken -> Username -> Task PageLoadError Model
+init maybeToken username =
     let
         config : ListConfig
         config =
             { defaultListConfig | limit = 5, author = Just username }
 
-        maybeAuthToken =
-            session.user
-                |> Maybe.map .token
-
         loadProfile =
-            Request.Profile.get username maybeAuthToken
+            Profile.get username maybeToken
                 |> Http.toTask
 
         loadFeedSources =
-            Feed.init session (defaultFeedSources username)
+            Feed.init maybeToken (defaultFeedSources username)
 
         handleLoadError _ =
             "Profile is currently unavailable."
@@ -71,18 +67,21 @@ view session model =
             model.profile
 
         isMyProfile =
-            session.user
-                |> Maybe.map (\{ username } -> username == profile.username)
-                |> Maybe.withDefault False
+            case Session.me session of
+                Just me ->
+                    Me.username me == Profile.username profile
+
+                Nothing ->
+                    False
     in
     { title =
         if isMyProfile then
             "My Profile"
 
         else
-            case session.user of
-                Just { username } ->
-                    "Profile — " ++ Username.toString username
+            case Session.me session of
+                Just me ->
+                    "Profile — " ++ Username.toString (Me.username me)
 
                 Nothing ->
                     "Profile"
@@ -96,7 +95,7 @@ view session model =
                     ]
                 ]
             , div [ class "container" ]
-                [ div [ class "row" ] [ viewFeed session.timeZone model.feed ] ]
+                [ div [ class "row" ] [ viewFeed (Session.timeZone session) model.feed ] ]
             ]
     }
 
@@ -104,9 +103,9 @@ view session model =
 viewProfileInfo : Bool -> Profile -> Html Msg
 viewProfileInfo isMyProfile profile =
     div [ class "col-xs-12 col-md-10 offset-md-1" ]
-        [ img [ class "user-img", UserPhoto.src profile.image ] []
-        , h4 [] [ Username.toHtml profile.username ]
-        , p [] [ text (Maybe.withDefault "" profile.bio) ]
+        [ img [ class "user-img", UserPhoto.src (Profile.image profile) ] []
+        , h4 [] [ Username.toHtml (Profile.username profile) ]
+        , p [] [ text (Maybe.withDefault "" (Profile.bio profile)) ]
         , if isMyProfile then
             text ""
 
@@ -134,8 +133,8 @@ type Msg
     | FeedMsg Feed.Msg
 
 
-update : Session -> Msg -> Model -> ( Model, Cmd Msg )
-update session msg model =
+update : Maybe AuthToken -> Msg -> Model -> ( Model, Cmd Msg )
+update maybeToken msg model =
     let
         profile =
             model.profile
@@ -145,17 +144,17 @@ update session msg model =
             ( { model | errors = [] }, Cmd.none )
 
         ToggleFollow ->
-            case session.user of
+            case maybeToken of
                 Nothing ->
                     ( { model | errors = model.errors ++ [ "You are currently signed out. You must be signed in to follow people." ] }
                     , Cmd.none
                     )
 
-                Just user ->
-                    user.token
-                        |> Request.Profile.toggleFollow
-                            profile.username
-                            profile.following
+                Just token ->
+                    token
+                        |> Profile.toggleFollow
+                            (Profile.username profile)
+                            (Profile.following profile)
                         |> Http.send FollowCompleted
                         |> Tuple.pair model
 
@@ -168,14 +167,16 @@ update session msg model =
         FeedMsg subMsg ->
             let
                 ( newFeed, subCmd ) =
-                    Feed.update session subMsg model.feed
+                    Feed.update maybeToken subMsg model.feed
             in
             ( { model | feed = newFeed }, Cmd.map FeedMsg subCmd )
 
 
 followButton : Profile -> Html Msg
-followButton =
+followButton profile =
     Follow.button (\_ -> ToggleFollow)
+        (Profile.following profile)
+        (Profile.username profile)
 
 
 

@@ -28,16 +28,16 @@ decoder =
 
 
 encode : AuthToken -> Value
-encode (AuthToken token) =
-    Encode.string token
+encode (AuthToken str) =
+    Encode.string str
 
 
 withAuthorization : Maybe AuthToken -> RequestBuilder a -> RequestBuilder a
 withAuthorization maybeToken builder =
     case maybeToken of
-        Just (AuthToken token) ->
+        Just (AuthToken str) ->
             builder
-                |> withHeader "authorization" ("Token " ++ token)
+                |> withHeader "authorization" ("Token " ++ str)
 
         Nothing ->
             builder

@@ -1,5 +1,9 @@
 module CommentId exposing (CommentId, decoder, toString)
 
+import Json.Decode as Decode exposing (Decoder)
+
+
+
 -- TYPES
 
 

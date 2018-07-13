@@ -1,4 +1,4 @@
-module Profile exposing (Profile, bio, edit, email, following, image, login, profile, register, storeSession, toggleFollow, username)
+module Profile exposing (Profile, bio, decoder, follow, following, get, image, toggleFollow, username)
 
 {-| A user's profile - potentially your own!
 
@@ -7,17 +7,13 @@ Contrast with Me, which is the currently signed-in user.
 -}
 
 import AuthToken exposing (AuthToken, withAuthorization)
-import Html exposing (Html)
 import Http
 import HttpBuilder exposing (RequestBuilder, withExpect)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
-import Json.Encode as Encode exposing (Value)
-import Ports
-import Request.Helpers exposing (apiUrl)
-import Url.Parser
 import UserPhoto exposing (UserPhoto)
 import Username exposing (Username)
+import Util exposing (apiUrl)
 
 
 
@@ -41,34 +37,34 @@ type alias ProfileRecord =
 
 
 username : Profile -> Username
-username (User profile) =
-    profile.profilename
+username (Profile info) =
+    info.username
 
 
 bio : Profile -> Maybe String
-bio (User profile) =
-    profile.bio
+bio (Profile info) =
+    info.bio
 
 
 image : Profile -> UserPhoto
-image (User profile) =
-    profile.image
+image (Profile info) =
+    info.image
 
 
 following : Profile -> Bool
-following (Profile profile) =
-    profile.following
+following (Profile info) =
+    info.following
 
 
 
 -- PROFILE
 
 
-profile : Username -> Maybe AuthToken -> Http.Request Profile
-profile username maybeToken =
-    apiUrl ("/profiles/" ++ Username.toString username)
+get : Username -> Maybe AuthToken -> Http.Request Profile
+get uname maybeToken =
+    apiUrl ("/profiles/" ++ Username.toString uname)
         |> HttpBuilder.get
-        |> HttpBuilder.withExpect (Http.expectJson (Decode.field "profile" profileDecoder))
+        |> HttpBuilder.withExpect (Http.expectJson (Decode.field "profile" decoder))
         |> withAuthorization maybeToken
         |> HttpBuilder.toRequest
 
@@ -77,22 +73,27 @@ profile username maybeToken =
 -- FOLLOWING --
 
 
+follow : Bool -> Profile -> Profile
+follow isFollowing (Profile info) =
+    Profile { info | following = isFollowing }
+
+
 toggleFollow : Username -> Bool -> AuthToken -> Http.Request Profile
-toggleFollow username following authToken =
-    if following then
-        unfollow username authToken
+toggleFollow uname isFollowing authToken =
+    if isFollowing then
+        requestUnfollow uname authToken
 
     else
-        follow username authToken
+        requestFollow uname authToken
 
 
-follow : Username -> AuthToken -> Http.Request Profile
-follow =
+requestFollow : Username -> AuthToken -> Http.Request Profile
+requestFollow =
     buildFollow HttpBuilder.post
 
 
-unfollow : Username -> AuthToken -> Http.Request Profile
-unfollow =
+requestUnfollow : Username -> AuthToken -> Http.Request Profile
+requestUnfollow =
     buildFollow HttpBuilder.delete
 
 
@@ -101,12 +102,12 @@ buildFollow :
     -> Username
     -> AuthToken
     -> Http.Request Profile
-buildFollow builderFromUrl username token =
-    [ apiUrl "/profiles", Username.toString username, "follow" ]
+buildFollow builderFromUrl uname token =
+    [ apiUrl "/profiles", Username.toString uname, "follow" ]
         |> String.join "/"
         |> builderFromUrl
         |> withAuthorization (Just token)
-        |> withExpect (Http.expectJson (Decode.field "profile" Profile.decoder))
+        |> withExpect (Http.expectJson (Decode.field "profile" decoder))
         |> HttpBuilder.toRequest
 
 

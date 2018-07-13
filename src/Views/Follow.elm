@@ -1,4 +1,4 @@
-module Views.User.Follow exposing (State, button)
+module Views.Follow exposing (button)
 
 {-| The Follow button.
 
@@ -11,19 +11,15 @@ and for no benefit.
 
 -}
 
-import Data.User as User
-import Data.User.Username as Username exposing (Username)
 import Html exposing (Html, i, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
+import Profile
+import Username exposing (Username)
 
 
-type alias State record =
-    { record | following : Bool, username : Username }
-
-
-button : (Username -> msg) -> State record -> Html msg
-button toggleFollow { following, username } =
+button : (Username -> msg) -> Bool -> Username -> Html msg
+button toggleFollow following username =
     let
         ( prefix, secondaryClass ) =
             if following then

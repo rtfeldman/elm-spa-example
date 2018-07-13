@@ -3,16 +3,16 @@ module Page.Home exposing (Model, Msg, init, update, view)
 {-| The homepage. You can get here via either the / or /#/ routes.
 -}
 
-import Data.Article as Article
-import Data.Article.FeedSources as FeedSources exposing (FeedSources, Source(..))
-import Data.Article.Tag as Tag exposing (Tag)
-import Data.Session exposing (Session)
+import Article
+import Article.FeedSources as FeedSources exposing (FeedSources, Source(..))
+import Article.Tag as Tag exposing (Tag)
+import AuthToken exposing (AuthToken)
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, classList, href, id, placeholder)
 import Html.Events exposing (onClick)
 import Http
 import Page.Errored exposing (PageLoadError, pageLoadError)
-import Request.Article
+import Session exposing (Session)
 import Task exposing (Task)
 import Time
 import Views.Article.Feed as Feed
@@ -29,22 +29,23 @@ type alias Model =
     }
 
 
-init : Session -> Task PageLoadError Model
-init session =
+init : Maybe AuthToken -> Task PageLoadError Model
+init maybeToken =
     let
         feedSources =
-            if session.user == Nothing then
-                FeedSources.fromLists GlobalFeed []
+            case maybeToken of
+                Just _ ->
+                    FeedSources.fromLists GlobalFeed []
 
-            else
-                FeedSources.fromLists YourFeed [ GlobalFeed ]
+                Nothing ->
+                    FeedSources.fromLists YourFeed [ GlobalFeed ]
 
         loadTags =
-            Request.Article.tags
+            Tag.list
                 |> Http.toTask
 
         loadSources =
-            Feed.init session feedSources
+            Feed.init maybeToken feedSources
 
         handleLoadError _ =
             pageLoadError Page.Home "Homepage is currently unavailable."
@@ -65,7 +66,7 @@ view session model =
             [ viewBanner
             , div [ class "container page" ]
                 [ div [ class "row" ]
-                    [ div [ class "col-md-9" ] (viewFeed session.timeZone model.feed)
+                    [ div [ class "col-md-9" ] (viewFeed (Session.timeZone session) model.feed)
                     , div [ class "col-md-3" ]
                         [ div [ class "sidebar" ]
                             [ p [] [ text "Popular Tags" ]
@@ -119,19 +120,19 @@ type Msg
     | SelectTag Tag
 
 
-update : Session -> Msg -> Model -> ( Model, Cmd Msg )
-update session msg model =
+update : Maybe AuthToken -> Msg -> Model -> ( Model, Cmd Msg )
+update maybeToken msg model =
     case msg of
         FeedMsg subMsg ->
             let
                 ( newFeed, subCmd ) =
-                    Feed.update session subMsg model.feed
+                    Feed.update maybeToken subMsg model.feed
             in
             ( { model | feed = newFeed }, Cmd.map FeedMsg subCmd )
 
         SelectTag tagName ->
             let
                 subCmd =
-                    Feed.selectTag (Maybe.map .token session.user) tagName
+                    Feed.selectTag maybeToken tagName
             in
             ( model, Cmd.map FeedMsg subCmd )

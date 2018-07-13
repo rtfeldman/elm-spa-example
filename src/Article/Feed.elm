@@ -1,4 +1,4 @@
-module Feed
+module Article.Feed
     exposing
         ( Feed
         , FeedConfig
@@ -9,30 +9,29 @@ module Feed
         , list
         )
 
-import Data.Article as Article exposing (Article)
+import Article exposing (Article, Preview)
+import Article.Tag as Tag exposing (Tag)
+import AuthToken exposing (AuthToken, withAuthorization)
+import Http
+import HttpBuilder exposing (RequestBuilder, withExpect, withQueryParams)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
+import Username exposing (Username)
+import Util exposing (apiUrl)
+
+
+
+-- TYPES
 
 
 type alias Feed =
-    { articles : List (Article ())
+    { articles : List (Article Preview)
     , articlesCount : Int
     }
 
 
 
--- SERIALIZATION
-
-
-decoder : Decoder Feed
-decoder =
-    Decode.succeed Feed
-        |> required "articles" (Decode.list Article.decoder)
-        |> required "articlesCount" Decode.int
-
-
-
--- LIST --
+-- LIST
 
 
 type alias ListConfig =
@@ -69,7 +68,7 @@ list config maybeToken =
 
 
 
--- FEED --
+-- FEED
 
 
 type alias FeedConfig =
@@ -96,7 +95,18 @@ feed config token =
 
 
 
--- HELPERS --
+-- SERIALIZATION
+
+
+decoder : Decoder Feed
+decoder =
+    Decode.succeed Feed
+        |> required "articles" (Decode.list Article.previewDecoder)
+        |> required "articlesCount" Decode.int
+
+
+
+-- REQUEST
 
 
 buildFromQueryParams : String -> List ( String, String ) -> RequestBuilder Feed
@@ -104,5 +114,5 @@ buildFromQueryParams url queryParams =
     url
         |> apiUrl
         |> HttpBuilder.get
-        |> withExpect (Http.expectJson Feed.decoder)
+        |> withExpect (Http.expectJson decoder)
         |> withQueryParams queryParams

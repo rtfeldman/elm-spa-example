@@ -1,14 +1,13 @@
 module Route exposing (Route(..), fromUrl, href, replaceUrl)
 
+import Article.Slug as Slug exposing (Slug)
 import Browser.Navigation as Nav
-import Data.Article as Article
-import Data.Article.Slug as Slug exposing (Slug)
-import Data.User as User
-import Data.User.Username as Username exposing (Username)
 import Html exposing (Attribute)
 import Html.Attributes as Attr
+import Profile exposing (Profile)
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, oneOf, s, string)
+import Username exposing (Username)
 
 
 
@@ -35,11 +34,11 @@ parser =
         , Parser.map Login (s "login")
         , Parser.map Logout (s "logout")
         , Parser.map Settings (s "settings")
-        , Parser.map Profile (s "profile" </> Username.parser)
+        , Parser.map Profile (s "profile" </> Username.urlParser)
         , Parser.map Register (s "register")
-        , Parser.map Article (s "article" </> Slug.parser)
+        , Parser.map Article (s "article" </> Slug.urlParser)
         , Parser.map NewArticle (s "editor")
-        , Parser.map EditArticle (s "editor" </> Slug.parser)
+        , Parser.map EditArticle (s "editor" </> Slug.urlParser)
         ]
 
 

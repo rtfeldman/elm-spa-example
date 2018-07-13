@@ -1,18 +1,18 @@
 module Page.Settings exposing (ExternalMsg(..), Model, Msg, init, update, view)
 
+import AuthToken exposing (AuthToken)
 import Browser.Navigation as Nav
-import Data.Session exposing (Session)
-import Data.User as User exposing (User)
-import Data.User.Photo as UserPhoto
-import Data.User.Username as Username exposing (Username)
 import Html exposing (Html, button, div, fieldset, h1, input, text, textarea)
 import Html.Attributes exposing (attribute, class, placeholder, type_, value)
 import Html.Events exposing (onInput, onSubmit)
 import Http
 import Json.Decode as Decode exposing (Decoder, decodeString, field, list, string)
 import Json.Decode.Pipeline exposing (optional)
-import Request.User exposing (storeSession)
+import Me exposing (Me)
 import Route
+import Session exposing (Session)
+import UserPhoto
+import Username as Username exposing (Username)
 import Validate exposing (Validator, ifBlank, validate)
 import Views.Form as Form
 
@@ -31,13 +31,13 @@ type alias Model =
     }
 
 
-init : User -> String -> Model
-init user email =
+init : Me -> Model
+init me =
     { errors = []
-    , image = UserPhoto.toMaybeString user.image
-    , email = email
-    , bio = Maybe.withDefault "" user.bio
-    , username = Username.toString user.username
+    , image = UserPhoto.toMaybeString (Me.image me)
+    , email = Me.email me
+    , bio = Maybe.withDefault "" (Me.bio me)
+    , username = Username.toString (Me.username me)
     , password = Nothing
     }
 
@@ -121,23 +121,21 @@ type Msg
     | SetPassword String
     | SetBio String
     | SetImage String
-    | SaveCompleted (Result Http.Error User)
+    | SaveCompleted (Result Http.Error Me)
 
 
 type ExternalMsg
     = NoOp
-    | SetUser User
+    | SetMe Me
 
 
-update : Nav.Key -> Session -> Msg -> Model -> ( ( Model, Cmd Msg ), ExternalMsg )
-update navKey session msg model =
+update : Nav.Key -> AuthToken -> Msg -> Model -> ( ( Model, Cmd Msg ), ExternalMsg )
+update navKey authToken msg model =
     case msg of
         SubmitForm ->
             case validate modelValidator model of
                 [] ->
-                    ( session.user
-                        |> Maybe.map .token
-                        |> Request.User.edit model
+                    ( Me.edit authToken model
                         |> Http.send SaveCompleted
                         |> Tuple.pair { model | errors = [] }
                     , NoOp
@@ -223,11 +221,11 @@ update navKey session msg model =
             , NoOp
             )
 
-        SaveCompleted (Ok user) ->
+        SaveCompleted (Ok me) ->
             ( ( model
-              , Cmd.batch [ storeSession user, Route.replaceUrl navKey Route.Home ]
+              , Cmd.batch [ Session.store me authToken, Route.replaceUrl navKey Route.Home ]
               )
-            , SetUser user
+            , SetMe me
             )
 
 

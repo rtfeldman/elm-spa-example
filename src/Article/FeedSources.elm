@@ -1,9 +1,9 @@
-module Data.Article.FeedSources exposing (FeedSources, Source(..), after, before, fromLists, select, selected)
+module Article.FeedSources exposing (FeedSources, Source(..), after, before, fromLists, select, selected)
 
-import Data.Article as Article
-import Data.Article.Feed as Feed
-import Data.Article.Tag as Tag exposing (Tag)
-import Data.User.Username as Username exposing (Username)
+import Article
+import Article.Feed as Feed
+import Article.Tag as Tag exposing (Tag)
+import Username exposing (Username)
 
 
 

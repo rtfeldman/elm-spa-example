@@ -3,7 +3,7 @@ module Views.Article.Favorite exposing (button)
 {-| The Favorite button.
 -}
 
-import Data.Article exposing (Article)
+import Article exposing (Article)
 import Html exposing (Attribute, Html, i, text)
 import Html.Attributes exposing (class)
 import Util exposing (onClickStopPropagation)
@@ -24,7 +24,7 @@ button :
 button toggleFavorite article extraAttributes extraChildren =
     let
         favoriteButtonClass =
-            if article.favorited then
+            if Article.favorited article then
                 "btn-primary"
 
             else

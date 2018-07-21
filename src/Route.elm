@@ -30,7 +30,7 @@ type Route
 parser : Parser (Route -> a) a
 parser =
     oneOf
-        [ Parser.map Home (s "")
+        [ Parser.map Home Parser.top
         , Parser.map Login (s "login")
         , Parser.map Logout (s "logout")
         , Parser.map Settings (s "settings")
@@ -43,7 +43,7 @@ parser =
 
 
 
--- INTERNAL --
+-- INTERNAL
 
 
 routeToString : Route -> String
@@ -100,19 +100,8 @@ replaceUrl key route =
 
 fromUrl : Url -> Maybe Route
 fromUrl url =
-    case url.fragment of
-        Nothing ->
-            Just Root
-
-        Just fragment ->
-            fragmentToRoute fragment
-
-
-fragmentToRoute : String -> Maybe Route
-fragmentToRoute fragment =
-    case Url.fromString fragment of
-        Nothing ->
-            Nothing
-
-        Just segments ->
-            Parser.parse parser segments
+    -- The RealWorld spec treats the fragment like a path.
+    -- This makes it *literally* the path, so we can proceed
+    -- with parsing as if it had been a normal path all along.
+    { url | path = Maybe.withDefault "" url.fragment, fragment = Nothing }
+        |> Parser.parse parser

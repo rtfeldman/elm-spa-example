@@ -1,8 +1,7 @@
 {
     "type": "application",
     "source-directories": [
-        "src",
-        "vendor"
+        "src"
     ],
     "elm-version": "0.19.0",
     "dependencies": {
@@ -19,6 +18,7 @@
             "elm/url": "1.0.0",
             "elm-explorations/markdown": "1.0.0",
             "lukewestby/elm-http-builder": "6.0.0",
+            "rtfeldman/elm-iso8601": "1.0.0",
             "rtfeldman/elm-validate": "3.0.2"
         },
         "indirect": {

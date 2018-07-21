@@ -4,7 +4,6 @@ import Html exposing (Attribute, Html)
 import Html.Events exposing (stopPropagationOn)
 import Iso8601
 import Json.Decode as Decode exposing (Decoder, fail, succeed)
-import Parser
 import Time exposing (Month(..))
 
 
@@ -34,17 +33,17 @@ updateFromResult model fallbackCmd result =
 dateStringDecoder : Decoder Time.Posix
 dateStringDecoder =
     Decode.string
-        |> Decode.andThen (\str -> fromResult str (Iso8601.toTime str))
+        |> Decode.andThen fromString
 
 
-fromResult : String -> Result (List Parser.DeadEnd) a -> Decoder a
-fromResult source result =
-    case result of
+fromString : String -> Decoder Time.Posix
+fromString str =
+    case Iso8601.toTime str of
         Ok successValue ->
             succeed successValue
 
         Err _ ->
-            fail ("Failed to parse: " ++ source)
+            fail ("Failed to parse: " ++ str)
 
 
 formatTimestamp : Time.Zone -> Time.Posix -> String

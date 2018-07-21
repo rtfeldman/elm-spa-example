@@ -105,8 +105,10 @@ viewTag : Tag -> Html Msg
 viewTag tagName =
     a
         [ class "tag-pill tag-default"
-        , href "javascript:void(0)"
         , onClick (SelectTag tagName)
+
+        -- The RealWorld CSS requires an href to work properly.
+        , href ""
         ]
         [ text (Tag.toString tagName) ]
 

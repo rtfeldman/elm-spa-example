@@ -116,8 +116,10 @@ viewFeedSource isSelected source =
     li [ class "nav-item" ]
         [ a
             [ classList [ ( "nav-link", True ), ( "active", isSelected ) ]
-            , href "javascript:void(0);"
             , onClick (SelectFeedSource source)
+
+            -- The RealWorld CSS requires an href to work properly.
+            , href ""
             ]
             [ text (sourceName source) ]
         ]
@@ -195,8 +197,10 @@ pageLink page isActive =
     li [ classList [ ( "page-item", True ), ( "active", isActive ) ] ]
         [ a
             [ class "page-link"
-            , href "javascript:void(0);"
             , onClick (SelectPage page)
+
+            -- The RealWorld CSS requires an href to work properly.
+            , href ""
             ]
             [ text (String.fromInt page) ]
         ]

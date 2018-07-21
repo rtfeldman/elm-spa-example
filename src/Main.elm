@@ -69,7 +69,6 @@ init flags url navKey =
         , navKey = navKey
         , session = fromFlags flags
         }
-        -- TODO load the time zone *before* rendering the page for the first time
         |> Tuple.mapSecond (\cmd -> Cmd.batch [ cmd, Task.perform GotTimeZone Time.here ])
 
 
@@ -529,7 +528,7 @@ updateCurrentPage page msg model =
 
 
 
--- MAIN --
+-- MAIN
 
 
 main : Program Value Model Msg

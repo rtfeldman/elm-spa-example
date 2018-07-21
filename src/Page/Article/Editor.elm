@@ -20,7 +20,7 @@ import Views.Page as Page
 
 
 
--- MODEL --
+-- MODEL
 
 
 type alias Model =
@@ -65,7 +65,7 @@ initEdit maybeToken slug =
 
 
 
--- VIEW --
+-- VIEW
 
 
 view : Model -> { title : String, content : Html Msg }
@@ -133,7 +133,7 @@ viewForm model =
 
 
 
--- UPDATE --
+-- UPDATE
 
 
 type Msg
@@ -208,7 +208,7 @@ update token navKey msg model =
 
 
 
--- VALIDATION --
+-- VALIDATION
 
 
 type Field
@@ -230,7 +230,7 @@ modelValidator =
 
 
 
--- INTERNAL --
+-- INTERNAL
 
 
 tagsFromString : String -> List String

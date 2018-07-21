@@ -35,10 +35,10 @@ init maybeToken =
         feedSources =
             case maybeToken of
                 Just _ ->
-                    FeedSources.fromLists GlobalFeed []
+                    FeedSources.fromLists YourFeed [ GlobalFeed ]
 
                 Nothing ->
-                    FeedSources.fromLists YourFeed [ GlobalFeed ]
+                    FeedSources.fromLists GlobalFeed []
 
         loadTags =
             Tag.list

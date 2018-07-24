@@ -1,0 +1,26 @@
+{
+  "name": "z5h-elm-spa-example",
+  "version": "1.0.0",
+  "description": "👉 I gave a talk, [**Scaling Elm Apps**](https://www.youtube.com/watch?v=DoA4Txr4GUs), to explain the principles I used to build this. I highly recommend [watching it](https://www.youtube.com/watch?v=DoA4Txr4GUs)!",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/z5h/elm-spa-example.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/z5h/elm-spa-example/issues"
+  },
+  "homepage": "https://github.com/z5h/elm-spa-example#readme",
+  "devDependencies": {
+    "elm": "^0.18.0",
+    "elm-live": "^2.7.5"
+  }
+}

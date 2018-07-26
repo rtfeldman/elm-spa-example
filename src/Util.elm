@@ -1,7 +1,17 @@
-module Util exposing ((=>), appendErrors, onClickStopPropagation, pair, viewIf)
+module Util
+    exposing
+        ( (=>)
+        , appendErrors
+        , onClickStopPropagation
+        , pair
+        , viewIf
+        , httpErrorString
+        , unpackResult
+        )
 
 import Html exposing (Attribute, Html)
 import Html.Events exposing (defaultOptions, onWithOptions)
+import Http
 import Json.Decode as Decode
 
 
@@ -48,3 +58,18 @@ onClickStopPropagation msg =
 appendErrors : { model | errors : List error } -> List error -> { model | errors : List error }
 appendErrors model errors =
     { model | errors = model.errors ++ errors }
+
+
+httpErrorString : Http.Error -> String
+httpErrorString error =
+    toString error
+
+
+unpackResult : (e -> b) -> (a -> b) -> Result e a -> b
+unpackResult errFunc okFunc result =
+    case result of
+        Ok ok ->
+            okFunc ok
+
+        Err err ->
+            errFunc err

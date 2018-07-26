@@ -12,5 +12,5 @@ import Route exposing (Route)
 
 view : Username -> Html msg
 view username =
-    a [ class "author", Route.href (Route.Profile username) ]
+    a [ class "author", Route.href (Route.Home) ]
         [ User.usernameToHtml username ]

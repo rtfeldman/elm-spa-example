@@ -29,26 +29,29 @@ view toggleFavorite article =
         author =
             article.author
     in
-    div [ class "article-preview" ]
-        [ div [ class "article-meta" ]
-            [ a [ Route.href (Route.Profile author.username) ]
-                [ img [ UserPhoto.src author.image ] [] ]
-            , div [ class "info" ]
-                [ Views.Author.view author.username
-                , viewTimestamp article
+        div [ class "article-preview" ]
+            [ div [ class "article-meta" ]
+                [ a
+                    [ Route.href
+                        (Route.Home)
+                    ]
+                    [ img [ UserPhoto.src author.image ] [] ]
+                , div [ class "info" ]
+                    [ Views.Author.view author.username
+                    , viewTimestamp article
+                    ]
+                , Favorite.button
+                    toggleFavorite
+                    article
+                    [ class "pull-xs-right" ]
+                    [ text (" " ++ toString article.favoritesCount) ]
                 ]
-            , Favorite.button
-                toggleFavorite
-                article
-                [ class "pull-xs-right" ]
-                [ text (" " ++ toString article.favoritesCount) ]
+            , a [ class "preview-link", Route.href (Route.Home) ]
+                [ h1 [] [ text article.title ]
+                , p [] [ text article.description ]
+                , span [] [ text "Read more..." ]
+                ]
             ]
-        , a [ class "preview-link", Route.href (Route.Article article.slug) ]
-            [ h1 [] [ text article.title ]
-            , p [] [ text article.description ]
-            , span [] [ text "Read more..." ]
-            ]
-        ]
 
 
 

@@ -39,51 +39,42 @@ isLoading is for determining whether we should show a loading spinner
 in the header. (This comes up during slow page transitions.)
 
 -}
-frame : Bool -> Maybe User -> ActivePage -> Html msg -> Html msg
-frame isLoading user page content =
+frame : Maybe User -> ActivePage -> Html msg -> Html msg
+frame user page content =
     div [ class "page-frame" ]
-        [ viewHeader page user isLoading
+        [ viewHeader page user
         , content
         , viewFooter
         ]
 
 
-viewHeader : ActivePage -> Maybe User -> Bool -> Html msg
-viewHeader page user isLoading =
+viewHeader : ActivePage -> Maybe User -> Html msg
+viewHeader page user =
     nav [ class "navbar navbar-light" ]
         [ div [ class "container" ]
             [ a [ class "navbar-brand", Route.href Route.Home ]
                 [ text "conduit" ]
             , ul [ class "nav navbar-nav pull-xs-right" ] <|
-                lazy2 Util.viewIf isLoading spinner
-                    :: navbarLink page Route.Home [ text "Home" ]
+                navbarLink page Route.Home [ text "Home" ]
                     :: viewSignIn page user
             ]
         ]
 
 
 viewSignIn : ActivePage -> Maybe User -> List (Html msg)
-viewSignIn page user =
+viewSignIn page maybeUser =
     let
         linkTo =
             navbarLink page
     in
-    case user of
-        Nothing ->
-            [ linkTo Route.Login [ text "Sign in" ]
-            , linkTo Route.Register [ text "Sign up" ]
-            ]
-
-        Just user ->
-            [ linkTo Route.NewArticle [ i [ class "ion-compose" ] [], text " New Post" ]
-            , linkTo Route.Settings [ i [ class "ion-gear-a" ] [], text " Settings" ]
-            , linkTo
-                (Route.Profile user.username)
-                [ img [ class "user-pic", UserPhoto.src user.image ] []
-                , User.usernameToHtml user.username
+        case maybeUser of
+            Nothing ->
+                [ linkTo Route.Login [ text "Sign in" ]
                 ]
-            , linkTo Route.Logout [ text "Sign out" ]
-            ]
+
+            Just user ->
+                [ text <| "Hi " ++ (user.email)
+                ]
 
 
 viewFooter : Html msg
@@ -110,21 +101,6 @@ isActive : ActivePage -> Route -> Bool
 isActive page route =
     case ( page, route ) of
         ( Home, Route.Home ) ->
-            True
-
-        ( Login, Route.Login ) ->
-            True
-
-        ( Register, Route.Register ) ->
-            True
-
-        ( Settings, Route.Settings ) ->
-            True
-
-        ( Profile pageUsername, Route.Profile routeUsername ) ->
-            pageUsername == routeUsername
-
-        ( NewArticle, Route.NewArticle ) ->
             True
 
         _ ->

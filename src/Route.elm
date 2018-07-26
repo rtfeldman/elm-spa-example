@@ -13,15 +13,7 @@ import UrlParser as Url exposing ((</>), Parser, oneOf, parseHash, s, string)
 
 type Route
     = Home
-    | Root
     | Login
-    | Logout
-    | Register
-    | Settings
-    | Article Article.Slug
-    | Profile Username
-    | NewArticle
-    | EditArticle Article.Slug
 
 
 route : Parser (Route -> a) a
@@ -29,13 +21,6 @@ route =
     oneOf
         [ Url.map Home (s "")
         , Url.map Login (s "login")
-        , Url.map Logout (s "logout")
-        , Url.map Settings (s "settings")
-        , Url.map Profile (s "profile" </> User.usernameParser)
-        , Url.map Register (s "register")
-        , Url.map Article (s "article" </> Article.slugParser)
-        , Url.map NewArticle (s "editor")
-        , Url.map EditArticle (s "editor" </> Article.slugParser)
         ]
 
 
@@ -51,34 +36,10 @@ routeToString page =
                 Home ->
                     []
 
-                Root ->
-                    []
-
                 Login ->
                     [ "login" ]
-
-                Logout ->
-                    [ "logout" ]
-
-                Register ->
-                    [ "register" ]
-
-                Settings ->
-                    [ "settings" ]
-
-                Article slug ->
-                    [ "article", Article.slugToString slug ]
-
-                Profile username ->
-                    [ "profile", User.usernameToString username ]
-
-                NewArticle ->
-                    [ "editor" ]
-
-                EditArticle slug ->
-                    [ "editor", Article.slugToString slug ]
     in
-    "#/" ++ String.join "/" pieces
+        "#/" ++ String.join "/" pieces
 
 
 
@@ -98,6 +59,6 @@ modifyUrl =
 fromLocation : Location -> Maybe Route
 fromLocation location =
     if String.isEmpty location.hash then
-        Just Root
+        Just Home
     else
         parseHash route location

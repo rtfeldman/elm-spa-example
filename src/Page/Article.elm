@@ -59,8 +59,8 @@ init session slug =
         handleLoadError _ =
             pageLoadError Page.Other "Article is currently unavailable."
     in
-    Task.map2 (Model [] "" False) loadArticle loadComments
-        |> Task.mapError handleLoadError
+        Task.map2 (Model [] "" False) loadArticle loadComments
+            |> Task.mapError handleLoadError
 
 
 
@@ -82,32 +82,32 @@ view session model =
         postingDisabled =
             model.commentInFlight
     in
-    div [ class "article-page" ]
-        [ viewBanner model.errors article author session.user
-        , div [ class "container page" ]
-            [ div [ class "row article-content" ]
-                [ div [ class "col-md-12" ]
-                    [ Article.bodyToHtml article.body [] ]
-                ]
-            , hr [] []
-            , div [ class "article-actions" ]
-                [ div [ class "article-meta" ] <|
-                    [ a [ Route.href (Route.Profile author.username) ]
-                        [ img [ UserPhoto.src author.image ] [] ]
-                    , div [ class "info" ]
-                        [ Views.Author.view author.username
-                        , Views.Article.viewTimestamp article
-                        ]
+        div [ class "article-page" ]
+            [ viewBanner model.errors article author session.user
+            , div [ class "container page" ]
+                [ div [ class "row article-content" ]
+                    [ div [ class "col-md-12" ]
+                        [ Article.bodyToHtml article.body [] ]
                     ]
-                        ++ buttons
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-xs-12 col-md-8 offset-md-2" ] <|
-                    viewAddComment postingDisabled session.user
-                        :: List.map (viewComment session.user) model.comments
+                , hr [] []
+                , div [ class "article-actions" ]
+                    [ div [ class "article-meta" ] <|
+                        [ a [ Route.href (Route.Profile author.username) ]
+                            [ img [ UserPhoto.src author.image ] [] ]
+                        , div [ class "info" ]
+                            [ Views.Author.view author.username
+                            , Views.Article.viewTimestamp article
+                            ]
+                        ]
+                            ++ buttons
+                    ]
+                , div [ class "row" ]
+                    [ div [ class "col-xs-12 col-md-8 offset-md-2" ] <|
+                        viewAddComment postingDisabled session.user
+                            :: List.map (viewComment session.user) model.comments
+                    ]
                 ]
             ]
-        ]
 
 
 viewBanner : List String -> Article a -> Author -> Maybe User -> Html Msg
@@ -116,21 +116,21 @@ viewBanner errors article author maybeUser =
         buttons =
             viewButtons article author maybeUser
     in
-    div [ class "banner" ]
-        [ div [ class "container" ]
-            [ h1 [] [ text article.title ]
-            , div [ class "article-meta" ] <|
-                [ a [ Route.href (Route.Profile author.username) ]
-                    [ img [ UserPhoto.src author.image ] [] ]
-                , div [ class "info" ]
-                    [ Views.Author.view author.username
-                    , Views.Article.viewTimestamp article
+        div [ class "banner" ]
+            [ div [ class "container" ]
+                [ h1 [] [ text article.title ]
+                , div [ class "article-meta" ] <|
+                    [ a [ Route.href (Route.Profile author.username) ]
+                        [ img [ UserPhoto.src author.image ] [] ]
+                    , div [ class "info" ]
+                        [ Views.Author.view author.username
+                        , Views.Article.viewTimestamp article
+                        ]
                     ]
+                        ++ buttons
+                , Views.Errors.view DismissErrors errors
                 ]
-                    ++ buttons
-            , Views.Errors.view DismissErrors errors
             ]
-        ]
 
 
 viewAddComment : Bool -> Maybe User -> Html Msg
@@ -172,16 +172,16 @@ viewButtons article author maybeUser =
         isMyArticle =
             Maybe.map .username maybeUser == Just author.username
     in
-    if isMyArticle then
-        [ editButton article
-        , text " "
-        , deleteButton article
-        ]
-    else
-        [ followButton author
-        , text " "
-        , favoriteButton article
-        ]
+        if isMyArticle then
+            [ editButton article
+            , text " "
+            , deleteButton article
+            ]
+        else
+            [ followButton author
+            , text " "
+            , favoriteButton article
+            ]
 
 
 viewComment : Maybe User -> Comment -> Html Msg
@@ -193,26 +193,26 @@ viewComment user comment =
         isAuthor =
             Maybe.map .username user == Just comment.author.username
     in
-    div [ class "card" ]
-        [ div [ class "card-block" ]
-            [ p [ class "card-text" ] [ text comment.body ] ]
-        , div [ class "card-footer" ]
-            [ a [ class "comment-author", href "" ]
-                [ img [ class "comment-author-img", UserPhoto.src author.image ] []
-                , text " "
-                ]
-            , text " "
-            , a [ class "comment-author", Route.href (Route.Profile author.username) ]
-                [ text (User.usernameToString comment.author.username) ]
-            , span [ class "date-posted" ] [ text (formatCommentTimestamp comment.createdAt) ]
-            , viewIf isAuthor <|
-                span
-                    [ class "mod-options"
-                    , onClick (DeleteComment comment.id)
+        div [ class "card" ]
+            [ div [ class "card-block" ]
+                [ p [ class "card-text" ] [ text comment.body ] ]
+            , div [ class "card-footer" ]
+                [ a [ class "comment-author", href "" ]
+                    [ img [ class "comment-author-img", UserPhoto.src author.image ] []
+                    , text " "
                     ]
-                    [ i [ class "ion-trash-a" ] [] ]
+                , text " "
+                , a [ class "comment-author", Route.href (Route.Profile author.username) ]
+                    [ text (User.usernameToString comment.author.username) ]
+                , span [ class "date-posted" ] [ text (formatCommentTimestamp comment.createdAt) ]
+                , viewIf isAuthor <|
+                    span
+                        [ class "mod-options"
+                        , onClick (DeleteComment comment.id)
+                        ]
+                        [ i [ class "ion-trash-a" ] [] ]
+                ]
             ]
-        ]
 
 
 formatCommentTimestamp : Date -> String
@@ -248,122 +248,122 @@ update session msg model =
         author =
             article.author
     in
-    case msg of
-        DismissErrors ->
-            { model | errors = [] } => Cmd.none
+        case msg of
+            DismissErrors ->
+                { model | errors = [] } => Cmd.none
 
-        ToggleFavorite ->
-            let
-                cmdFromAuth authToken =
-                    Request.Article.toggleFavorite model.article authToken
-                        |> Http.toTask
-                        |> Task.map (\newArticle -> { newArticle | body = article.body })
-                        |> Task.attempt FavoriteCompleted
-            in
-            session
-                |> Session.attempt "favorite" cmdFromAuth
-                |> Tuple.mapFirst (Util.appendErrors model)
+            ToggleFavorite ->
+                let
+                    cmdFromAuth authToken =
+                        Request.Article.toggleFavorite model.article authToken
+                            |> Http.toTask
+                            |> Task.map (\newArticle -> { newArticle | body = article.body })
+                            |> Task.attempt FavoriteCompleted
+                in
+                    session
+                        |> Session.attempt "favorite" cmdFromAuth
+                        |> Tuple.mapFirst (Util.appendErrors model)
 
-        FavoriteCompleted (Ok newArticle) ->
-            { model | article = newArticle } => Cmd.none
+            FavoriteCompleted (Ok newArticle) ->
+                { model | article = newArticle } => Cmd.none
 
-        FavoriteCompleted (Err error) ->
-            -- In a serious production application, we would log the error to
-            -- a logging service so we could investigate later.
-            [ "There was a server error trying to record your Favorite. Sorry!" ]
-                |> Util.appendErrors model
-                => Cmd.none
+            FavoriteCompleted (Err error) ->
+                -- In a serious production application, we would log the error to
+                -- a logging service so we could investigate later.
+                [ "There was a server error trying to record your Favorite. Sorry!" ]
+                    |> Util.appendErrors model
+                    => Cmd.none
 
-        ToggleFollow ->
-            let
-                cmdFromAuth authToken =
-                    authToken
-                        |> Request.Profile.toggleFollow author.username author.following
-                        |> Http.send FollowCompleted
-            in
-            session
-                |> Session.attempt "follow" cmdFromAuth
-                |> Tuple.mapFirst (Util.appendErrors model)
-
-        FollowCompleted (Ok { following }) ->
-            let
-                newArticle =
-                    { article | author = { author | following = following } }
-            in
-            { model | article = newArticle } => Cmd.none
-
-        FollowCompleted (Err error) ->
-            { model | errors = "Unable to follow user." :: model.errors }
-                => Cmd.none
-
-        SetCommentText commentText ->
-            { model | commentText = commentText } => Cmd.none
-
-        PostComment ->
-            let
-                comment =
-                    model.commentText
-            in
-            if model.commentInFlight || String.isEmpty comment then
-                model => Cmd.none
-            else
+            ToggleFollow ->
                 let
                     cmdFromAuth authToken =
                         authToken
-                            |> Request.Article.Comments.post model.article.slug comment
-                            |> Http.send CommentPosted
+                            |> Request.Profile.toggleFollow author.username author.following
+                            |> Http.send FollowCompleted
                 in
-                session
-                    |> Session.attempt "post a comment" cmdFromAuth
-                    |> Tuple.mapFirst (Util.appendErrors { model | commentInFlight = True })
+                    session
+                        |> Session.attempt "follow" cmdFromAuth
+                        |> Tuple.mapFirst (Util.appendErrors model)
 
-        CommentPosted (Ok comment) ->
-            { model
-                | commentInFlight = False
-                , comments = comment :: model.comments
-            }
-                => Cmd.none
+            FollowCompleted (Ok { following }) ->
+                let
+                    newArticle =
+                        { article | author = { author | following = following } }
+                in
+                    { model | article = newArticle } => Cmd.none
 
-        CommentPosted (Err error) ->
-            { model | errors = model.errors ++ [ "Server error while trying to post comment." ] }
-                => Cmd.none
+            FollowCompleted (Err error) ->
+                { model | errors = "Unable to follow user." :: model.errors }
+                    => Cmd.none
 
-        DeleteComment id ->
-            let
-                cmdFromAuth authToken =
-                    authToken
-                        |> Request.Article.Comments.delete model.article.slug id
-                        |> Http.send (CommentDeleted id)
-            in
-            session
-                |> Session.attempt "delete comments" cmdFromAuth
-                |> Tuple.mapFirst (Util.appendErrors model)
+            SetCommentText commentText ->
+                { model | commentText = commentText } => Cmd.none
 
-        CommentDeleted id (Ok ()) ->
-            { model | comments = withoutComment id model.comments }
-                => Cmd.none
+            PostComment ->
+                let
+                    comment =
+                        model.commentText
+                in
+                    if model.commentInFlight || String.isEmpty comment then
+                        model => Cmd.none
+                    else
+                        let
+                            cmdFromAuth authToken =
+                                authToken
+                                    |> Request.Article.Comments.post model.article.slug comment
+                                    |> Http.send CommentPosted
+                        in
+                            session
+                                |> Session.attempt "post a comment" cmdFromAuth
+                                |> Tuple.mapFirst (Util.appendErrors { model | commentInFlight = True })
 
-        CommentDeleted id (Err error) ->
-            { model | errors = model.errors ++ [ "Server error while trying to delete comment." ] }
-                => Cmd.none
+            CommentPosted (Ok comment) ->
+                { model
+                    | commentInFlight = False
+                    , comments = comment :: model.comments
+                }
+                    => Cmd.none
 
-        DeleteArticle ->
-            let
-                cmdFromAuth authToken =
-                    authToken
-                        |> Request.Article.delete model.article.slug
-                        |> Http.send ArticleDeleted
-            in
-            session
-                |> Session.attempt "delete articles" cmdFromAuth
-                |> Tuple.mapFirst (Util.appendErrors model)
+            CommentPosted (Err error) ->
+                { model | errors = model.errors ++ [ "Server error while trying to post comment." ] }
+                    => Cmd.none
 
-        ArticleDeleted (Ok ()) ->
-            model => Route.modifyUrl Route.Home
+            DeleteComment id ->
+                let
+                    cmdFromAuth authToken =
+                        authToken
+                            |> Request.Article.Comments.delete model.article.slug id
+                            |> Http.send (CommentDeleted id)
+                in
+                    session
+                        |> Session.attempt "delete comments" cmdFromAuth
+                        |> Tuple.mapFirst (Util.appendErrors model)
 
-        ArticleDeleted (Err error) ->
-            { model | errors = model.errors ++ [ "Server error while trying to delete article." ] }
-                => Cmd.none
+            CommentDeleted id (Ok ()) ->
+                { model | comments = withoutComment id model.comments }
+                    => Cmd.none
+
+            CommentDeleted id (Err error) ->
+                { model | errors = model.errors ++ [ "Server error while trying to delete comment." ] }
+                    => Cmd.none
+
+            DeleteArticle ->
+                let
+                    cmdFromAuth authToken =
+                        authToken
+                            |> Request.Article.delete model.article.slug
+                            |> Http.send ArticleDeleted
+                in
+                    session
+                        |> Session.attempt "delete articles" cmdFromAuth
+                        |> Tuple.mapFirst (Util.appendErrors model)
+
+            ArticleDeleted (Ok ()) ->
+                model => Route.modifyUrl Route.Home
+
+            ArticleDeleted (Err error) ->
+                { model | errors = model.errors ++ [ "Server error while trying to delete article." ] }
+                    => Cmd.none
 
 
 
@@ -381,7 +381,7 @@ favoriteButton article =
         favoriteText =
             " Favorite Article (" ++ toString article.favoritesCount ++ ")"
     in
-    Favorite.button (\_ -> ToggleFavorite) article [] [ text favoriteText ]
+        Favorite.button (\_ -> ToggleFavorite) article [] [ text favoriteText ]
 
 
 deleteButton : Article a -> Html Msg

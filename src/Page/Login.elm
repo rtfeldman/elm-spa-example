@@ -47,10 +47,6 @@ view session model =
             [ div [ class "row" ]
                 [ div [ class "col-md-6 offset-md-3 col-xs-12" ]
                     [ h1 [ class "text-xs-center" ] [ text "Sign in" ]
-                    , p [ class "text-xs-center" ]
-                        [ a [ Route.href Route.Register ]
-                            [ text "Need an account?" ]
-                        ]
                     , Form.viewErrors model.errors
                     , viewForm
                     ]
@@ -132,9 +128,9 @@ update msg model =
                         _ ->
                             [ "unable to perform login" ]
             in
-            { model | errors = List.map (\errorMessage -> Form => errorMessage) errorMessages }
-                => Cmd.none
-                => NoOp
+                { model | errors = List.map (\errorMessage -> Form => errorMessage) errorMessages }
+                    => Cmd.none
+                    => NoOp
 
         LoginCompleted (Ok user) ->
             model
@@ -200,4 +196,4 @@ optionalError fieldName =
         errorToString errorMessage =
             String.join " " [ fieldName, errorMessage ]
     in
-    optional fieldName (Decode.list (Decode.map errorToString string)) []
+        optional fieldName (Decode.list (Decode.map errorToString string)) []

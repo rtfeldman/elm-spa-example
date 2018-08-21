@@ -1,14 +1,17 @@
-module Route exposing (Route(..), fromLocation, href, modifyUrl)
+module Route exposing (Route(..), fromUrl, href, replaceUrl)
 
-import Data.Article as Article
-import Data.User as User exposing (Username)
+import Article.Slug as Slug exposing (Slug)
+import Browser.Navigation as Nav
 import Html exposing (Attribute)
 import Html.Attributes as Attr
-import Navigation exposing (Location)
-import UrlParser as Url exposing ((</>), Parser, oneOf, parseHash, s, string)
+import Profile exposing (Profile)
+import Url exposing (Url)
+import Url.Parser as Parser exposing ((</>), Parser, oneOf, s, string)
+import Username exposing (Username)
 
 
--- ROUTING --
+
+-- ROUTING
 
 
 type Route
@@ -18,29 +21,52 @@ type Route
     | Logout
     | Register
     | Settings
-    | Article Article.Slug
+    | Article Slug
     | Profile Username
     | NewArticle
-    | EditArticle Article.Slug
+    | EditArticle Slug
 
 
-route : Parser (Route -> a) a
-route =
+parser : Parser (Route -> a) a
+parser =
     oneOf
-        [ Url.map Home (s "")
-        , Url.map Login (s "login")
-        , Url.map Logout (s "logout")
-        , Url.map Settings (s "settings")
-        , Url.map Profile (s "profile" </> User.usernameParser)
-        , Url.map Register (s "register")
-        , Url.map Article (s "article" </> Article.slugParser)
-        , Url.map NewArticle (s "editor")
-        , Url.map EditArticle (s "editor" </> Article.slugParser)
+        [ Parser.map Home Parser.top
+        , Parser.map Login (s "login")
+        , Parser.map Logout (s "logout")
+        , Parser.map Settings (s "settings")
+        , Parser.map Profile (s "profile" </> Username.urlParser)
+        , Parser.map Register (s "register")
+        , Parser.map Article (s "article" </> Slug.urlParser)
+        , Parser.map NewArticle (s "editor")
+        , Parser.map EditArticle (s "editor" </> Slug.urlParser)
         ]
 
 
 
--- INTERNAL --
+-- PUBLIC HELPERS
+
+
+href : Route -> Attribute msg
+href targetRoute =
+    Attr.href (routeToString targetRoute)
+
+
+replaceUrl : Nav.Key -> Route -> Cmd msg
+replaceUrl key route =
+    Nav.replaceUrl key (routeToString route)
+
+
+fromUrl : Url -> Maybe Route
+fromUrl url =
+    -- The RealWorld spec treats the fragment like a path.
+    -- This makes it *literally* the path, so we can proceed
+    -- with parsing as if it had been a normal path all along.
+    { url | path = Maybe.withDefault "" url.fragment, fragment = Nothing }
+        |> Parser.parse parser
+
+
+
+-- INTERNAL
 
 
 routeToString : Route -> String
@@ -67,37 +93,15 @@ routeToString page =
                     [ "settings" ]
 
                 Article slug ->
-                    [ "article", Article.slugToString slug ]
+                    [ "article", Slug.toString slug ]
 
                 Profile username ->
-                    [ "profile", User.usernameToString username ]
+                    [ "profile", Username.toString username ]
 
                 NewArticle ->
                     [ "editor" ]
 
                 EditArticle slug ->
-                    [ "editor", Article.slugToString slug ]
+                    [ "editor", Slug.toString slug ]
     in
     "#/" ++ String.join "/" pieces
-
-
-
--- PUBLIC HELPERS --
-
-
-href : Route -> Attribute msg
-href route =
-    Attr.href (routeToString route)
-
-
-modifyUrl : Route -> Cmd msg
-modifyUrl =
-    routeToString >> Navigation.modifyUrl
-
-
-fromLocation : Location -> Maybe Route
-fromLocation location =
-    if String.isEmpty location.hash then
-        Just Root
-    else
-        parseHash route location

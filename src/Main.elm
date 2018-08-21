@@ -1,25 +1,30 @@
 module Main exposing (main)
 
-import Data.Article exposing (Slug)
-import Data.Session exposing (Session)
-import Data.User as User exposing (User, Username)
+import Api exposing (Cred)
+import Article.Slug exposing (Slug)
+import Avatar exposing (Avatar)
+import Browser exposing (Document)
+import Browser.Navigation as Nav
 import Html exposing (..)
 import Json.Decode as Decode exposing (Value)
-import Navigation exposing (Location)
+import Page exposing (Page)
 import Page.Article as Article
 import Page.Article.Editor as Editor
-import Page.Errored as Errored exposing (PageLoadError)
+import Page.Blank as Blank
 import Page.Home as Home
 import Page.Login as Login
 import Page.NotFound as NotFound
 import Page.Profile as Profile
 import Page.Register as Register
 import Page.Settings as Settings
-import Ports
 import Route exposing (Route)
+import Session exposing (Session)
 import Task
-import Util exposing ((=>))
-import Views.Page as Page exposing (ActivePage)
+import Time
+import Url exposing (Url)
+import Username exposing (Username)
+import Viewer exposing (Viewer)
+
 
 
 -- WARNING: Based on discussions around how asset management features
@@ -28,10 +33,9 @@ import Views.Page as Page exposing (ActivePage)
 -- Avoid putting things in here unless there is no alternative!
 
 
-type Page
-    = Blank
-    | NotFound
-    | Errored PageLoadError
+type Model
+    = Redirect Session
+    | NotFound Session
     | Home Home.Model
     | Settings Settings.Model
     | Login Login.Model
@@ -41,431 +45,291 @@ type Page
     | Editor (Maybe Slug) Editor.Model
 
 
-type PageState
-    = Loaded Page
-    | TransitioningFrom Page
+
+-- MODEL
+
+
+init : Maybe Viewer -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init maybeViewer url navKey =
+    changeRouteTo (Route.fromUrl url)
+        (Redirect (Session.fromViewer navKey maybeViewer))
 
 
 
--- MODEL --
+-- VIEW
 
 
-type alias Model =
-    { session : Session
-    , pageState : PageState
-    }
-
-
-init : Value -> Location -> ( Model, Cmd Msg )
-init val location =
-    setRoute (Route.fromLocation location)
-        { pageState = Loaded initialPage
-        , session = { user = decodeUserFromJson val }
-        }
-
-
-decodeUserFromJson : Value -> Maybe User
-decodeUserFromJson json =
-    json
-        |> Decode.decodeValue Decode.string
-        |> Result.toMaybe
-        |> Maybe.andThen (Decode.decodeString User.decoder >> Result.toMaybe)
-
-
-initialPage : Page
-initialPage =
-    Blank
-
-
-
--- VIEW --
-
-
-view : Model -> Html Msg
+view : Model -> Document Msg
 view model =
-    case model.pageState of
-        Loaded page ->
-            viewPage model.session False page
-
-        TransitioningFrom page ->
-            viewPage model.session True page
-
-
-viewPage : Session -> Bool -> Page -> Html Msg
-viewPage session isLoading page =
     let
-        frame =
-            Page.frame isLoading session.user
-    in
-    case page of
-        NotFound ->
-            NotFound.view session
-                |> frame Page.Other
-
-        Blank ->
-            -- This is for the very initial page load, while we are loading
-            -- data via HTTP. We could also render a spinner here.
-            Html.text ""
-                |> frame Page.Other
-
-        Errored subModel ->
-            Errored.view session subModel
-                |> frame Page.Other
-
-        Settings subModel ->
-            Settings.view session subModel
-                |> frame Page.Other
-                |> Html.map SettingsMsg
-
-        Home subModel ->
-            Home.view session subModel
-                |> frame Page.Home
-                |> Html.map HomeMsg
-
-        Login subModel ->
-            Login.view session subModel
-                |> frame Page.Other
-                |> Html.map LoginMsg
-
-        Register subModel ->
-            Register.view session subModel
-                |> frame Page.Other
-                |> Html.map RegisterMsg
-
-        Profile username subModel ->
-            Profile.view session subModel
-                |> frame (Page.Profile username)
-                |> Html.map ProfileMsg
-
-        Article subModel ->
-            Article.view session subModel
-                |> frame Page.Other
-                |> Html.map ArticleMsg
-
-        Editor maybeSlug subModel ->
+        viewPage page toMsg config =
             let
-                framePage =
-                    if maybeSlug == Nothing then
-                        Page.NewArticle
-                    else
-                        Page.Other
+                { title, body } =
+                    Page.view (Session.viewer (toSession model)) page config
             in
-            Editor.view subModel
-                |> frame framePage
-                |> Html.map EditorMsg
+            { title = title
+            , body = List.map (Html.map toMsg) body
+            }
+    in
+    case model of
+        Redirect _ ->
+            viewPage Page.Other (\_ -> Ignored) Blank.view
+
+        NotFound _ ->
+            viewPage Page.Other (\_ -> Ignored) NotFound.view
+
+        Settings settings ->
+            viewPage Page.Other GotSettingsMsg (Settings.view settings)
+
+        Home home ->
+            viewPage Page.Home GotHomeMsg (Home.view home)
+
+        Login login ->
+            viewPage Page.Other GotLoginMsg (Login.view login)
+
+        Register register ->
+            viewPage Page.Other GotRegisterMsg (Register.view register)
+
+        Profile username profile ->
+            viewPage (Page.Profile username) GotProfileMsg (Profile.view profile)
+
+        Article article ->
+            viewPage Page.Other GotArticleMsg (Article.view article)
+
+        Editor Nothing editor ->
+            viewPage Page.NewArticle GotEditorMsg (Editor.view editor)
+
+        Editor (Just _) editor ->
+            viewPage Page.Other GotEditorMsg (Editor.view editor)
 
 
 
--- SUBSCRIPTIONS --
--- Note: we aren't currently doing any page subscriptions, but I thought it would
--- be a good idea to put this in here as an example. If I were actually
--- maintaining this in production, I wouldn't bother until I needed this!
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.batch
-        [ pageSubscriptions (getPage model.pageState)
-        , Sub.map SetUser sessionChange
-        ]
-
-
-sessionChange : Sub (Maybe User)
-sessionChange =
-    Ports.onSessionChange (Decode.decodeValue User.decoder >> Result.toMaybe)
-
-
-getPage : PageState -> Page
-getPage pageState =
-    case pageState of
-        Loaded page ->
-            page
-
-        TransitioningFrom page ->
-            page
-
-
-pageSubscriptions : Page -> Sub Msg
-pageSubscriptions page =
-    case page of
-        Blank ->
-            Sub.none
-
-        Errored _ ->
-            Sub.none
-
-        NotFound ->
-            Sub.none
-
-        Settings _ ->
-            Sub.none
-
-        Home _ ->
-            Sub.none
-
-        Login _ ->
-            Sub.none
-
-        Register _ ->
-            Sub.none
-
-        Profile _ _ ->
-            Sub.none
-
-        Article _ ->
-            Sub.none
-
-        Editor _ _ ->
-            Sub.none
-
-
-
--- UPDATE --
+-- UPDATE
 
 
 type Msg
-    = SetRoute (Maybe Route)
-    | HomeLoaded (Result PageLoadError Home.Model)
-    | ArticleLoaded (Result PageLoadError Article.Model)
-    | ProfileLoaded Username (Result PageLoadError Profile.Model)
-    | EditArticleLoaded Slug (Result PageLoadError Editor.Model)
-    | HomeMsg Home.Msg
-    | SettingsMsg Settings.Msg
-    | SetUser (Maybe User)
-    | LoginMsg Login.Msg
-    | RegisterMsg Register.Msg
-    | ProfileMsg Profile.Msg
-    | ArticleMsg Article.Msg
-    | EditorMsg Editor.Msg
+    = Ignored
+    | ChangedRoute (Maybe Route)
+    | ChangedUrl Url
+    | ClickedLink Browser.UrlRequest
+    | GotHomeMsg Home.Msg
+    | GotSettingsMsg Settings.Msg
+    | GotLoginMsg Login.Msg
+    | GotRegisterMsg Register.Msg
+    | GotProfileMsg Profile.Msg
+    | GotArticleMsg Article.Msg
+    | GotEditorMsg Editor.Msg
+    | GotSession Session
 
 
-setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
-setRoute maybeRoute model =
+toSession : Model -> Session
+toSession page =
+    case page of
+        Redirect session ->
+            session
+
+        NotFound session ->
+            session
+
+        Home home ->
+            Home.toSession home
+
+        Settings settings ->
+            Settings.toSession settings
+
+        Login login ->
+            Login.toSession login
+
+        Register register ->
+            Register.toSession register
+
+        Profile _ profile ->
+            Profile.toSession profile
+
+        Article article ->
+            Article.toSession article
+
+        Editor _ editor ->
+            Editor.toSession editor
+
+
+changeRouteTo : Maybe Route -> Model -> ( Model, Cmd Msg )
+changeRouteTo maybeRoute model =
     let
-        transition toMsg task =
-            { model | pageState = TransitioningFrom (getPage model.pageState) }
-                => Task.attempt toMsg task
-
-        errored =
-            pageErrored model
+        session =
+            toSession model
     in
     case maybeRoute of
         Nothing ->
-            { model | pageState = Loaded NotFound } => Cmd.none
-
-        Just Route.NewArticle ->
-            case model.session.user of
-                Just user ->
-                    { model | pageState = Loaded (Editor Nothing Editor.initNew) } => Cmd.none
-
-                Nothing ->
-                    errored Page.NewArticle "You must be signed in to post an article."
-
-        Just (Route.EditArticle slug) ->
-            case model.session.user of
-                Just user ->
-                    transition (EditArticleLoaded slug) (Editor.initEdit model.session slug)
-
-                Nothing ->
-                    errored Page.Other "You must be signed in to edit an article."
-
-        Just Route.Settings ->
-            case model.session.user of
-                Just user ->
-                    { model | pageState = Loaded (Settings (Settings.init user)) } => Cmd.none
-
-                Nothing ->
-                    errored Page.Settings "You must be signed in to access your settings."
-
-        Just Route.Home ->
-            transition HomeLoaded (Home.init model.session)
+            ( NotFound session, Cmd.none )
 
         Just Route.Root ->
-            model => Route.modifyUrl Route.Home
-
-        Just Route.Login ->
-            { model | pageState = Loaded (Login Login.initialModel) } => Cmd.none
+            ( model, Route.replaceUrl (Session.navKey session) Route.Home )
 
         Just Route.Logout ->
-            let
-                session =
-                    model.session
-            in
-            { model | session = { session | user = Nothing } }
-                => Cmd.batch
-                    [ Ports.storeSession Nothing
-                    , Route.modifyUrl Route.Home
-                    ]
+            ( model, Api.logout )
+
+        Just Route.NewArticle ->
+            Editor.initNew session
+                |> updateWith (Editor Nothing) GotEditorMsg model
+
+        Just (Route.EditArticle slug) ->
+            Editor.initEdit session slug
+                |> updateWith (Editor (Just slug)) GotEditorMsg model
+
+        Just Route.Settings ->
+            Settings.init session
+                |> updateWith Settings GotSettingsMsg model
+
+        Just Route.Home ->
+            Home.init session
+                |> updateWith Home GotHomeMsg model
+
+        Just Route.Login ->
+            Login.init session
+                |> updateWith Login GotLoginMsg model
 
         Just Route.Register ->
-            { model | pageState = Loaded (Register Register.initialModel) } => Cmd.none
+            Register.init session
+                |> updateWith Register GotRegisterMsg model
 
         Just (Route.Profile username) ->
-            transition (ProfileLoaded username) (Profile.init model.session username)
+            Profile.init session username
+                |> updateWith (Profile username) GotProfileMsg model
 
         Just (Route.Article slug) ->
-            transition ArticleLoaded (Article.init model.session slug)
-
-
-pageErrored : Model -> ActivePage -> String -> ( Model, Cmd msg )
-pageErrored model activePage errorMessage =
-    let
-        error =
-            Errored.pageLoadError activePage errorMessage
-    in
-    { model | pageState = Loaded (Errored error) } => Cmd.none
+            Article.init session slug
+                |> updateWith Article GotArticleMsg model
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    updatePage (getPage model.pageState) msg model
+    case ( msg, model ) of
+        ( Ignored, _ ) ->
+            ( model, Cmd.none )
 
+        ( ClickedLink urlRequest, _ ) ->
+            case urlRequest of
+                Browser.Internal url ->
+                    case url.fragment of
+                        Nothing ->
+                            -- If we got a link that didn't include a fragment,
+                            -- it's from one of those (href "") attributes that
+                            -- we have to include to make the RealWorld CSS work.
+                            --
+                            -- In an application doing path routing instead of
+                            -- fragment-based routing, this entire
+                            -- `case url.fragment of` expression this comment
+                            -- is inside would be unnecessary.
+                            ( model, Cmd.none )
 
-updatePage : Page -> Msg -> Model -> ( Model, Cmd Msg )
-updatePage page msg model =
-    let
-        session =
-            model.session
+                        Just _ ->
+                            ( model
+                            , Nav.pushUrl (Session.navKey (toSession model)) (Url.toString url)
+                            )
 
-        toPage toModel toMsg subUpdate subMsg subModel =
-            let
-                ( newModel, newCmd ) =
-                    subUpdate subMsg subModel
-            in
-            ( { model | pageState = Loaded (toModel newModel) }, Cmd.map toMsg newCmd )
+                Browser.External href ->
+                    ( model
+                    , Nav.load href
+                    )
 
-        errored =
-            pageErrored model
-    in
-    case ( msg, page ) of
-        ( SetRoute route, _ ) ->
-            setRoute route model
+        ( ChangedUrl url, _ ) ->
+            changeRouteTo (Route.fromUrl url) model
 
-        ( HomeLoaded (Ok subModel), _ ) ->
-            { model | pageState = Loaded (Home subModel) } => Cmd.none
+        ( ChangedRoute route, _ ) ->
+            changeRouteTo route model
 
-        ( HomeLoaded (Err error), _ ) ->
-            { model | pageState = Loaded (Errored error) } => Cmd.none
+        ( GotSettingsMsg subMsg, Settings settings ) ->
+            Settings.update subMsg settings
+                |> updateWith Settings GotSettingsMsg model
 
-        ( ProfileLoaded username (Ok subModel), _ ) ->
-            { model | pageState = Loaded (Profile username subModel) } => Cmd.none
+        ( GotLoginMsg subMsg, Login login ) ->
+            Login.update subMsg login
+                |> updateWith Login GotLoginMsg model
 
-        ( ProfileLoaded username (Err error), _ ) ->
-            { model | pageState = Loaded (Errored error) } => Cmd.none
+        ( GotRegisterMsg subMsg, Register register ) ->
+            Register.update subMsg register
+                |> updateWith Register GotRegisterMsg model
 
-        ( ArticleLoaded (Ok subModel), _ ) ->
-            { model | pageState = Loaded (Article subModel) } => Cmd.none
+        ( GotHomeMsg subMsg, Home home ) ->
+            Home.update subMsg home
+                |> updateWith Home GotHomeMsg model
 
-        ( ArticleLoaded (Err error), _ ) ->
-            { model | pageState = Loaded (Errored error) } => Cmd.none
+        ( GotProfileMsg subMsg, Profile username profile ) ->
+            Profile.update subMsg profile
+                |> updateWith (Profile username) GotProfileMsg model
 
-        ( EditArticleLoaded slug (Ok subModel), _ ) ->
-            { model | pageState = Loaded (Editor (Just slug) subModel) } => Cmd.none
+        ( GotArticleMsg subMsg, Article article ) ->
+            Article.update subMsg article
+                |> updateWith Article GotArticleMsg model
 
-        ( EditArticleLoaded slug (Err error), _ ) ->
-            { model | pageState = Loaded (Errored error) } => Cmd.none
+        ( GotEditorMsg subMsg, Editor slug editor ) ->
+            Editor.update subMsg editor
+                |> updateWith (Editor slug) GotEditorMsg model
 
-        ( SetUser user, _ ) ->
-            let
-                cmd =
-                    -- If we just signed out, then redirect to Home.
-                    if session.user /= Nothing && user == Nothing then
-                        Route.modifyUrl Route.Home
-                    else
-                        Cmd.none
-            in
-            { model | session = { session | user = user } }
-                => cmd
-
-        ( SettingsMsg subMsg, Settings subModel ) ->
-            let
-                ( ( pageModel, cmd ), msgFromPage ) =
-                    Settings.update model.session subMsg subModel
-
-                newModel =
-                    case msgFromPage of
-                        Settings.NoOp ->
-                            model
-
-                        Settings.SetUser user ->
-                            { model | session = { user = Just user } }
-            in
-            { newModel | pageState = Loaded (Settings pageModel) }
-                => Cmd.map SettingsMsg cmd
-
-        ( LoginMsg subMsg, Login subModel ) ->
-            let
-                ( ( pageModel, cmd ), msgFromPage ) =
-                    Login.update subMsg subModel
-
-                newModel =
-                    case msgFromPage of
-                        Login.NoOp ->
-                            model
-
-                        Login.SetUser user ->
-                            { model | session = { user = Just user } }
-            in
-            { newModel | pageState = Loaded (Login pageModel) }
-                => Cmd.map LoginMsg cmd
-
-        ( RegisterMsg subMsg, Register subModel ) ->
-            let
-                ( ( pageModel, cmd ), msgFromPage ) =
-                    Register.update subMsg subModel
-
-                newModel =
-                    case msgFromPage of
-                        Register.NoOp ->
-                            model
-
-                        Register.SetUser user ->
-                            { model | session = { user = Just user } }
-            in
-            { newModel | pageState = Loaded (Register pageModel) }
-                => Cmd.map RegisterMsg cmd
-
-        ( HomeMsg subMsg, Home subModel ) ->
-            toPage Home HomeMsg (Home.update session) subMsg subModel
-
-        ( ProfileMsg subMsg, Profile username subModel ) ->
-            toPage (Profile username) ProfileMsg (Profile.update model.session) subMsg subModel
-
-        ( ArticleMsg subMsg, Article subModel ) ->
-            toPage Article ArticleMsg (Article.update model.session) subMsg subModel
-
-        ( EditorMsg subMsg, Editor slug subModel ) ->
-            case model.session.user of
-                Nothing ->
-                    if slug == Nothing then
-                        errored Page.NewArticle
-                            "You must be signed in to post articles."
-                    else
-                        errored Page.Other
-                            "You must be signed in to edit articles."
-
-                Just user ->
-                    toPage (Editor slug) EditorMsg (Editor.update user) subMsg subModel
-
-        ( _, NotFound ) ->
-            -- Disregard incoming messages when we're on the
-            -- NotFound page.
-            model => Cmd.none
+        ( GotSession session, Redirect _ ) ->
+            ( Redirect session
+            , Route.replaceUrl (Session.navKey session) Route.Home
+            )
 
         ( _, _ ) ->
-            -- Disregard incoming messages that arrived for the wrong page
-            model => Cmd.none
+            -- Disregard messages that arrived for the wrong page.
+            ( model, Cmd.none )
+
+
+updateWith : (subModel -> Model) -> (subMsg -> Msg) -> Model -> ( subModel, Cmd subMsg ) -> ( Model, Cmd Msg )
+updateWith toModel toMsg model ( subModel, subCmd ) =
+    ( toModel subModel
+    , Cmd.map toMsg subCmd
+    )
 
 
 
--- MAIN --
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    case model of
+        NotFound _ ->
+            Sub.none
+
+        Redirect _ ->
+            Session.changes GotSession (Session.navKey (toSession model))
+
+        Settings settings ->
+            Sub.map GotSettingsMsg (Settings.subscriptions settings)
+
+        Home home ->
+            Sub.map GotHomeMsg (Home.subscriptions home)
+
+        Login login ->
+            Sub.map GotLoginMsg (Login.subscriptions login)
+
+        Register register ->
+            Sub.map GotRegisterMsg (Register.subscriptions register)
+
+        Profile _ profile ->
+            Sub.map GotProfileMsg (Profile.subscriptions profile)
+
+        Article article ->
+            Sub.map GotArticleMsg (Article.subscriptions article)
+
+        Editor _ editor ->
+            Sub.map GotEditorMsg (Editor.subscriptions editor)
+
+
+
+-- MAIN
 
 
 main : Program Value Model Msg
 main =
-    Navigation.programWithFlags (Route.fromLocation >> SetRoute)
+    Api.application Viewer.decoder
         { init = init
-        , view = view
-        , update = update
+        , onUrlChange = ChangedUrl
+        , onUrlRequest = ClickedLink
         , subscriptions = subscriptions
+        , update = update
+        , view = view
         }

@@ -136,6 +136,8 @@ view model =
                         [ div [ class "row article-content" ]
                             [ div [ class "col-md-12" ]
                                 [ Article.Body.toHtml (Article.body article) [] ]
+                            , ul [ class "tag-list" ]
+                                (List.map viewTag (Article.metadata article).tags)
                             ]
                         , hr [] []
                         , div [ class "article-actions" ]
@@ -183,6 +185,11 @@ view model =
 
         Failed ->
             { title = "Article", content = Loading.error "article" }
+
+
+viewTag : String -> Html msg
+viewTag tagName =
+    li [ class "tag-default tag-pill tag-outline" ] [ text tagName ]
 
 
 viewAddComment : Slug -> CommentText -> Maybe Viewer -> Html Msg

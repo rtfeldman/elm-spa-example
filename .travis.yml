@@ -19,16 +19,14 @@ before_install:
 
 
 install:
-  - npm install -g elm@0.18.0 elm-test elm-format@exp
-  - mv $(npm config get prefix)/bin/elm-make $(npm config get prefix)/bin/elm-make-old
-  - printf '%s\n\n' '#!/bin/bash' 'echo "Running elm-make with sysconfcpus -n 2"' '$TRAVIS_BUILD_DIR/sysconfcpus/bin/sysconfcpus -n 2 elm-make-old "$@"' > $(npm config get prefix)/bin/elm-make
-  - chmod +x $(npm config get prefix)/bin/elm-make
-  - travis_retry elm-package install --yes
+  - npm install -g elm@0.19.0-bugfix2 elm-test elm-format
+  - mv $(npm config get prefix)/bin/elm $(npm config get prefix)/bin/elm-old
+  - printf '%s\n\n' '#!/bin/bash' 'echo "Running elm with sysconfcpus -n 1"' '$TRAVIS_BUILD_DIR/sysconfcpus/bin/sysconfcpus -n 1 elm-old "$@"' > $(npm config get prefix)/bin/elm
+  - chmod +x $(npm config get prefix)/bin/elm
   - cd tests
   - npm install
-  - travis_retry elm-package install --yes
   - cd ..
 
 script:
-  - elm-format --validate src tests
-  - elm test
+  - elm-format --validate .
+  - elm-test

@@ -26,11 +26,11 @@ import Username exposing (Username)
 import Viewer exposing (Viewer)
 
 
-
--- WARNING: Based on discussions around how asset management features
--- like code splitting and lazy loading have been shaping up, I expect
--- most of this file to become unnecessary in a future release of Elm.
--- Avoid putting things in here unless there is no alternative!
+-- NOTE: Based on discussions around how asset management features
+-- like code splitting and lazy loading have been shaping up, it's possible
+-- that most of this file may become unnecessary in a future release of Elm.
+-- Avoid putting things in this module unless there is no alternative!
+-- See https://discourse.elm-lang.org/t/elm-spa-in-0-19/1800/2 for more.
 
 
 type Model

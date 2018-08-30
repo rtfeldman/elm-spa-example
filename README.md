@@ -59,4 +59,4 @@ $ uglifyjs elm.js --no-rename --compress 'pure_funcs="F2,F3,F4,F5,F6,F7,F8,F9,A2
 
 This is a lengthy command - make sure to scroll horizontally to get all of it if you're copy/pasting!
 
-It's neccessary to disable the internal Uglify `rename` pass with `--no-rename` when you use the `pure_funcs` flag, because if you enable both `--compress` and `--mangle` at the same time, the `pure_funcs` argument will have no effect; Uglify will rename symbols first and then not recognize them when it encounters those functions later.
+It's neccessary to disable the internal Uglify `rename` pass with `--no-rename` when you use the `pure_funcs` flag, because if you enable both `--compress` and `--mangle` at the same time, the `pure_funcs` argument will have no effect; Uglify will rename symbols first and then not recognize them when it encounters them later.

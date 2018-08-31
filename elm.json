@@ -15,7 +15,7 @@
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
             "elm-explorations/markdown": "1.0.0",
-            "rtfeldman/elm-iso8601-date-strings": "1.0.0"
+            "rtfeldman/elm-iso8601-date-strings": "1.1.0"
         },
         "indirect": {
             "elm/parser": "1.0.0",

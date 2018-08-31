@@ -21,13 +21,13 @@ import Html exposing (Attribute, Html, i)
 import Html.Attributes exposing (class)
 import Html.Events exposing (stopPropagationOn)
 import Http
+import Iso8601
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (custom, hardcoded, required)
 import Json.Encode as Encode
 import Markdown
 import Profile exposing (Profile)
 import Time
-import Timestamp
 import Username as Username exposing (Username)
 import Viewer exposing (Viewer)
 
@@ -196,7 +196,7 @@ metadataDecoder =
         |> required "description" (Decode.map (Maybe.withDefault "") (Decode.nullable Decode.string))
         |> required "title" Decode.string
         |> required "tagList" (Decode.list Decode.string)
-        |> required "createdAt" Timestamp.iso8601Decoder
+        |> required "createdAt" Iso8601.decoder
         |> required "favorited" Decode.bool
         |> required "favoritesCount" Decode.int
 

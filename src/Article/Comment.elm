@@ -7,12 +7,12 @@ import Article.Slug as Slug exposing (Slug)
 import Author exposing (Author)
 import CommentId exposing (CommentId)
 import Http
+import Iso8601
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (custom, required)
 import Json.Encode as Encode exposing (Value)
 import Profile exposing (Profile)
 import Time
-import Timestamp
 
 
 
@@ -103,6 +103,6 @@ decoder maybeCred =
     Decode.succeed Internals
         |> required "id" CommentId.decoder
         |> required "body" Decode.string
-        |> required "createdAt" Timestamp.iso8601Decoder
+        |> required "createdAt" Iso8601.decoder
         |> required "author" (Author.decoder maybeCred)
         |> Decode.map Comment

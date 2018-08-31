@@ -1,8 +1,7 @@
-module Timestamp exposing (format, iso8601Decoder, view)
+module Timestamp exposing (format, view)
 
 import Html exposing (Html, span, text)
 import Html.Attributes exposing (class)
-import Iso8601
 import Json.Decode as Decode exposing (Decoder, fail, succeed)
 import Time exposing (Month(..))
 
@@ -14,28 +13,6 @@ import Time exposing (Month(..))
 view : Time.Zone -> Time.Posix -> Html msg
 view timeZone timestamp =
     span [ class "date" ] [ text (format timeZone timestamp) ]
-
-
-
--- DECODE
-
-
-{-| Decode an ISO-8601 date string.
--}
-iso8601Decoder : Decoder Time.Posix
-iso8601Decoder =
-    Decode.string
-        |> Decode.andThen fromString
-
-
-fromString : String -> Decoder Time.Posix
-fromString str =
-    case Iso8601.toTime str of
-        Ok successValue ->
-            succeed successValue
-
-        Err _ ->
-            fail ("Invalid date: " ++ str)
 
 
 

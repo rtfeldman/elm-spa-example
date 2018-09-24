@@ -83,7 +83,7 @@ viewArticles timeZone (Model { articles, session, errors }) =
 
         articlesHtml =
             PaginatedList.values articles
-                |> List.map (viewPreview maybeCred timeZone)
+                |> List.map (\article -> viewPreview maybeCred timeZone article)
     in
     Page.viewErrors ClickedDismissErrors errors :: articlesHtml
 
@@ -154,9 +154,9 @@ viewTabs :
 viewTabs before selected after =
     ul [ class "nav nav-pills outline-active" ] <|
         List.concat
-            [ List.map (viewTab []) before
+            [ List.map (\pair -> viewTab [] pair) before
             , [ viewTab [ class "active" ] selected ]
-            , List.map (viewTab []) after
+            , List.map (\pair -> viewTab [] pair) after
             ]
 
 
@@ -229,8 +229,8 @@ update maybeCred msg (Model model) =
         ClickedUnfavorite cred slug ->
             fave Article.unfavorite cred slug model
 
-        CompletedFavorite (Ok article) ->
-            ( Model { model | articles = PaginatedList.map (replaceArticle article) model.articles }
+        CompletedFavorite (Ok newArticle) ->
+            ( Model { model | articles = PaginatedList.map (\article -> replaceArticle newArticle article) model.articles }
             , Cmd.none
             )
 

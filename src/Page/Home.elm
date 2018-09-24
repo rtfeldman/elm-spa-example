@@ -107,7 +107,7 @@ view model =
                                                 model.feedTab
                                           ]
                                         , Feed.viewArticles model.timeZone feed
-                                            |> List.map (Html.map GotFeedMsg)
+                                            |> List.map (\elems -> Html.map GotFeedMsg elems)
                                         , [ Feed.viewPagination ClickedFeedPage model.feedPage feed ]
                                         ]
                                 ]
@@ -361,7 +361,7 @@ fetchFeed session feedTabs page =
                     Api.get (Endpoint.articles (firstParam :: params)) maybeCred decoder
     in
     Http.toTask request
-        |> Task.map (Feed.init session)
+        |> Task.map (\articles -> Feed.init session articles)
 
 
 articlesPerPage : Int

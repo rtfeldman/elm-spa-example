@@ -142,7 +142,7 @@ application viewerDecoder config =
             let
                 maybeViewer =
                     Decode.decodeValue Decode.string flags
-                        |> Result.andThen (Decode.decodeString (storageDecoder viewerDecoder))
+                        |> Result.andThen (\str -> Decode.decodeString (storageDecoder viewerDecoder) str)
                         |> Result.toMaybe
             in
             config.init maybeViewer url navKey
@@ -278,7 +278,7 @@ decodeErrors error =
 errorsDecoder : Decoder (List String)
 errorsDecoder =
     Decode.keyValuePairs (Decode.list Decode.string)
-        |> Decode.map (List.concatMap fromPair)
+        |> Decode.map (\list -> List.concatMap fromPair list)
 
 
 fromPair : ( String, List String ) -> List String

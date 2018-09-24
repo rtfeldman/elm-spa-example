@@ -248,7 +248,7 @@ validate form =
         trimmedForm =
             trimFields form
     in
-    case List.concatMap (validateField trimmedForm) fieldsToValidate of
+    case List.concatMap (\field -> validateField trimmedForm field) fieldsToValidate of
         [] ->
             Ok trimmedForm
 
@@ -258,7 +258,7 @@ validate form =
 
 validateField : TrimmedForm -> ValidatedField -> List Problem
 validateField (Trimmed form) field =
-    List.map (InvalidEntry field) <|
+    List.map (\errors -> InvalidEntry field errors) <|
         case field of
             Email ->
                 if String.isEmpty form.email then

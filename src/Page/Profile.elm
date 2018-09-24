@@ -128,8 +128,8 @@ fetchFeed session feedTabs username page =
     in
     Api.get (Endpoint.articles params) maybeCred expect
         |> Http.toTask
-        |> Task.map (Feed.init session)
-        |> Task.mapError (Tuple.pair username)
+        |> Task.map (\article -> Feed.init session article)
+        |> Task.mapError (\err -> ( username, err))
         |> Task.attempt CompletedFeedLoad
 
 
@@ -217,7 +217,7 @@ view model =
                                             List.concat
                                                 [ [ viewTabs model.feedTab ]
                                                 , Feed.viewArticles model.timeZone feed
-                                                    |> List.map (Html.map GotFeedMsg)
+                                                    |> List.map (\elems -> Html.map GotFeedMsg elems)
                                                 , [ Feed.viewPagination ClickedFeedPage model.feedPage feed ]
                                                 ]
                                         ]

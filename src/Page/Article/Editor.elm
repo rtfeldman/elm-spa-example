@@ -472,7 +472,7 @@ validate form =
         trimmedForm =
             trimFields form
     in
-    case List.concatMap (validateField trimmedForm) fieldsToValidate of
+    case List.concatMap (\field -> validateField trimmedForm field) fieldsToValidate of
         [] ->
             Ok trimmedForm
 
@@ -482,7 +482,7 @@ validate form =
 
 validateField : TrimmedForm -> ValidatedField -> List Problem
 validateField (Trimmed form) field =
-    List.map (InvalidEntry field) <|
+    List.map (\errors -> InvalidEntry field errors) <|
         case field of
             Title ->
                 if String.isEmpty form.title then
@@ -539,7 +539,7 @@ tagsFromString : String -> List String
 tagsFromString str =
     String.split " " str
         |> List.map String.trim
-        |> List.filter (not << String.isEmpty)
+        |> List.filter (\str -> not (String.isEmpty str))
 
 
 edit : Slug -> TrimmedForm -> Cred -> Http.Request (Article Full)

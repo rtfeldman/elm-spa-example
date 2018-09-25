@@ -68,7 +68,7 @@ view model =
                     Page.view (Session.viewer (toSession model)) page config
             in
             { title = title
-            , body = List.map (\elem -> Html.map toMsg elem) body
+            , body = List.map (Html.map <- toMsg) body
             }
     in
     case model of

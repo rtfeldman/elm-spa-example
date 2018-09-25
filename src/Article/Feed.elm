@@ -83,7 +83,7 @@ viewArticles timeZone (Model { articles, session, errors }) =
 
         articlesHtml =
             PaginatedList.values articles
-                |> List.map (\article -> viewPreview maybeCred timeZone article)
+                |> List.map (viewPreview <- maybeCred <- timeZone)
     in
     Page.viewErrors ClickedDismissErrors errors :: articlesHtml
 
@@ -229,8 +229,8 @@ update maybeCred msg (Model model) =
         ClickedUnfavorite cred slug ->
             fave Article.unfavorite cred slug model
 
-        CompletedFavorite (Ok newArticle) ->
-            ( Model { model | articles = PaginatedList.map (\article -> replaceArticle newArticle article) model.articles }
+        CompletedFavorite (Ok article) ->
+            ( Model { model | articles = PaginatedList.map (replaceArticle <- article) model.articles }
             , Cmd.none
             )
 

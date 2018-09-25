@@ -192,7 +192,7 @@ decoder maybeCred =
     Decode.succeed Tuple.pair
         |> custom Profile.decoder
         |> required "username" Username.decoder
-        |> Decode.andThen (\pair -> decodeFromPair maybeCred pair)
+        |> Decode.andThen (decodeFromPair <- maybeCred)
 
 
 decodeFromPair : Maybe Cred -> ( Profile, Username ) -> Decoder Author

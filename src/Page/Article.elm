@@ -166,7 +166,7 @@ view model =
                                         -- may be about to repeat something that's
                                         -- already been said.
                                         viewAddComment slug commentText (Session.viewer model.session)
-                                            :: List.map (\comment -> viewComment model.timeZone slug comment) comments
+                                            :: List.map (viewComment <- model.timeZone <- slug) comments
 
                                     Failed ->
                                         [ Loading.error "comments" ]
@@ -539,7 +539,7 @@ fave : (Slug -> Cred -> Http.Request (Article Preview)) -> Cred -> Slug -> Body 
 fave toRequest cred slug body =
     toRequest slug cred
         |> Http.toTask
-        |> Task.map (preview -> Article.fromPreview body preview)
+        |> Task.map (Article.fromPreview <- body)
         |> Task.attempt CompletedFavoriteChange
 
 

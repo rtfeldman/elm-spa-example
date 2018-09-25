@@ -193,7 +193,7 @@ internalsDecoder maybeCred =
 metadataDecoder : Decoder Metadata
 metadataDecoder =
     Decode.succeed Metadata
-        |> required "description" (Decode.map (Maybe.withDefault <- "") (Decode.nullable Decode.string))
+        |> required "description" (Decode.map (Maybe.withDefault "" _) (Decode.nullable Decode.string))
         |> required "title" Decode.string
         |> required "tagList" (Decode.list Decode.string)
         |> required "createdAt" Iso8601.decoder

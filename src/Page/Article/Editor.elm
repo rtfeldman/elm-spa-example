@@ -472,7 +472,7 @@ validate form =
         trimmedForm =
             trimFields form
     in
-    case List.concatMap (validateField <- trimmedForm) fieldsToValidate of
+    case List.concatMap (validateField trimmedForm _) fieldsToValidate of
         [] ->
             Ok trimmedForm
 
@@ -482,7 +482,7 @@ validate form =
 
 validateField : TrimmedForm -> ValidatedField -> List Problem
 validateField (Trimmed form) field =
-    List.map (InvalidEntry <- field) <|
+    List.map (InvalidEntry field _) <|
         case field of
             Title ->
                 if String.isEmpty form.title then

@@ -16,15 +16,15 @@ import Username exposing (Username)
 fromUrl : Test
 fromUrl =
     describe "Route.fromUrl"
-        [ testUrl "" Root
-        , testUrl "#login" Login
-        , testUrl "#logout" Logout
-        , testUrl "#settings" Settings
-        , testUrl "#profile/foo" (Profile (usernameFromStr "foo"))
-        , testUrl "#register" Register
-        , testUrl "#article/foo" (Article (slugFromStr "foo"))
-        , testUrl "#editor" NewArticle
-        , testUrl "#editor/foo" (EditArticle (slugFromStr "foo"))
+        [ testUrl "" Home
+        , testUrl "login" Login
+        , testUrl "logout" Logout
+        , testUrl "settings" Settings
+        , testUrl "profile/foo" (Profile (usernameFromStr "foo"))
+        , testUrl "register" Register
+        , testUrl "article/foo" (Article (slugFromStr "foo"))
+        , testUrl "editor" NewArticle
+        , testUrl "editor/foo" (EditArticle (slugFromStr "foo"))
         ]
 
 

@@ -34,7 +34,7 @@
           localStorage.setItem(storageKey, JSON.stringify(val));
         }
 
-        // Report that the new session was stored succesfully.
+        // Report that the new session was stored successfully.
         setTimeout(function() { app.ports.onStoreChange.send(val); }, 0);
       });
 

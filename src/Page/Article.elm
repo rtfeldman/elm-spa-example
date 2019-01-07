@@ -11,7 +11,6 @@ import Article.Comment as Comment exposing (Comment)
 import Article.Slug as Slug exposing (Slug)
 import Author exposing (Author(..), FollowedAuthor, UnfollowedAuthor)
 import Avatar
-import Browser.Navigation as Nav
 import CommentId exposing (CommentId)
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, disabled, href, id, placeholder, value)

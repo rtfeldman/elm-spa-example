@@ -5,7 +5,6 @@ module Page.Profile exposing (Model, Msg, init, subscriptions, toSession, update
 
 import Api exposing (Cred)
 import Api.Endpoint as Endpoint
-import Article exposing (Article, Preview)
 import Article.Feed as Feed
 import Author exposing (Author(..), FollowedAuthor, UnfollowedAuthor)
 import Avatar exposing (Avatar)
@@ -23,7 +22,6 @@ import Task exposing (Task)
 import Time
 import Url.Builder
 import Username exposing (Username)
-import Viewer exposing (Viewer)
 
 
 

@@ -2,7 +2,6 @@ module Main exposing (main)
 
 import Api exposing (Cred)
 import Article.Slug exposing (Slug)
-import Avatar exposing (Avatar)
 import Browser exposing (Document)
 import Browser.Navigation as Nav
 import Html exposing (..)
@@ -19,8 +18,6 @@ import Page.Register as Register
 import Page.Settings as Settings
 import Route exposing (Route)
 import Session exposing (Session)
-import Task
-import Time
 import Url exposing (Url)
 import Username exposing (Username)
 import Viewer exposing (Viewer)

@@ -1,14 +1,11 @@
 module Page exposing (Page(..), view, viewErrors)
 
-import Api exposing (Cred)
 import Avatar
 import Browser exposing (Document)
 import Html exposing (Html, a, button, div, footer, i, img, li, nav, p, span, text, ul)
 import Html.Attributes exposing (class, classList, href, style)
 import Html.Events exposing (onClick)
-import Profile
 import Route exposing (Route)
-import Session exposing (Session)
 import Username exposing (Username)
 import Viewer exposing (Viewer)
 

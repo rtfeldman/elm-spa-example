@@ -15,7 +15,6 @@ import Api exposing (Cred)
 import Api.Endpoint as Endpoint
 import Article.Body as Body exposing (Body)
 import Article.Slug as Slug exposing (Slug)
-import Article.Tag as Tag exposing (Tag)
 import Author exposing (Author)
 import Html exposing (Attribute, Html, i)
 import Html.Attributes exposing (class)
@@ -24,12 +23,7 @@ import Http
 import Iso8601
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (custom, hardcoded, required)
-import Json.Encode as Encode
-import Markdown
-import Profile exposing (Profile)
 import Time
-import Username as Username exposing (Username)
-import Viewer exposing (Viewer)
 
 
 

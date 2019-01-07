@@ -1,13 +1,7 @@
 module Session exposing (Session, changes, cred, fromViewer, navKey, viewer)
 
 import Api exposing (Cred)
-import Avatar exposing (Avatar)
 import Browser.Navigation as Nav
-import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (custom, required)
-import Json.Encode as Encode exposing (Value)
-import Profile exposing (Profile)
-import Time
 import Viewer exposing (Viewer)
 
 

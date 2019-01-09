@@ -60,9 +60,6 @@ init session =
 
                 Nothing ->
                     GlobalFeed
-
-        loadTags =
-            Http.toTask Tag.list
     in
     ( { session = session
       , timeZone = Time.utc

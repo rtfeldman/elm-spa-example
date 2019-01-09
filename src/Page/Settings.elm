@@ -73,18 +73,6 @@ formDecoder =
         |> hardcoded ""
 
 
-{-| A form that has been validated. Only the `edit` function uses this. Its
-purpose is to prevent us from forgetting to validate the form before passing
-it to `edit`.
-
-This doesn't create any guarantees that the form was actually validated. If
-we wanted to do that, we'd need to move the form data into a separate module!
-
--}
-type ValidForm
-    = Valid Form
-
-
 
 -- VIEW
 
@@ -445,12 +433,3 @@ edit cred (Trimmed form) =
                 |> Http.jsonBody
     in
     Api.settings cred body Viewer.decoder
-
-
-nothingIfEmpty : String -> Maybe String
-nothingIfEmpty str =
-    if String.isEmpty str then
-        Nothing
-
-    else
-        Just str

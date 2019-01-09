@@ -148,10 +148,10 @@ view model =
                 Loaded (IsViewer _ _) ->
                     myProfileTitle
 
-                Loaded ((IsFollowing followedAuthor) as author) ->
+                Loaded ((IsFollowing _) as author) ->
                     titleForOther (Author.username author)
 
-                Loaded ((IsNotFollowing unfollowedAuthor) as author) ->
+                Loaded ((IsNotFollowing _) as author) ->
                     titleForOther (Author.username author)
 
                 Loading username ->

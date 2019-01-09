@@ -2,7 +2,7 @@ module Article.Feed exposing (Model, Msg, decoder, init, update, viewArticles, v
 
 import Api exposing (Cred)
 import Article exposing (Article, Preview)
-import Article.Slug as ArticleSlug exposing (Slug)
+import Article.Slug exposing (Slug)
 import Author
 import Avatar exposing (Avatar)
 import Html exposing (..)
@@ -215,7 +215,7 @@ type Msg
 
 
 update : Maybe Cred -> Msg -> Model -> ( Model, Cmd Msg )
-update maybeCred msg (Model model) =
+update _ msg (Model model) =
     case msg of
         ClickedDismissErrors ->
             ( Model { model | errors = [] }, Cmd.none )

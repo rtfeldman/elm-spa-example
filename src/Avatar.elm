@@ -1,4 +1,4 @@
-module Avatar exposing (Avatar, decoder, encode, src, toMaybeString)
+module Avatar exposing (Avatar, decoder, encode, src)
 
 import Asset
 import Html exposing (Attribute)
@@ -49,8 +49,3 @@ src (Avatar maybeUrl) =
 
         Just url ->
             Html.Attributes.src url
-
-
-toMaybeString : Avatar -> Maybe String
-toMaybeString (Avatar maybeUrl) =
-    maybeUrl

@@ -12,7 +12,7 @@ import Browser
 import Browser.Navigation as Nav
 import Http exposing (Body, Expect)
 import Json.Decode as Decode exposing (Decoder, Value, decodeString, field)
-import Json.Decode.Pipeline as Pipeline exposing (required)
+import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 import Url exposing (Url)
 import Username exposing (Username)
@@ -284,17 +284,3 @@ errorsDecoder =
 fromPair : ( String, List String ) -> List String
 fromPair ( field, errors ) =
     List.map (\error -> field ++ " " ++ error) errors
-
-
-
--- LOCALSTORAGE KEYS
-
-
-cacheStorageKey : String
-cacheStorageKey =
-    "cache"
-
-
-credStorageKey : String
-credStorageKey =
-    "cred"

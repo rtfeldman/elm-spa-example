@@ -1,4 +1,4 @@
-module Author exposing (Author(..), FollowedAuthor, UnfollowedAuthor, decoder, fetch, follow, followButton, profile, requestFollow, requestUnfollow, unfollow, unfollowButton, username, view)
+module Author exposing (Author(..), FollowedAuthor, UnfollowedAuthor, decoder, fetch, followButton, profile, requestFollow, requestUnfollow, unfollowButton, username, view)
 
 {-| The author of an Article. It includes a Profile.
 
@@ -112,16 +112,6 @@ fetch uname maybeCred =
 
 
 -- FOLLOWING
-
-
-follow : UnfollowedAuthor -> FollowedAuthor
-follow (UnfollowedAuthor uname prof) =
-    FollowedAuthor uname prof
-
-
-unfollow : FollowedAuthor -> UnfollowedAuthor
-unfollow (FollowedAuthor uname prof) =
-    UnfollowedAuthor uname prof
 
 
 requestFollow : UnfollowedAuthor -> Cred -> Http.Request Author

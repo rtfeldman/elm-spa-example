@@ -1,6 +1,10 @@
-# elm-package generated files
+.cache/
+.coverage/
+.installed
+dist/
 elm-stuff/
-# elm-repl generated files
+node_modules/
 repl-temp-*
+.npmrc
+/tests/VerifyExamples
 
-elm.js

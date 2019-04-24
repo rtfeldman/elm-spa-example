@@ -1,0 +1,27 @@
+{
+  "name": "elm-spa-example",
+  "version": "1.0.0",
+  "description": "Real World Elm Bootstrap SPA",
+  "main": "dist/index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/niteoweb/elm-spa-example.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/niteoweb/elm-spa-example/issues"
+  },
+  "homepage": "https://github.com/niteoweb/elm-spa-example#readme",
+  "devDependencies": {
+    "elm-hot": "^1.0.1",
+    "node-elm-compiler": "^5.0.3",
+    "parcel": "^1.12.3"
+  }
+}

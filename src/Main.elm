@@ -26,6 +26,7 @@ import Username exposing (Username)
 import Viewer exposing (Viewer)
 
 
+
 -- NOTE: Based on discussions around how asset management features
 -- like code splitting and lazy loading have been shaping up, it's possible
 -- that most of this file may become unnecessary in a future release of Elm.
@@ -85,10 +86,10 @@ view model =
             viewPage Page.Home GotHomeMsg (Home.view home)
 
         Login login ->
-            viewPage Page.Other GotLoginMsg (Login.view login)
+            viewPage Page.Login GotLoginMsg (Login.view login)
 
         Register register ->
-            viewPage Page.Other GotRegisterMsg (Register.view register)
+            viewPage Page.Register GotRegisterMsg (Register.view register)
 
         Profile username profile ->
             viewPage (Page.Profile username) GotProfileMsg (Profile.view profile)

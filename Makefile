@@ -13,8 +13,8 @@ dist: .installed copy-assets
 
 .PHONY: copy-assets
 copy-assets:
-	mkdir -p dist/assets/images/
-	cp -r assets/images/* dist/assets/images/
+	@mkdir -p dist/assets/images/
+	@cp -r assets/images/* dist/assets/images/
 
 .PHONY: install
 install:

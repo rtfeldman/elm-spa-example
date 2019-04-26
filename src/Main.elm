@@ -73,10 +73,10 @@ view model =
     in
     case model of
         Redirect _ ->
-            viewPage Page.Other (\_ -> Ignored) Blank.view
+            viewPage Page.Other (\_ -> GotBlankPageMsg) Blank.view
 
         NotFound _ ->
-            viewPage Page.Other (\_ -> Ignored) NotFound.view
+            viewPage Page.Other (\_ -> GotNotFoundMsg) NotFound.view
 
         Settings settings ->
             viewPage Page.Other GotSettingsMsg (Settings.view settings)
@@ -108,8 +108,7 @@ view model =
 
 
 type Msg
-    = Ignored
-    | ChangedRoute (Maybe Route)
+    = ChangedRoute (Maybe Route)
     | ChangedUrl Url
     | ClickedLink Browser.UrlRequest
     | GotHomeMsg Home.Msg
@@ -119,6 +118,8 @@ type Msg
     | GotProfileMsg Profile.Msg
     | GotArticleMsg Article.Msg
     | GotEditorMsg Editor.Msg
+    | GotBlankPageMsg
+    | GotNotFoundMsg
     | GotSession Session
 
 
@@ -205,9 +206,6 @@ changeRouteTo maybeRoute model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
-        ( Ignored, _ ) ->
-            ( model, Cmd.none )
-
         ( ClickedLink urlRequest, _ ) ->
             case urlRequest of
                 Browser.Internal url ->
@@ -266,6 +264,12 @@ update msg model =
         ( GotEditorMsg subMsg, Editor slug editor ) ->
             Editor.update subMsg editor
                 |> updateWith (Editor slug) GotEditorMsg model
+
+        ( GotBlankPageMsg, _ ) ->
+            ( model, Cmd.none )
+
+        ( GotNotFoundMsg, _ ) ->
+            ( model, Cmd.none )
 
         ( GotSession session, Redirect _ ) ->
             ( Redirect session

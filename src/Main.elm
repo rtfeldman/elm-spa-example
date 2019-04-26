@@ -62,10 +62,13 @@ init maybeViewer url navKey =
 view : Model -> Document Msg
 view model =
     let
+        viewer =
+            Session.viewer (toSession model)
+
         viewPage page toMsg config =
             let
                 { title, body } =
-                    Page.view (Session.viewer (toSession model)) page config
+                    Page.view viewer page config
             in
             { title = title
             , body = List.map (Html.map toMsg) body
@@ -73,10 +76,10 @@ view model =
     in
     case model of
         Redirect _ ->
-            viewPage Page.Other (\_ -> GotBlankPageMsg) Blank.view
+            Page.view viewer Page.Other Blank.view
 
         NotFound _ ->
-            viewPage Page.Other (\_ -> GotNotFoundMsg) NotFound.view
+            Page.view viewer Page.Other NotFound.view
 
         Settings settings ->
             viewPage Page.Other GotSettingsMsg (Settings.view settings)
@@ -118,8 +121,6 @@ type Msg
     | GotProfileMsg Profile.Msg
     | GotArticleMsg Article.Msg
     | GotEditorMsg Editor.Msg
-    | GotBlankPageMsg
-    | GotNotFoundMsg
     | GotSession Session
 
 
@@ -264,12 +265,6 @@ update msg model =
         ( GotEditorMsg subMsg, Editor slug editor ) ->
             Editor.update subMsg editor
                 |> updateWith (Editor slug) GotEditorMsg model
-
-        ( GotBlankPageMsg, _ ) ->
-            ( model, Cmd.none )
-
-        ( GotNotFoundMsg, _ ) ->
-            ( model, Cmd.none )
 
         ( GotSession session, Redirect _ ) ->
             ( Redirect session

@@ -26,6 +26,7 @@ import Username exposing (Username)
 import Viewer exposing (Viewer)
 
 
+
 -- NOTE: Based on discussions around how asset management features
 -- like code splitting and lazy loading have been shaping up, it's possible
 -- that most of this file may become unnecessary in a future release of Elm.
@@ -62,10 +63,13 @@ init maybeViewer url navKey =
 view : Model -> Document Msg
 view model =
     let
+        viewer =
+            Session.viewer (toSession model)
+
         viewPage page toMsg config =
             let
                 { title, body } =
-                    Page.view (Session.viewer (toSession model)) page config
+                    Page.view viewer page config
             in
             { title = title
             , body = List.map (Html.map toMsg) body
@@ -73,10 +77,10 @@ view model =
     in
     case model of
         Redirect _ ->
-            viewPage Page.Other (\_ -> Ignored) Blank.view
+            Page.view viewer Page.Other Blank.view
 
         NotFound _ ->
-            viewPage Page.Other (\_ -> Ignored) NotFound.view
+            Page.view viewer Page.Other NotFound.view
 
         Settings settings ->
             viewPage Page.Other GotSettingsMsg (Settings.view settings)
@@ -108,8 +112,7 @@ view model =
 
 
 type Msg
-    = Ignored
-    | ChangedRoute (Maybe Route)
+    = ChangedRoute (Maybe Route)
     | ChangedUrl Url
     | ClickedLink Browser.UrlRequest
     | GotHomeMsg Home.Msg
@@ -205,9 +208,6 @@ changeRouteTo maybeRoute model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
-        ( Ignored, _ ) ->
-            ( model, Cmd.none )
-
         ( ClickedLink urlRequest, _ ) ->
             case urlRequest of
                 Browser.Internal url ->

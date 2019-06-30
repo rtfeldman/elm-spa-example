@@ -36,3 +36,12 @@ $ npm run dev
 ```
 $ npm run build
 ```
+
+# Testing
+```
+$ npm run test
+```
+Or in watch mode:
+```
+$ npm run test:watch
+```

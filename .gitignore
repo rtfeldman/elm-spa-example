@@ -6,5 +6,5 @@ repl-temp-*
 node_modules
 # Parcel cache
 .cache
-# Parcel Build dist
+# Parcel build dist
 dist

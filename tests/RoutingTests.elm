@@ -1,4 +1,4 @@
-module RoutingTests exposing (..)
+module RoutingTests exposing (fragment, fromUrl, slugFromStr, testUrl, usernameFromStr)
 
 import Article
 import Article.Slug as Slug exposing (Slug)
@@ -8,6 +8,7 @@ import Route exposing (Route(..))
 import Test exposing (..)
 import Url exposing (Url)
 import Username exposing (Username)
+
 
 
 -- TODO need to add lots more tests!

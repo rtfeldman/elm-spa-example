@@ -1,4 +1,5 @@
 sudo: false
+language: elm
 
 install:
   - npm install

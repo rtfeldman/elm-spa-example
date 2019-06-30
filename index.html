@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <title>Conduit</title>
@@ -17,33 +17,7 @@
     <link href="//fonts.googleapis.com/css?family=Titillium+Web:700|Source+Serif+Pro:400,700|Merriweather+Sans:400,700|Source+Sans+Pro:400,300,600,700,300italic,400italic,600italic,700italic" rel="stylesheet" type="text/css">
     <!-- Import the custom Bootstrap 4 theme from our hosted CDN -->
     <link rel="stylesheet" href="//demo.productionready.io/main.css">
-
-    <script src="elm.js"></script>
   </head>
-  <body>
-    <script>
-      var storageKey = "store";
-      var flags = localStorage.getItem(storageKey);
-      var app = Elm.Main.init({flags: flags});
-
-      app.ports.storeCache.subscribe(function(val) {
-
-        if (val === null) {
-          localStorage.removeItem(storageKey);
-        } else {
-          localStorage.setItem(storageKey, JSON.stringify(val));
-        }
-
-        // Report that the new session was stored succesfully.
-        setTimeout(function() { app.ports.onStoreChange.send(val); }, 0);
-      });
-
-      // Whenever localStorage changes in another tab, report it if necessary.
-      window.addEventListener("storage", function(event) {
-        if (event.storageArea === localStorage && event.key === storageKey) {
-          app.ports.onStoreChange.send(event.newValue);
-        }
-      }, false);
-    </script>
-  </body>
+  <main></main>
+  <script src="src/index.js"></script>
 </html>

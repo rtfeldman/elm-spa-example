@@ -4,12 +4,6 @@ language: elm
 install:
   - npm install
 
-jobs:
-  include:
-    - stage: verify
-      name: "Lint"
-      script: npm run lint
-
-    - stage: verify
-      name: "Test"
-      script: npm run test
+script:
+  - npm run lint
+  - npm run test

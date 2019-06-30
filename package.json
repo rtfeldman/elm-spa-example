@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "parcel index.html",
     "build": "parcel build index.html",
+    "lint": "elm-format --validate .",
     "test": "elm-test",
     "test:watch": "elm-test --watch"
   },

@@ -3,6 +3,12 @@ sudo: false
 install:
   - npm install
 
-script:
-  - elm-format --validate .
-  - elm-test
+jobs:
+  include:
+    - stage: verify
+      name: "Lint"
+      script: npm run lint
+
+    - stage: verify
+      name: "Test"
+      script: npm run test

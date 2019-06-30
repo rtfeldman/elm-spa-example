@@ -41,7 +41,7 @@ $ npm run build
 ```
 $ npm run test
 ```
-Or in watch mode:
+## Watch mode:
 ```
 $ npm run test:watch
 ```

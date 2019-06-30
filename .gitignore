@@ -2,5 +2,9 @@
 elm-stuff/
 # elm-repl generated files
 repl-temp-*
-
-elm.js
+# Node dependencies
+node_modules
+# Parcel cache
+.cache
+# Parcel Build dist
+dist

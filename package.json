@@ -1,7 +1,6 @@
 {
   "name": "elm-spa-example",
   "version": "1.0.0",
-  "description": "👉 I gave [a talk](https://www.youtube.com/watch?v=x1FU3e0sT1I) to explain the principles I used to build this. I highly recommend watching it!",
   "scripts": {
     "dev": "parcel index.html",
     "build": "parcel build index.html",

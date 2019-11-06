@@ -1,4 +1,4 @@
-module RoutingTests exposing (..)
+module RoutingTests exposing (fragment, fromUrl, slugFromStr, testUrl, usernameFromStr)
 
 import Article
 import Article.Slug as Slug exposing (Slug)
@@ -10,21 +10,22 @@ import Url exposing (Url)
 import Username exposing (Username)
 
 
+
 -- TODO need to add lots more tests!
 
 
 fromUrl : Test
 fromUrl =
     describe "Route.fromUrl"
-        [ testUrl "" Root
-        , testUrl "#login" Login
-        , testUrl "#logout" Logout
-        , testUrl "#settings" Settings
-        , testUrl "#profile/foo" (Profile (usernameFromStr "foo"))
-        , testUrl "#register" Register
-        , testUrl "#article/foo" (Article (slugFromStr "foo"))
-        , testUrl "#editor" NewArticle
-        , testUrl "#editor/foo" (EditArticle (slugFromStr "foo"))
+        [ testUrl "" Home
+        , testUrl "login" Login
+        , testUrl "logout" Logout
+        , testUrl "settings" Settings
+        , testUrl "profile/foo" (Profile (usernameFromStr "foo"))
+        , testUrl "register" Register
+        , testUrl "article/foo" (Article (slugFromStr "foo"))
+        , testUrl "editor" NewArticle
+        , testUrl "editor/foo" (EditArticle (slugFromStr "foo"))
         ]
 
 

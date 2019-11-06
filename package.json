@@ -1,0 +1,18 @@
+{
+  "name": "elm-spa-example",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "parcel index.html",
+    "build": "parcel build index.html",
+    "lint": "elm-format --validate .",
+    "test": "elm-test",
+    "test:watch": "elm-test --watch"
+  },
+  "devDependencies": {
+    "elm-format": "^0.8.1",
+    "elm-hot": "^1.1.0",
+    "elm-test": "^0.19.0",
+    "node-elm-compiler": "^5.0.3",
+    "parcel-bundler": "^1.12.3"
+  }
+}

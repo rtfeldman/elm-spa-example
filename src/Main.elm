@@ -112,8 +112,7 @@ view model =
 
 
 type Msg
-    = ChangedRoute (Maybe Route)
-    | ChangedUrl Url
+    = ChangedUrl Url
     | ClickedLink Browser.UrlRequest
     | GotHomeMsg Home.Msg
     | GotSettingsMsg Settings.Msg
@@ -235,9 +234,6 @@ update msg model =
 
         ( ChangedUrl url, _ ) ->
             changeRouteTo (Route.fromUrl url) model
-
-        ( ChangedRoute route, _ ) ->
-            changeRouteTo route model
 
         ( GotSettingsMsg subMsg, Settings settings ) ->
             Settings.update subMsg settings

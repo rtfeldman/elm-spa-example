@@ -53,7 +53,7 @@ credHeader (Cred _ str) =
 
 {-| It's important that this is never exposed!
 
-We epxose `login` and `application` instead, so we can be certain that if anyone
+We expose `login` and `application` instead, so we can be certain that if anyone
 ever has access to a `Cred` value, it came from either the login API endpoint
 or was passed in via flags.
 

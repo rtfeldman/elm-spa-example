@@ -1,10 +1,5 @@
 module PaginatedList exposing (PaginatedList, fromList, map, params, total, values)
 
-import Html exposing (Html, a, li, text, ul)
-import Html.Attributes exposing (class, classList, href)
-import Html.Events exposing (onClick)
-import Json.Decode as Decode exposing (Decoder)
-import Task exposing (Task)
 import Url.Builder exposing (QueryParameter)
 
 

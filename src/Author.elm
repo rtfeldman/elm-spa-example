@@ -13,7 +13,7 @@ To do this, I defined `Author` a custom type with three variants, one for each
 of those possibilities.
 
 I also made separate types for FollowedAuthor and UnfollowedAuthor.
-They are custom type wrappers around Profile, and thier sole purpose is to
+They are custom type wrappers around Profile, and their sole purpose is to
 help me keep track of which operations are supported.
 
 For example, consider these functions:
@@ -34,16 +34,14 @@ There are still ways we could mess things up (e.g. make a button that calls Auth
 import Api exposing (Cred)
 import Api.Endpoint as Endpoint
 import Html exposing (Html, a, i, text)
-import Html.Attributes exposing (attribute, class, href, id, placeholder)
+import Html.Attributes exposing (class, href)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (custom, optional, required)
-import Json.Encode as Encode exposing (Value)
 import Profile exposing (Profile)
-import Route exposing (Route)
+import Route
 import Username exposing (Username)
-import Viewer exposing (Viewer)
 
 
 {-| An author - either the current user, another user we're following, or

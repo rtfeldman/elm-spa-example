@@ -15,7 +15,6 @@ import Api exposing (Cred)
 import Api.Endpoint as Endpoint
 import Article.Body as Body exposing (Body)
 import Article.Slug as Slug exposing (Slug)
-import Article.Tag as Tag exposing (Tag)
 import Author exposing (Author)
 import Html exposing (Attribute, Html, i)
 import Html.Attributes exposing (class)
@@ -24,12 +23,7 @@ import Http
 import Iso8601
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (custom, hardcoded, required)
-import Json.Encode as Encode
-import Markdown
-import Profile exposing (Profile)
 import Time
-import Username as Username exposing (Username)
-import Viewer exposing (Viewer)
 
 
 
@@ -49,7 +43,7 @@ viewArticle : Article Full -> Html msg
 viewFeed : List (Article Preview) -> Html msg
 
 This indicates that `viewArticle` requires an article _with a `body` present_,
-wereas `viewFeed` accepts articles with no bodies. (We could also have written
+whereas `viewFeed` accepts articles with no bodies. (We could also have written
 it as `List (Article a)` to specify that feeds can accept either articles that
 have `body` present or not. Either work, given that feeds do not attempt to
 read the `body` field from articles.)

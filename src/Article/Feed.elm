@@ -2,12 +2,11 @@ module Article.Feed exposing (Model, Msg, decoder, init, update, viewArticles, v
 
 import Api exposing (Cred)
 import Article exposing (Article, Preview)
-import Article.Slug as ArticleSlug exposing (Slug)
-import Article.Tag as Tag exposing (Tag)
+import Article.Slug exposing (Slug)
 import Author
-import Avatar exposing (Avatar)
-import Html exposing (..)
-import Html.Attributes exposing (attribute, class, classList, href, id, placeholder, src)
+import Avatar
+import Html exposing (Attribute, Html, a, div, h1, img, li, p, span, text, ul)
+import Html.Attributes exposing (class, classList, href, src)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -15,13 +14,11 @@ import Json.Decode.Pipeline exposing (required)
 import Page
 import PaginatedList exposing (PaginatedList)
 import Profile
-import Route exposing (Route)
+import Route
 import Session exposing (Session)
-import Task exposing (Task)
+import Task
 import Time
 import Timestamp
-import Url exposing (Url)
-import Username exposing (Username)
 
 
 {-| NOTE: This module has its own Model, view, and update. This is not normal!
@@ -218,7 +215,7 @@ type Msg
 
 
 update : Maybe Cred -> Msg -> Model -> ( Model, Cmd Msg )
-update maybeCred msg (Model model) =
+update _ msg (Model model) =
     case msg of
         ClickedDismissErrors ->
             ( Model { model | errors = [] }, Cmd.none )
@@ -234,7 +231,7 @@ update maybeCred msg (Model model) =
             , Cmd.none
             )
 
-        CompletedFavorite (Err error) ->
+        CompletedFavorite (Err _) ->
             ( Model { model | errors = Api.addServerError model.errors }
             , Cmd.none
             )

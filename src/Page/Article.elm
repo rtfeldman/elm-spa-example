@@ -8,12 +8,11 @@ import Api.Endpoint as Endpoint
 import Article exposing (Article, Full, Preview)
 import Article.Body exposing (Body)
 import Article.Comment as Comment exposing (Comment)
-import Article.Slug as Slug exposing (Slug)
+import Article.Slug exposing (Slug)
 import Author exposing (Author(..), FollowedAuthor, UnfollowedAuthor)
 import Avatar
-import Browser.Navigation as Nav
 import CommentId exposing (CommentId)
-import Html exposing (..)
+import Html exposing (Html, a, button, div, h1, hr, i, img, p, span, text, textarea)
 import Html.Attributes exposing (attribute, class, disabled, href, id, placeholder, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Http
@@ -24,10 +23,10 @@ import Page
 import Profile exposing (Profile)
 import Route
 import Session exposing (Session)
-import Task exposing (Task)
+import Task
 import Time
 import Timestamp
-import Username exposing (Username)
+import Username
 import Viewer exposing (Viewer)
 
 
@@ -403,7 +402,7 @@ update msg model =
 
         ClickedPostComment cred slug ->
             case model.comments of
-                Loaded ( Editing "", comments ) ->
+                Loaded ( Editing "", _ ) ->
                     -- No posting empty comments!
                     -- We don't use Log.error here because this isn't an error,
                     -- it just doesn't do anything.
@@ -454,7 +453,7 @@ update msg model =
                 _ ->
                     ( model, Log.error )
 
-        CompletedDeleteComment id (Err error) ->
+        CompletedDeleteComment _ (Err error) ->
             ( { model | errors = Api.addServerError model.errors }
             , Log.error
             )

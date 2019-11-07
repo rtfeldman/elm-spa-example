@@ -3,16 +3,14 @@ module Page.Login exposing (Model, Msg, init, subscriptions, toSession, update, 
 {-| The login page.
 -}
 
-import Api exposing (Cred)
-import Browser.Navigation as Nav
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Api
+import Html exposing (Html, a, button, div, fieldset, h1, input, li, p, text, ul)
+import Html.Attributes exposing (class, placeholder, type_, value)
+import Html.Events exposing (onInput, onSubmit)
 import Http
-import Json.Decode as Decode exposing (Decoder, decodeString, field, string)
-import Json.Decode.Pipeline exposing (optional)
+import Json.Decode exposing (string)
 import Json.Encode as Encode
-import Route exposing (Route)
+import Route
 import Session exposing (Session)
 import Viewer exposing (Viewer)
 

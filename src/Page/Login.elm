@@ -12,8 +12,11 @@ import Http
 import Json.Decode as Decode exposing (Decoder, decodeString, field, string)
 import Json.Decode.Pipeline exposing (optional)
 import Json.Encode as Encode
+import Process
 import Route exposing (Route)
-import Session exposing (Session)
+import Session exposing (Session, isLoggedIn)
+import Task
+import Username exposing (toString)
 import Viewer exposing (Viewer)
 
 
@@ -63,17 +66,30 @@ type alias Form =
     }
 
 
-init : Session -> ( Model, Cmd msg )
+initialModel : Session -> Model
+initialModel session =
+    { session = session
+    , problems = []
+    , form =
+        { email = ""
+        , password = ""
+        }
+    }
+
+
+init : Session -> ( Model, Cmd Msg )
 init session =
-    ( { session = session
-      , problems = []
-      , form =
-            { email = ""
-            , password = ""
-            }
-      }
-    , Cmd.none
-    )
+    if Session.isLoggedIn session then
+        ( initialModel session
+        , Process.sleep 3000
+            |> Task.andThen (always <| Task.succeed (GotSession session))
+            |> Task.perform identity
+        )
+
+    else
+        ( initialModel session
+        , Cmd.none
+        )
 
 
 
@@ -84,23 +100,59 @@ view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "Login"
     , content =
-        div [ class "cred-page" ]
-            [ div [ class "container page" ]
-                [ div [ class "row" ]
-                    [ div [ class "col-md-6 offset-md-3 col-xs-12" ]
-                        [ h1 [ class "text-xs-center" ] [ text "Sign in" ]
-                        , p [ class "text-xs-center" ]
-                            [ a [ Route.href Route.Register ]
-                                [ text "Need an account?" ]
+        if Session.isLoggedIn model.session then
+            viewLoggedIn model.session
+
+        else
+            viewLoggedOut model
+    }
+
+
+viewLoggedOut : Model -> Html Msg
+viewLoggedOut model =
+    div [ class "cred-page" ]
+        [ div [ class "container page" ]
+            [ div [ class "row" ]
+                [ div [ class "col-md-6 offset-md-3 col-xs-12" ]
+                    [ h1 [ class "text-xs-center" ] [ text "Sign in" ]
+                    , p [ class "text-xs-center" ]
+                        [ a [ Route.href Route.Register ]
+                            [ text "Need an account?" ]
+                        ]
+                    , ul [ class "error-messages" ]
+                        (List.map viewProblem model.problems)
+                    , viewForm model.form
+                    ]
+                ]
+            ]
+        ]
+
+
+viewLoggedIn : Session -> Html Msg
+viewLoggedIn session =
+    div [ class "cred-page" ]
+        [ div [ class "container page" ]
+            [ div [ class "row" ]
+                [ div [ class "col-md-6 offset-md-3 col-xs-12" ]
+                    [ h2 [ class "text-xs-center" ]
+                        [ text <| "Hi " ++ getUserName session
+                        , h3 [ class "text-xs-center" ]
+                            [ text "Redirecting you to the Home Page"
                             ]
-                        , ul [ class "error-messages" ]
-                            (List.map viewProblem model.problems)
-                        , viewForm model.form
                         ]
                     ]
                 ]
             ]
-    }
+        ]
+
+
+getUserName : Session -> String
+getUserName session =
+    session
+        |> Session.viewer
+        |> Maybe.map Viewer.username
+        |> Maybe.map Username.toString
+        |> Maybe.withDefault "Donald Trump"
 
 
 viewProblem : Problem -> Html msg

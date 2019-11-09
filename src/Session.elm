@@ -1,4 +1,4 @@
-module Session exposing (Session, changes, cred, fromViewer, navKey, viewer)
+module Session exposing (Session, changes, cred, fromViewer, isLoggedIn, navKey, viewer)
 
 import Api exposing (Cred)
 import Avatar exposing (Avatar)
@@ -52,6 +52,16 @@ navKey session =
 
         Guest key ->
             key
+
+
+isLoggedIn : Session -> Bool
+isLoggedIn session =
+    case session of
+        LoggedIn key _ ->
+            True
+
+        Guest key ->
+            False
 
 
 

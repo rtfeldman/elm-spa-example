@@ -36,7 +36,7 @@ import Viewer exposing (Viewer)
 
 type Model
     = Redirect Session
-    | NotFound Session
+    | NotFound NotFound.Model
     | Home Home.Model
     | Settings Settings.Model
     | Login Login.Model
@@ -122,6 +122,7 @@ type Msg
     | GotArticleMsg Article.Msg
     | GotEditorMsg Editor.Msg
     | GotSession Session
+    | GotNotFoundMsg NotFound.Msg
 
 
 toSession : Model -> Session
@@ -130,8 +131,8 @@ toSession page =
         Redirect session ->
             session
 
-        NotFound session ->
-            session
+        NotFound notFound ->
+            NotFound.toSession notFound
 
         Home home ->
             Home.toSession home
@@ -163,7 +164,8 @@ changeRouteTo maybeRoute model =
     in
     case maybeRoute of
         Nothing ->
-            ( NotFound session, Cmd.none )
+            NotFound.init session
+                |> updateWith NotFound GotNotFoundMsg model
 
         Just Route.Root ->
             ( model, Route.replaceUrl (Session.navKey session) Route.Home )
@@ -243,6 +245,10 @@ update msg model =
             Login.update subMsg login
                 |> updateWith Login GotLoginMsg model
 
+        ( GotNotFoundMsg subMsg, NotFound notFound ) ->
+            NotFound.update subMsg notFound
+                |> updateWith NotFound GotNotFoundMsg model
+
         ( GotRegisterMsg subMsg, Register register ) ->
             Register.update subMsg register
                 |> updateWith Register GotRegisterMsg model
@@ -287,8 +293,8 @@ updateWith toModel toMsg model ( subModel, subCmd ) =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case model of
-        NotFound _ ->
-            Sub.none
+        NotFound notFound ->
+            Sub.map GotNotFoundMsg (NotFound.subscriptions notFound)
 
         Redirect _ ->
             Session.changes GotSession (Session.navKey (toSession model))

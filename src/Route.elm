@@ -71,37 +71,38 @@ fromUrl url =
 
 routeToString : Route -> String
 routeToString page =
-    let
-        pieces =
-            case page of
-                Home ->
-                    []
+    "#/" ++ String.join "/" (routeToPieces page)
 
-                Root ->
-                    []
 
-                Login ->
-                    [ "login" ]
+routeToPieces : Route -> List String
+routeToPieces page =
+    case page of
+        Home ->
+            []
 
-                Logout ->
-                    [ "logout" ]
+        Root ->
+            []
 
-                Register ->
-                    [ "register" ]
+        Login ->
+            [ "login" ]
 
-                Settings ->
-                    [ "settings" ]
+        Logout ->
+            [ "logout" ]
 
-                Article slug ->
-                    [ "article", Slug.toString slug ]
+        Register ->
+            [ "register" ]
 
-                Profile username ->
-                    [ "profile", Username.toString username ]
+        Settings ->
+            [ "settings" ]
 
-                NewArticle ->
-                    [ "editor" ]
+        Article slug ->
+            [ "article", Slug.toString slug ]
 
-                EditArticle slug ->
-                    [ "editor", Slug.toString slug ]
-    in
-    "#/" ++ String.join "/" pieces
+        Profile username ->
+            [ "profile", Username.toString username ]
+
+        NewArticle ->
+            [ "editor" ]
+
+        EditArticle slug ->
+            [ "editor", Slug.toString slug ]

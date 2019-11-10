@@ -2,23 +2,20 @@ module Page.Settings exposing (Model, Msg, init, subscriptions, toSession, updat
 
 import Api exposing (Cred)
 import Api.Endpoint as Endpoint
-import Avatar
-import Browser.Navigation as Nav
 import Email exposing (Email)
 import Html exposing (Html, button, div, fieldset, h1, input, li, text, textarea, ul)
 import Html.Attributes exposing (attribute, class, placeholder, type_, value)
 import Html.Events exposing (onInput, onSubmit)
 import Http
-import Json.Decode as Decode exposing (Decoder, decodeString, field, list, string)
+import Json.Decode as Decode exposing (Decoder, field, string)
 import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Loading
 import Log
-import Profile exposing (Profile)
 import Route
 import Session exposing (Session)
 import Task
-import Username as Username exposing (Username)
+import Username exposing (Username)
 import Viewer exposing (Viewer)
 
 
@@ -76,18 +73,6 @@ formDecoder =
         |> required "email" Decode.string
         |> required "username" Decode.string
         |> hardcoded ""
-
-
-{-| A form that has been validated. Only the `edit` function uses this. Its
-purpose is to prevent us from forgetting to validate the form before passing
-it to `edit`.
-
-This doesn't create any guarantees that the form was actually validated. If
-we wanted to do that, we'd need to move the form data into a separate module!
-
--}
-type ValidForm
-    = Valid Form
 
 
 
@@ -450,12 +435,3 @@ edit cred (Trimmed form) =
                 |> Http.jsonBody
     in
     Api.settings cred body Viewer.decoder
-
-
-nothingIfEmpty : String -> Maybe String
-nothingIfEmpty str =
-    if String.isEmpty str then
-        Nothing
-
-    else
-        Just str

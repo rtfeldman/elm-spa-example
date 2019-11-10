@@ -10,9 +10,9 @@ import Api.Endpoint as Endpoint exposing (Endpoint)
 import Avatar exposing (Avatar)
 import Browser
 import Browser.Navigation as Nav
-import Http exposing (Body, Expect)
+import Http exposing (Body)
 import Json.Decode as Decode exposing (Decoder, Value, decodeString, field, string)
-import Json.Decode.Pipeline as Pipeline exposing (optional, required)
+import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 import Url exposing (Url)
 import Username exposing (Username)
@@ -271,7 +271,7 @@ decodeErrors error =
                 |> decodeString (field "errors" errorsDecoder)
                 |> Result.withDefault [ "Server error" ]
 
-        err ->
+        _ ->
             [ "Server error" ]
 
 

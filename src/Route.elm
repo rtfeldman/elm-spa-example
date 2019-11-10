@@ -6,7 +6,7 @@ import Html exposing (Attribute)
 import Html.Attributes as Attr
 import Profile exposing (Profile)
 import Url exposing (Url)
-import Url.Parser as Parser exposing ((</>), Parser, oneOf, s, string)
+import Url.Parser as Parser exposing ((</>), Parser, oneOf, s)
 import Username exposing (Username)
 
 

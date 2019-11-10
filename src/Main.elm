@@ -1,13 +1,12 @@
 module Main exposing (main)
 
-import Api exposing (Cred)
+import Api
 import Article.Slug exposing (Slug)
-import Avatar exposing (Avatar)
 import Browser exposing (Document)
 import Browser.Navigation as Nav
-import Html exposing (..)
-import Json.Decode as Decode exposing (Value)
-import Page exposing (Page)
+import Html
+import Json.Decode exposing (Value)
+import Page
 import Page.Article as Article
 import Page.Article.Editor as Editor
 import Page.Blank as Blank
@@ -19,8 +18,6 @@ import Page.Register as Register
 import Page.Settings as Settings
 import Route exposing (Route)
 import Session exposing (Session)
-import Task
-import Time
 import Url exposing (Url)
 import Username exposing (Username)
 import Viewer exposing (Viewer)
@@ -274,7 +271,7 @@ update msg model =
 
 
 updateWith : (subModel -> Model) -> (subMsg -> Msg) -> Model -> ( subModel, Cmd subMsg ) -> ( Model, Cmd Msg )
-updateWith toModel toMsg model ( subModel, subCmd ) =
+updateWith toModel toMsg _ ( subModel, subCmd ) =
     ( toModel subModel
     , Cmd.map toMsg subCmd
     )

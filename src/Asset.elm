@@ -7,7 +7,7 @@ all of them. One source of truth!
 
 -}
 
-import Html exposing (Attribute, Html)
+import Html exposing (Attribute)
 import Html.Attributes as Attr
 
 

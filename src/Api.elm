@@ -109,15 +109,15 @@ storeCredWith (Cred uname token) avatar =
                   )
                 ]
     in
-    storeCache (Just json)
+    storeCache json
 
 
 logout : Cmd msg
 logout =
-    storeCache Nothing
+    storeCache Encode.null
 
 
-port storeCache : Maybe Value -> Cmd msg
+port storeCache : Value -> Cmd msg
 
 
 

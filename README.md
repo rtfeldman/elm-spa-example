@@ -1,5 +1,9 @@
 # ![RealWorld Example App](https://cloud.githubusercontent.com/assets/556934/25448178/3e7dc5c0-2a7d-11e7-8069-06da5169dae6.png)
 
+[![RealWorld Frontend](https://img.shields.io/badge/realworld-frontend-%23783578.svg)](http://realworld.io)
+[![Build Status](https://travis-ci.org/rtfeldman/elm-spa-example.svg?branch=master)](https://travis-ci.org/rtfeldman/elm-spa-example)
+
+
 👉 I gave [a talk](https://www.youtube.com/watch?v=x1FU3e0sT1I)
 to explain the principles I used to build this. I highly recommend watching it!
 

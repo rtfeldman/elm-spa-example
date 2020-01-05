@@ -1,0 +1,23 @@
+{
+  "name": "elm-spa-example",
+  "version": "1.0.0",
+  "description": "👉 I gave [a talk](https://www.youtube.com/watch?v=x1FU3e0sT1I) to explain the principles I used to build this. I highly recommend watching it!",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build" : "elm make src/Main.elm --output ../hanase-yesod/static/app.js --optimize"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KarateCowboy/elm-spa-example.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KarateCowboy/elm-spa-example/issues"
+  },
+  "homepage": "https://github.com/KarateCowboy/elm-spa-example#readme"
+}

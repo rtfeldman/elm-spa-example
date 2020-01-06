@@ -48,11 +48,11 @@ view maybeViewer page { title, content } =
 
 viewHeader : Page -> Maybe Viewer -> Html msg
 viewHeader page maybeViewer =
-    nav [ class "navbar navbar-light" ]
-        [ div [ class "container" ]
-            [ a [ class "navbar-brand", Route.href Route.Home ]
-                [ text "conduit" ]
-            , ul [ class "nav navbar-nav pull-xs-right" ] <|
+    nav [ class "navbar" ]
+        [ div [ class "navbar-brand" ]
+            [ a [ class "navbar-item", Route.href Route.Home ]
+                [ text "Hanase" ]
+            , ul [ class "navbar-menu" ] <|
                 navbarLink page Route.Home [ text "Home" ]
                     :: viewMenu page maybeViewer
             ]
@@ -106,7 +106,7 @@ viewFooter =
 
 navbarLink : Page -> Route -> List (Html msg) -> Html msg
 navbarLink page route linkContent =
-    li [ classList [ ( "nav-item", True ), ( "active", isActive page route ) ] ]
+    li [ classList [ ( "navbar-item", True ), ( "active", isActive page route ) ] ]
         [ a [ class "nav-link", Route.href route ] linkContent ]
 
 

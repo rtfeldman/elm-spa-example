@@ -93,11 +93,11 @@ view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "Conduit"
     , content =
-        div [ class "home-page" ]
+        div [ class "home-page", class "section" ]
             [ viewBanner
             , div [ class "container page" ]
-                [ div [ class "row" ]
-                    [ div [ class "col-md-9" ] <|
+                [ div [ class "columns" ]
+                    [ div [ class "column" ] <|
                         case model.feed of
                             Loaded feed ->
                                 [ div [ class "feed-toggle" ] <|
@@ -120,7 +120,7 @@ view model =
 
                             Failed ->
                                 [ Loading.error "feed" ]
-                    , div [ class "col-md-3" ] <|
+                    , div [ class "column", class "is-one-fifth" ] <|
                         case model.tags of
                             Loaded tags ->
                                 [ div [ class "sidebar" ] <|
@@ -145,10 +145,12 @@ view model =
 
 viewBanner : Html msg
 viewBanner =
-    div [ class "banner" ]
-        [ div [ class "container" ]
-            [ h1 [ class "logo-font" ] [ text "conduit" ]
-            , p [] [ text "A place to share your knowledge." ]
+    section [ class "hero", class "is-bold", class "is-primary" ]
+        [ div [ class "hero-body" ]
+            [ div [ class "container" ]
+                [ h1 [ class "title" ] [ text "Hanase" ]
+                , p [] [ text "Streamline your presence." ]
+                ]
             ]
         ]
 
@@ -215,7 +217,7 @@ viewTags tags =
 viewTag : Tag -> Html Msg
 viewTag tagName =
     a
-        [ class "tag-pill tag-default"
+        [ class "tag", class "is-primary"
         , onClick (ClickedTag tagName)
 
         -- The RealWorld CSS requires an href to work properly.

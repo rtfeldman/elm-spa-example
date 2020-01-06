@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build" : "elm make src/Main.elm --output ../hanase-yesod/static/app.js --optimize"
+    "build": "elm make src/Main.elm --output ../hanase-yesod/static/app.js --optimize"
   },
   "repository": {
     "type": "git",
@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/KarateCowboy/elm-spa-example/issues"
   },
-  "homepage": "https://github.com/KarateCowboy/elm-spa-example#readme"
+  "homepage": "https://github.com/KarateCowboy/elm-spa-example#readme",
+  "devDependencies": {
+    "elm-format": "^0.8.2"
+  }
 }

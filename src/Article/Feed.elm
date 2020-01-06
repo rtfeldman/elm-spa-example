@@ -127,21 +127,14 @@ viewPreview maybeCred timeZone article =
                     text ""
     in
     div [ class "article-preview" ]
-        [ div [ class "article-meta" ]
-            [ a [ Route.href (Route.Profile username) ]
+        [ div [ class "media-left" ]
+            [ a [ class "media-left", Route.href (Route.Profile username) ]
                 [ img [ Avatar.src (Profile.avatar profile) ] [] ]
             , div [ class "info" ]
                 [ Author.view username
                 , Timestamp.view timeZone createdAt
                 ]
             , faveButton
-            ]
-        , a [ class "preview-link", Route.href (Route.Article (Article.slug article)) ]
-            [ h1 [] [ text title ]
-            , p [] [ text description ]
-            , span [] [ text "Read more..." ]
-            , ul [ class "tag-list" ]
-                (List.map viewTag (Article.metadata article).tags)
             ]
         ]
 

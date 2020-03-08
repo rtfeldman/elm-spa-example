@@ -2,13 +2,14 @@
   "name": "elm-spa-example",
   "version": "1.0.0",
   "main": "index.js",
-  "repository": "https://github.com/rtfeldman/elm-spa-example.git",
+  "repository": "git@github.com:MikeyBurkman/elm-spa-example.git",
   "author": "MikeyBurkman <michael.burkman@gmail.com>",
   "license": "MIT",
   "scripts": {
     "elm": "elm",
     "debug": "elm-live -e node_modules/.bin/elm src/Main.elm --open -- --debug --output elm.js",
-    "build": "elm make src/Main.elm --debug --output elm.js"
+    "build": "elm make src/Main.elm --debug --output elm.js",
+    "clean-make": "rm -rf elm-stuff && yarn build"
   },
   "dependencies": {
     "elm": "^0.19.1-3",

@@ -26,37 +26,30 @@ type Session
 
 viewer session =
     case session of
-        LoggedIn _ val ->
-            Just val
+        LoggedIn _ val -> Just val
 
-        Guest _ ->
-            Nothing
+        Guest _ -> Nothing
 
 
 cred session =
     case session of
-        LoggedIn _ val ->
-            Just (Viewer.cred val)
+        LoggedIn _ val -> Just (Viewer.cred val)
 
-        Guest _ ->
-            Nothing
+        Guest _ -> Nothing
 
 
 navKey session =
     case session of
-        LoggedIn key _ ->
-            key
+        LoggedIn key _ -> key
 
-        Guest key ->
-            key
+        Guest key -> key
 
 
 
 -- CHANGES
 
 
-changes toMsg key =
-    Api.viewerChanges (\maybeViewer -> toMsg (fromViewer key maybeViewer)) Viewer.decoder
+changes toMsg key = Api.viewerChanges (\maybeViewer -> toMsg (fromViewer key maybeViewer)) Viewer.decoder
 
 
 fromViewer key maybeViewer =
@@ -64,8 +57,6 @@ fromViewer key maybeViewer =
     -- first decode the Value as a String, then
     -- decode that String as JSON.
     case maybeViewer of
-        Just viewerVal ->
-            LoggedIn key viewerVal
+        Just viewerVal -> LoggedIn key viewerVal
 
-        Nothing ->
-            Guest key
+        Nothing -> Guest key

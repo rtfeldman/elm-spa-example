@@ -51,8 +51,7 @@ type Model
 
 
 init maybeViewer url navKey =
-    changeRouteTo (Route.fromUrl url)
-        (Redirect (Session.fromViewer navKey maybeViewer))
+    changeRouteTo (Route.fromUrl url) (Redirect (Session.fromViewer navKey maybeViewer))
 
 
 
@@ -61,48 +60,32 @@ init maybeViewer url navKey =
 
 view model =
     let
-        viewer =
-            Session.viewer (toSession model)
+        viewer = Session.viewer (toSession model)
 
         viewPage page toMsg config =
-            let
-                { title, body } =
-                    Page.view viewer page config
-            in
-            { title = title
-            , body = List.map (Html.map toMsg) body
-            }
+            let { title, body } = Page.view viewer page config in
+            { title = title, body = List.map (Html.map toMsg) body }
     in
     case model of
-        Redirect _ ->
-            Page.view viewer Page.Other Blank.view
+        Redirect _ -> Page.view viewer Page.Other Blank.view
 
-        NotFound _ ->
-            Page.view viewer Page.Other NotFound.view
+        NotFound _ -> Page.view viewer Page.Other NotFound.view
 
-        Settings settings ->
-            viewPage Page.Other GotSettingsMsg (Settings.view settings)
+        Settings settings -> viewPage Page.Other GotSettingsMsg (Settings.view settings)
 
-        Home home ->
-            viewPage Page.Home GotHomeMsg (Home.view home)
+        Home home -> viewPage Page.Home GotHomeMsg (Home.view home)
 
-        Login login ->
-            viewPage Page.Other GotLoginMsg (Login.view login)
+        Login login -> viewPage Page.Other GotLoginMsg (Login.view login)
 
-        Register register ->
-            viewPage Page.Other GotRegisterMsg (Register.view register)
+        Register register -> viewPage Page.Other GotRegisterMsg (Register.view register)
 
-        Profile username profile ->
-            viewPage (Page.Profile username) GotProfileMsg (Profile.view profile)
+        Profile username profile -> viewPage (Page.Profile username) GotProfileMsg (Profile.view profile)
 
-        Article article ->
-            viewPage Page.Other GotArticleMsg (Article.view article)
+        Article article -> viewPage Page.Other GotArticleMsg (Article.view article)
 
-        Editor Nothing editor ->
-            viewPage Page.NewArticle GotEditorMsg (Editor.view editor)
+        Editor Nothing editor -> viewPage Page.NewArticle GotEditorMsg (Editor.view editor)
 
-        Editor (Just _) editor ->
-            viewPage Page.Other GotEditorMsg (Editor.view editor)
+        Editor (Just _) editor -> viewPage Page.Other GotEditorMsg (Editor.view editor)
 
 
 
@@ -124,32 +107,23 @@ type Msg
 
 toSession page =
     case page of
-        Redirect session ->
-            session
+        Redirect session -> session
 
-        NotFound session ->
-            session
+        NotFound session -> session
 
-        Home home ->
-            Home.toSession home
+        Home home -> Home.toSession home
 
-        Settings settings ->
-            Settings.toSession settings
+        Settings settings -> Settings.toSession settings
 
-        Login login ->
-            Login.toSession login
+        Login login -> Login.toSession login
 
-        Register register ->
-            Register.toSession register
+        Register register -> Register.toSession register
 
-        Profile _ profile ->
-            Profile.toSession profile
+        Profile _ profile -> Profile.toSession profile
 
-        Article article ->
-            Article.toSession article
+        Article article -> Article.toSession article
 
-        Editor _ editor ->
-            Editor.toSession editor
+        Editor _ editor -> Editor.toSession editor
 
 
 changeRouteTo maybeRoute model =
@@ -158,46 +132,27 @@ changeRouteTo maybeRoute model =
             toSession model
     in
     case maybeRoute of
-        Nothing ->
-            ( NotFound session, Cmd.none )
+        Nothing -> ( NotFound session, Cmd.none )
 
-        Just Route.Root ->
-            ( model, Route.replaceUrl (Session.navKey session) Route.Home )
+        Just Route.Root -> ( model, Route.replaceUrl (Session.navKey session) Route.Home )
 
-        Just Route.Logout ->
-            ( model, Api.logout )
+        Just Route.Logout -> ( model, Api.logout )
 
-        Just Route.NewArticle ->
-            Editor.initNew session
-                |> updateWith (Editor Nothing) GotEditorMsg model
+        Just Route.NewArticle -> Editor.initNew session |> updateWith (Editor Nothing) GotEditorMsg model
 
-        Just (Route.EditArticle slug) ->
-            Editor.initEdit session slug
-                |> updateWith (Editor (Just slug)) GotEditorMsg model
+        Just (Route.EditArticle slug) -> Editor.initEdit session slug |> updateWith (Editor (Just slug)) GotEditorMsg model
 
-        Just Route.Settings ->
-            Settings.init session
-                |> updateWith Settings GotSettingsMsg model
+        Just Route.Settings -> Settings.init session |> updateWith Settings GotSettingsMsg model
 
-        Just Route.Home ->
-            Home.init session
-                |> updateWith Home GotHomeMsg model
+        Just Route.Home -> Home.init session |> updateWith Home GotHomeMsg model
 
-        Just Route.Login ->
-            Login.init session
-                |> updateWith Login GotLoginMsg model
+        Just Route.Login -> Login.init session |> updateWith Login GotLoginMsg model
 
-        Just Route.Register ->
-            Register.init session
-                |> updateWith Register GotRegisterMsg model
+        Just Route.Register -> Register.init session |> updateWith Register GotRegisterMsg model
 
-        Just (Route.Profile username) ->
-            Profile.init session username
-                |> updateWith (Profile username) GotProfileMsg model
+        Just (Route.Profile username) -> Profile.init session username |> updateWith (Profile username) GotProfileMsg model
 
-        Just (Route.Article slug) ->
-            Article.init session slug
-                |> updateWith Article GotArticleMsg model
+        Just (Route.Article slug) -> Article.init session slug |> updateWith Article GotArticleMsg model
 
 
 update msg model =
@@ -206,72 +161,34 @@ update msg model =
             case urlRequest of
                 Browser.Internal url ->
                     case url.fragment of
-                        Nothing ->
-                            -- If we got a link that didn't include a fragment,
-                            -- it's from one of those (href "") attributes that
-                            -- we have to include to make the RealWorld CSS work.
-                            --
-                            -- In an application doing path routing instead of
-                            -- fragment-based routing, this entire
-                            -- `case url.fragment of` expression this comment
-                            -- is inside would be unnecessary.
-                            ( model, Cmd.none )
+                        Nothing -> ( model, Cmd.none )
 
-                        Just _ ->
-                            ( model
-                            , Nav.pushUrl (Session.navKey (toSession model)) (Url.toString url)
-                            )
+                        Just _ -> ( model, Nav.pushUrl (Session.navKey (toSession model)) (Url.toString url) )
 
-                Browser.External href ->
-                    ( model
-                    , Nav.load href
-                    )
+                Browser.External href -> ( model, Nav.load href )
 
-        ( ChangedUrl url, _ ) ->
-            changeRouteTo (Route.fromUrl url) model
+        ( ChangedUrl url, _ ) -> changeRouteTo (Route.fromUrl url) model
 
-        ( GotSettingsMsg subMsg, Settings settings ) ->
-            Settings.update subMsg settings
-                |> updateWith Settings GotSettingsMsg model
+        ( GotSettingsMsg subMsg, Settings settings ) -> Settings.update subMsg settings |> updateWith Settings GotSettingsMsg model
 
-        ( GotLoginMsg subMsg, Login login ) ->
-            Login.update subMsg login
-                |> updateWith Login GotLoginMsg model
+        ( GotLoginMsg subMsg, Login login ) -> Login.update subMsg login |> updateWith Login GotLoginMsg model
 
-        ( GotRegisterMsg subMsg, Register register ) ->
-            Register.update subMsg register
-                |> updateWith Register GotRegisterMsg model
+        ( GotRegisterMsg subMsg, Register register ) -> Register.update subMsg register |> updateWith Register GotRegisterMsg model
 
-        ( GotHomeMsg subMsg, Home home ) ->
-            Home.update subMsg home
-                |> updateWith Home GotHomeMsg model
+        ( GotHomeMsg subMsg, Home home ) -> Home.update subMsg home |> updateWith Home GotHomeMsg model
 
-        ( GotProfileMsg subMsg, Profile username profile ) ->
-            Profile.update subMsg profile
-                |> updateWith (Profile username) GotProfileMsg model
+        ( GotProfileMsg subMsg, Profile username profile ) -> Profile.update subMsg profile |> updateWith (Profile username) GotProfileMsg model
 
-        ( GotArticleMsg subMsg, Article article ) ->
-            Article.update subMsg article
-                |> updateWith Article GotArticleMsg model
+        ( GotArticleMsg subMsg, Article article ) -> Article.update subMsg article |> updateWith Article GotArticleMsg model
 
-        ( GotEditorMsg subMsg, Editor slug editor ) ->
-            Editor.update subMsg editor
-                |> updateWith (Editor slug) GotEditorMsg model
+        ( GotEditorMsg subMsg, Editor slug editor ) -> Editor.update subMsg editor |> updateWith (Editor slug) GotEditorMsg model
 
-        ( GotSession session, Redirect _ ) ->
-            ( Redirect session
-            , Route.replaceUrl (Session.navKey session) Route.Home
-            )
+        ( GotSession session, Redirect _ ) -> ( Redirect session, Route.replaceUrl (Session.navKey session) Route.Home )
 
-        ( _, _ ) ->
-            -- Disregard messages that arrived for the wrong page.
-            ( model, Cmd.none )
+        ( _, _ ) -> ( model, Cmd.none )
 
 
-updateWith toModel toMsg model ( subModel, subCmd ) =
-    ( toModel subModel
-    , Cmd.map toMsg subCmd
-    )
+updateWith toModel toMsg model ( subModel, subCmd ) = ( toModel subModel, Cmd.map toMsg subCmd )
 
 
 
@@ -280,32 +197,23 @@ updateWith toModel toMsg model ( subModel, subCmd ) =
 
 subscriptions model =
     case model of
-        NotFound _ ->
-            Sub.none
+        NotFound _ -> Sub.none
 
-        Redirect _ ->
-            Session.changes GotSession (Session.navKey (toSession model))
+        Redirect _ -> Session.changes GotSession (Session.navKey (toSession model))
 
-        Settings settings ->
-            Sub.map GotSettingsMsg (Settings.subscriptions settings)
+        Settings settings -> Sub.map GotSettingsMsg (Settings.subscriptions settings)
 
-        Home home ->
-            Sub.map GotHomeMsg (Home.subscriptions home)
+        Home home -> Sub.map GotHomeMsg (Home.subscriptions home)
 
-        Login login ->
-            Sub.map GotLoginMsg (Login.subscriptions login)
+        Login login -> Sub.map GotLoginMsg (Login.subscriptions login)
 
-        Register register ->
-            Sub.map GotRegisterMsg (Register.subscriptions register)
+        Register register -> Sub.map GotRegisterMsg (Register.subscriptions register)
 
-        Profile _ profile ->
-            Sub.map GotProfileMsg (Profile.subscriptions profile)
+        Profile _ profile -> Sub.map GotProfileMsg (Profile.subscriptions profile)
 
-        Article article ->
-            Sub.map GotArticleMsg (Article.subscriptions article)
+        Article article -> Sub.map GotArticleMsg (Article.subscriptions article)
 
-        Editor _ editor ->
-            Sub.map GotEditorMsg (Editor.subscriptions editor)
+        Editor _ editor -> Sub.map GotEditorMsg (Editor.subscriptions editor)
 
 
 

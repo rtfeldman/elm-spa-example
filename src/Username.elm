@@ -10,33 +10,27 @@ import Url.Parser
 -- TYPES
 
 
-type Username
-    = Username String
+type Username = Username String
 
 
 
 -- CREATE
 
 
-decoder =
-    Decode.map Username Decode.string
+decoder = Decode.map Username Decode.string
 
 
 
 -- TRANSFORM
 
 
-encode (Username username) =
-    Encode.string username
+encode (Username username) = Encode.string username
 
 
-toString (Username username) =
-    username
+toString (Username username) = username
 
 
-urlParser =
-    Url.Parser.custom "USERNAME" (\str -> Just (Username str))
+urlParser = Url.Parser.custom "USERNAME" (\str -> Just (Username str))
 
 
-toHtml (Username username) =
-    Html.text username
+toHtml (Username username) = Html.text username

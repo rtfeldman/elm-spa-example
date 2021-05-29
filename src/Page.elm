@@ -58,18 +58,13 @@ viewHeader page maybeViewer =
 
 
 viewMenu page maybeViewer =
-    let
-        linkTo =
-            navbarLink page
-    in
+    let linkTo = navbarLink page in
     case maybeViewer of
         Just viewer ->
             let
-                username =
-                    Viewer.username viewer
+                username = Viewer.username viewer
 
-                avatar =
-                    Viewer.avatar viewer
+                avatar = Viewer.avatar viewer
             in
             [ linkTo Route.NewArticle [ i [ class "ion-compose" ] [], text "\u{00A0}New Post" ]
             , linkTo Route.Settings [ i [ class "ion-gear-a" ] [], text "\u{00A0}Settings" ]
@@ -107,34 +102,25 @@ navbarLink page route linkContent =
 
 isActive page route =
     case ( page, route ) of
-        ( Home, Route.Home ) ->
-            True
+        ( Home, Route.Home ) -> True
 
-        ( Login, Route.Login ) ->
-            True
+        ( Login, Route.Login ) -> True
 
-        ( Register, Route.Register ) ->
-            True
+        ( Register, Route.Register ) -> True
 
-        ( Settings, Route.Settings ) ->
-            True
+        ( Settings, Route.Settings ) -> True
 
-        ( Profile pageUsername, Route.Profile routeUsername ) ->
-            pageUsername == routeUsername
+        ( Profile pageUsername, Route.Profile routeUsername ) -> pageUsername == routeUsername
 
-        ( NewArticle, Route.NewArticle ) ->
-            True
+        ( NewArticle, Route.NewArticle ) -> True
 
-        _ ->
-            False
+        _ -> False
 
 
 {-| Render dismissable errors. We use this all over the place!
 -}
 viewErrors dismissErrors errors =
-    if List.isEmpty errors then
-        Html.text ""
-
+    if List.isEmpty errors then Html.text ""
     else
         div
             [ class "error-messages"

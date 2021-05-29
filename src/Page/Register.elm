@@ -151,14 +151,11 @@ update msg model =
                     , Cmd.none
                     )
 
-        EnteredUsername username ->
-            updateForm (\form -> { form | username = username }) model
+        EnteredUsername username -> updateForm (\form -> { form | username = username }) model
 
-        EnteredEmail email ->
-            updateForm (\form -> { form | email = email }) model
+        EnteredEmail email -> updateForm (\form -> { form | email = email }) model
 
-        EnteredPassword password ->
-            updateForm (\form -> { form | password = password }) model
+        EnteredPassword password -> updateForm (\form -> { form | password = password }) model
 
         CompletedRegister (Err error) ->
             let serverErrors = List.map ServerError (Api.decodeErrors error) in

@@ -52,10 +52,7 @@ map transform (PaginatedList info) =
 {-| I decided to accept a record here so I don't mess up the argument order of the two Ints.
 -}
 params { page, resultsPerPage } =
-    let
-        offset =
-            (page - 1) * resultsPerPage
-    in
+    let offset = (page - 1) * resultsPerPage in
     [ Url.Builder.string "limit" (String.fromInt resultsPerPage)
     , Url.Builder.string "offset" (String.fromInt offset)
     ]

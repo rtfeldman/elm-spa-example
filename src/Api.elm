@@ -37,16 +37,13 @@ This token should never be rendered to the end user, and with this API, it
 can't be!
 
 -}
-type Cred
-    = Cred Username String
+type Cred = Cred Username String
 
 
-username (Cred val _) =
-    val
+username (Cred val _) = val
 
 
-credHeader (Cred _ str) =
-    Http.header "authorization" ("Token " ++ str)
+credHeader (Cred _ str) = Http.header "authorization" ("Token " ++ str)
 
 
 {-| It's important that this is never exposed!
@@ -77,8 +74,7 @@ decode decoder value =
 port onStoreChange : (Value -> msg) -> Sub msg
 
 
-viewerChanges toMsg decoder =
-    onStoreChange (\value -> toMsg (decodeFromChange decoder value))
+viewerChanges toMsg decoder = onStoreChange (\value -> toMsg (decodeFromChange decoder value))
 
 
 decodeFromChange viewerDecoder val =
@@ -149,8 +145,7 @@ application viewerDecoder config =
         }
 
 
-storageDecoder viewerDecoder =
-    Decode.field "user" (decoderFromCred viewerDecoder)
+storageDecoder viewerDecoder = Decode.field "user" (decoderFromCred viewerDecoder)
 
 
 
@@ -164,11 +159,9 @@ get url maybeCred decoder =
         , expect = Http.expectJson decoder
         , headers =
             case maybeCred of
-                Just cred ->
-                    [ credHeader cred ]
+                Just cred -> [ credHeader cred ]
 
-                Nothing ->
-                    []
+                Nothing -> []
         , body = Http.emptyBody
         , timeout = Nothing
         , withCredentials = False
@@ -194,11 +187,9 @@ post url maybeCred body decoder =
         , expect = Http.expectJson decoder
         , headers =
             case maybeCred of
-                Just cred ->
-                    [ credHeader cred ]
+                Just cred -> [ credHeader cred ]
 
-                Nothing ->
-                    []
+                Nothing -> []
         , body = body
         , timeout = Nothing
         , withCredentials = False
@@ -217,30 +208,23 @@ delete url cred body decoder =
         }
 
 
-login body decoder =
-    post Endpoint.login Nothing body (Decode.field "user" (decoderFromCred decoder))
+login body decoder = post Endpoint.login Nothing body (Decode.field "user" (decoderFromCred decoder))
 
 
-register body decoder =
-    post Endpoint.users Nothing body (Decode.field "user" (decoderFromCred decoder))
+register body decoder = post Endpoint.users Nothing body (Decode.field "user" (decoderFromCred decoder))
 
 
-settings cred body decoder =
-    put Endpoint.user cred body (Decode.field "user" (decoderFromCred decoder))
+settings cred body decoder = put Endpoint.user cred body (Decode.field "user" (decoderFromCred decoder))
 
 
-decoderFromCred decoder =
-    Decode.map2 (\fromCred cred -> fromCred cred)
-        decoder
-        credDecoder
+decoderFromCred decoder = Decode.map2 (\fromCred cred -> fromCred cred) decoder credDecoder
 
 
 
 -- ERRORS
 
 
-addServerError list =
-    "Server error" :: list
+addServerError list = "Server error" :: list
 
 
 {-| Many API endpoints include an "errors" field in their BadStatus responses.
@@ -252,8 +236,7 @@ decodeErrors error =
                 |> decodeString (field "errors" errorsDecoder)
                 |> Result.withDefault [ "Server error" ]
 
-        err ->
-            [ "Server error" ]
+        err -> [ "Server error" ]
 
 
 errorsDecoder =
@@ -261,17 +244,14 @@ errorsDecoder =
         |> Decode.map (List.concatMap fromPair)
 
 
-fromPair ( field, errors ) =
-    List.map (\error -> field ++ " " ++ error) errors
+fromPair ( field, errors ) = List.map (\error -> field ++ " " ++ error) errors
 
 
 
 -- LOCALSTORAGE KEYS
 
 
-cacheStorageKey =
-    "cache"
+cacheStorageKey = "cache"
 
 
-credStorageKey =
-    "cred"
+credStorageKey = "cred"

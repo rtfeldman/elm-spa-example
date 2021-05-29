@@ -69,25 +69,21 @@ routeToString page = "#/" ++ String.join "/" (routeToPieces page)
 routeToPieces page =
     case page of
         Home -> []
+
         Root -> []
+
         Login -> [ "login" ]
 
         Logout -> [ "logout" ]
 
-        Register ->
-            [ "register" ]
+        Register -> [ "register" ]
 
-        Settings ->
-            [ "settings" ]
+        Settings -> [ "settings" ]
 
-        Article slug ->
-            [ "article", Slug.toString slug ]
+        Article slug -> [ "article", Slug.toString slug ]
 
-        Profile username ->
-            [ "profile", Username.toString username ]
+        Profile username -> [ "profile", Username.toString username ]
 
-        NewArticle ->
-            [ "editor" ]
+        NewArticle -> [ "editor" ]
 
-        EditArticle slug ->
-            [ "editor", Slug.toString slug ]
+        EditArticle slug -> [ "editor", Slug.toString slug ]

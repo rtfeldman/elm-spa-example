@@ -30,46 +30,32 @@ format zone time =
     let
         month =
             case Time.toMonth zone time of
-                Jan ->
-                    "January"
+                Jan -> "January"
 
-                Feb ->
-                    "February"
+                Feb -> "February"
 
-                Mar ->
-                    "March"
+                Mar -> "March"
 
-                Apr ->
-                    "April"
+                Apr -> "April"
 
-                May ->
-                    "May"
+                May -> "May"
 
-                Jun ->
-                    "June"
+                Jun -> "June"
 
-                Jul ->
-                    "July"
+                Jul -> "July"
 
-                Aug ->
-                    "August"
+                Aug -> "August"
 
-                Sep ->
-                    "September"
+                Sep -> "September"
 
-                Oct ->
-                    "October"
+                Oct -> "October"
 
-                Nov ->
-                    "November"
+                Nov -> "November"
 
-                Dec ->
-                    "December"
+                Dec -> "December"
 
-        day =
-            String.fromInt (Time.toDay zone time)
+        day = String.fromInt (Time.toDay zone time)
 
-        year =
-            String.fromInt (Time.toYear zone time)
+        year = String.fromInt (Time.toYear zone time)
     in
     month ++ " " ++ day ++ ", " ++ year

@@ -19,25 +19,20 @@ type Image
 -- IMAGES
 
 
-error =
-    image "error.jpg"
+error = image "error.jpg"
 
 
-loading =
-    image "loading.svg"
+loading = image "loading.svg"
 
 
-defaultAvatar =
-    image "smiley-cyrus.jpg"
+defaultAvatar = image "smiley-cyrus.jpg"
 
 
-image filename =
-    Image ("/assets/images/" ++ filename)
+image filename = Image ("/assets/images/" ++ filename)
 
 
 
 -- USING IMAGES
 
 
-src (Image url) =
-    Attr.src url
+src (Image url) = Attr.src url

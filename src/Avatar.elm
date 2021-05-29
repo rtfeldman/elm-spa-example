@@ -11,16 +11,14 @@ import Json.Encode as Encode exposing (Value)
 -- TYPES
 
 
-type Avatar
-    = Avatar (Maybe String)
+type Avatar = Avatar (Maybe String)
 
 
 
 -- CREATE
 
 
-decoder =
-    Decode.map Avatar (Decode.nullable Decode.string)
+decoder = Decode.map Avatar (Decode.nullable Decode.string)
 
 
 
@@ -29,24 +27,18 @@ decoder =
 
 encode (Avatar maybeUrl) =
     case maybeUrl of
-        Just url ->
-            Encode.string url
+        Just url -> Encode.string url
 
-        Nothing ->
-            Encode.null
+        Nothing -> Encode.null
 
 
 src (Avatar maybeUrl) =
     case maybeUrl of
-        Nothing ->
-            Asset.src Asset.defaultAvatar
+        Nothing -> Asset.src Asset.defaultAvatar
 
-        Just "" ->
-            Asset.src Asset.defaultAvatar
+        Just "" -> Asset.src Asset.defaultAvatar
 
-        Just url ->
-            Html.Attributes.src url
+        Just url -> Html.Attributes.src url
 
 
-toMaybeString (Avatar maybeUrl) =
-    maybeUrl
+toMaybeString (Avatar maybeUrl) = maybeUrl

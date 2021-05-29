@@ -60,42 +60,34 @@ type Author
 
 {-| An author we're following.
 -}
-type FollowedAuthor
-    = FollowedAuthor Username Profile
+type FollowedAuthor = FollowedAuthor Username Profile
 
 
 {-| An author we're not following.
 -}
-type UnfollowedAuthor
-    = UnfollowedAuthor Username Profile
+type UnfollowedAuthor = UnfollowedAuthor Username Profile
 
 
 {-| Return an Author's username.
 -}
 username author =
     case author of
-        IsViewer cred _ ->
-            Api.username cred
+        IsViewer cred _ -> Api.username cred
 
-        IsFollowing (FollowedAuthor val _) ->
-            val
+        IsFollowing (FollowedAuthor val _) -> val
 
-        IsNotFollowing (UnfollowedAuthor val _) ->
-            val
+        IsNotFollowing (UnfollowedAuthor val _) -> val
 
 
 {-| Return an Author's profile.
 -}
 profile author =
     case author of
-        IsViewer _ val ->
-            val
+        IsViewer _ val -> val
 
-        IsFollowing (FollowedAuthor _ val) ->
-            val
+        IsFollowing (FollowedAuthor _ val) -> val
 
-        IsNotFollowing (UnfollowedAuthor _ val) ->
-            val
+        IsNotFollowing (UnfollowedAuthor _ val) -> val
 
 
 
@@ -111,55 +103,37 @@ fetch uname maybeCred =
 -- FOLLOWING
 
 
-follow (UnfollowedAuthor uname prof) =
-    FollowedAuthor uname prof
+follow (UnfollowedAuthor uname prof) = FollowedAuthor uname prof
 
 
-unfollow (FollowedAuthor uname prof) =
-    UnfollowedAuthor uname prof
+unfollow (FollowedAuthor uname prof) = UnfollowedAuthor uname prof
 
 
-requestFollow (UnfollowedAuthor uname _) cred =
-    Api.post (Endpoint.follow uname) (Just cred) Http.emptyBody (followDecoder cred)
+requestFollow (UnfollowedAuthor uname _) cred = Api.post (Endpoint.follow uname) (Just cred) Http.emptyBody (followDecoder cred)
 
 
 requestUnfollow (FollowedAuthor uname _) cred =
-    Api.delete (Endpoint.follow uname)
-        cred
-        Http.emptyBody
-        (followDecoder cred)
+    Api.delete (Endpoint.follow uname) cred Http.emptyBody (followDecoder cred)
 
 
-followDecoder cred =
-    Decode.field "profile" (decoder (Just cred))
+followDecoder cred = Decode.field "profile" (decoder (Just cred))
 
 
 followButton toMsg cred ((UnfollowedAuthor uname _) as author) =
-    toggleFollowButton "Follow"
-        [ "btn-outline-secondary" ]
-        (toMsg cred author)
-        uname
+    toggleFollowButton "Follow" [ "btn-outline-secondary" ] (toMsg cred author) uname
 
 
 unfollowButton toMsg cred ((FollowedAuthor uname _) as author) =
-    toggleFollowButton "Unfollow"
-        [ "btn-secondary" ]
-        (toMsg cred author)
-        uname
+    toggleFollowButton "Unfollow" [ "btn-secondary" ] (toMsg cred author) uname
 
 
 toggleFollowButton txt extraClasses msgWhenClicked uname =
-    let
-        classStr =
-            "btn btn-sm " ++ String.join " " extraClasses ++ " action-btn"
+    let classStr = "btn btn-sm " ++ String.join " " extraClasses ++ " action-btn"
 
-        caption =
-            "\u{00A0}" ++ txt ++ " " ++ Username.toString uname
+        caption = "\u{00A0}" ++ txt ++ " " ++ Username.toString uname
     in
     Html.button [ class classStr, onClick msgWhenClicked ]
-        [ i [ class "ion-plus-round" ] []
-        , text caption
-        ]
+        [ i [ class "ion-plus-round" ] [], text caption ]
 
 
 
@@ -175,16 +149,12 @@ decoder maybeCred =
 
 decodeFromPair maybeCred ( prof, uname ) =
     case maybeCred of
-        Nothing ->
-            -- If you're logged out, you can't be following anyone!
-            Decode.succeed (IsNotFollowing (UnfollowedAuthor uname prof))
+        Nothing -> Decode.succeed (IsNotFollowing (UnfollowedAuthor uname prof))
 
         Just cred ->
-            if uname == Api.username cred then
-                Decode.succeed (IsViewer cred prof)
-
-            else
-                nonViewerDecoder prof uname
+            if uname == Api.username cred
+            then Decode.succeed (IsViewer cred prof)
+            else nonViewerDecoder prof uname
 
 
 nonViewerDecoder prof uname =
@@ -193,16 +163,13 @@ nonViewerDecoder prof uname =
 
 
 authorFromFollowing prof uname isFollowing =
-    if isFollowing then
-        IsFollowing (FollowedAuthor uname prof)
-
-    else
-        IsNotFollowing (UnfollowedAuthor uname prof)
+    if isFollowing
+    then IsFollowing (FollowedAuthor uname prof)
+    else IsNotFollowing (UnfollowedAuthor uname prof)
 
 
 {-| View an author. We basically render their username and a link to their
 profile, and that's it.
 -}
 view uname =
-    a [ class "author", Route.href (Route.Profile uname) ]
-        [ Username.toHtml uname ]
+    a [ class "author", Route.href (Route.Profile uname) ] [ Username.toHtml uname ]

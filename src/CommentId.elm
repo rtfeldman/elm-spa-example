@@ -7,8 +7,7 @@ import Json.Decode as Decode exposing (Decoder)
 -- TYPES
 
 
-type CommentId
-    = CommentId Int
+type CommentId = CommentId Int
 
 
 

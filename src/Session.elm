@@ -24,7 +24,6 @@ type Session
 -- INFO
 
 
-viewer : Session -> Maybe Viewer
 viewer session =
     case session of
         LoggedIn _ val ->
@@ -34,7 +33,6 @@ viewer session =
             Nothing
 
 
-cred : Session -> Maybe Cred
 cred session =
     case session of
         LoggedIn _ val ->
@@ -44,7 +42,6 @@ cred session =
             Nothing
 
 
-navKey : Session -> Nav.Key
 navKey session =
     case session of
         LoggedIn key _ ->
@@ -58,12 +55,10 @@ navKey session =
 -- CHANGES
 
 
-changes : (Session -> msg) -> Nav.Key -> Sub msg
 changes toMsg key =
     Api.viewerChanges (\maybeViewer -> toMsg (fromViewer key maybeViewer)) Viewer.decoder
 
 
-fromViewer : Nav.Key -> Maybe Viewer -> Session
 fromViewer key maybeViewer =
     -- It's stored in localStorage as a JSON String;
     -- first decode the Value as a String, then

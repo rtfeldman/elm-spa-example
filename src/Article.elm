@@ -45,8 +45,6 @@ which displays multiple articles, but without bodies.
 
 This definition for `Article` means we can write:
 
-viewArticle : Article Full -> Html msg
-viewFeed : List (Article Preview) -> Html msg
 
 This indicates that `viewArticle` requires an article _with a `body` present_,
 wereas `viewFeed` accepts articles with no bodies. (We could also have written
@@ -71,8 +69,7 @@ not to alter it. This is read-only information!
 If we find ourselves using any particular piece of metadata often,
 for example `title`, we could expose a convenience function like this:
 
-Article.title : Article a -> String
-
+Article.
 If you like, it's totally reasonable to expose a function like that for every one
 of these fields!
 
@@ -110,36 +107,26 @@ type alias Internals =
     }
 
 
-type Preview
-    = Preview
+type Preview = Preview
 
 
-type Full
-    = Full Body
+type Full = Full Body
 
 
 
 -- INFO
 
 
-author : Article a -> Author
-author (Article internals _) =
-    internals.author
+author (Article internals _) = internals.author
 
 
-metadata : Article a -> Metadata
-metadata (Article internals _) =
-    internals.metadata
+metadata (Article internals _) = internals.metadata
 
 
-slug : Article a -> Slug
-slug (Article internals _) =
-    internals.slug
+slug (Article internals _) = internals.slug
 
 
-body : Article Full -> Body
-body (Article _ (Full extraInfo)) =
-    extraInfo
+body (Article _ (Full extraInfo)) = extraInfo
 
 
 
@@ -154,35 +141,28 @@ We can tell this for sure by looking at the types of the exposed functions
 in this module.
 
 -}
-mapAuthor : (Author -> Author) -> Article a -> Article a
-mapAuthor transform (Article info extras) =
-    Article { info | author = transform info.author } extras
+mapAuthor transform (Article info extras) = Article { info | author = transform info.author } extras
 
 
-fromPreview : Body -> Article Preview -> Article Full
-fromPreview newBody (Article info Preview) =
-    Article info (Full newBody)
+fromPreview newBody (Article info Preview) = Article info (Full newBody)
 
 
 
 -- SERIALIZATION
 
 
-previewDecoder : Maybe Cred -> Decoder (Article Preview)
 previewDecoder maybeCred =
     Decode.succeed Article
         |> custom (internalsDecoder maybeCred)
         |> hardcoded Preview
 
 
-fullDecoder : Maybe Cred -> Decoder (Article Full)
 fullDecoder maybeCred =
     Decode.succeed Article
         |> custom (internalsDecoder maybeCred)
         |> required "body" (Decode.map Full Body.decoder)
 
 
-internalsDecoder : Maybe Cred -> Decoder Internals
 internalsDecoder maybeCred =
     Decode.succeed Internals
         |> required "slug" Slug.decoder
@@ -190,7 +170,6 @@ internalsDecoder maybeCred =
         |> custom metadataDecoder
 
 
-metadataDecoder : Decoder Metadata
 metadataDecoder =
     Decode.succeed Metadata
         |> required "description" (Decode.map (Maybe.withDefault "") (Decode.nullable Decode.string))
@@ -205,7 +184,6 @@ metadataDecoder =
 -- SINGLE
 
 
-fetch : Maybe Cred -> Slug -> Http.Request (Article Full)
 fetch maybeCred articleSlug =
     Decode.field "article" (fullDecoder maybeCred)
         |> Api.get (Endpoint.article articleSlug) maybeCred
@@ -215,19 +193,11 @@ fetch maybeCred articleSlug =
 -- FAVORITE
 
 
-favorite : Slug -> Cred -> Http.Request (Article Preview)
-favorite articleSlug cred =
-    Api.post (Endpoint.favorite articleSlug) (Just cred) Http.emptyBody (faveDecoder cred)
+favorite articleSlug cred = Api.post (Endpoint.favorite articleSlug) (Just cred) Http.emptyBody (faveDecoder cred)
 
+unfavorite articleSlug cred = Api.delete (Endpoint.favorite articleSlug) cred Http.emptyBody (faveDecoder cred)
 
-unfavorite : Slug -> Cred -> Http.Request (Article Preview)
-unfavorite articleSlug cred =
-    Api.delete (Endpoint.favorite articleSlug) cred Http.emptyBody (faveDecoder cred)
-
-
-faveDecoder : Cred -> Decoder (Article Preview)
-faveDecoder cred =
-    Decode.field "article" (previewDecoder (Just cred))
+faveDecoder cred = Decode.field "article" (previewDecoder (Just cred))
 
 
 {-| This is a "build your own element" API.
@@ -236,39 +206,14 @@ You pass it some configuration, followed by a `List (Attribute msg)` and a
 `List (Html msg)`, just like any standard Html element.
 
 -}
-favoriteButton :
-    Cred
-    -> msg
-    -> List (Attribute msg)
-    -> List (Html msg)
-    -> Html msg
-favoriteButton _ msg attrs kids =
-    toggleFavoriteButton "btn btn-sm btn-outline-primary" msg attrs kids
+favoriteButton _ msg attrs kids = toggleFavoriteButton "btn btn-sm btn-outline-primary" msg attrs kids
 
+unfavoriteButton _ msg attrs kids = toggleFavoriteButton "btn btn-sm btn-primary" msg attrs kids
 
-unfavoriteButton :
-    Cred
-    -> msg
-    -> List (Attribute msg)
-    -> List (Html msg)
-    -> Html msg
-unfavoriteButton _ msg attrs kids =
-    toggleFavoriteButton "btn btn-sm btn-primary" msg attrs kids
-
-
-toggleFavoriteButton :
-    String
-    -> msg
-    -> List (Attribute msg)
-    -> List (Html msg)
-    -> Html msg
 toggleFavoriteButton classStr msg attrs kids =
     Html.button
         (class classStr :: onClickStopPropagation msg :: attrs)
         (i [ class "ion-heart" ] [] :: kids)
 
-
-onClickStopPropagation : msg -> Attribute msg
 onClickStopPropagation msg =
-    stopPropagationOn "click"
-        (Decode.succeed ( msg, True ))
+    stopPropagationOn "click" (Decode.succeed ( msg, True ))

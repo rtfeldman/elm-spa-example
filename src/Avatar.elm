@@ -19,7 +19,6 @@ type Avatar
 -- CREATE
 
 
-decoder : Decoder Avatar
 decoder =
     Decode.map Avatar (Decode.nullable Decode.string)
 
@@ -28,7 +27,6 @@ decoder =
 -- TRANSFORM
 
 
-encode : Avatar -> Value
 encode (Avatar maybeUrl) =
     case maybeUrl of
         Just url ->
@@ -38,7 +36,6 @@ encode (Avatar maybeUrl) =
             Encode.null
 
 
-src : Avatar -> Attribute msg
 src (Avatar maybeUrl) =
     case maybeUrl of
         Nothing ->
@@ -51,6 +48,5 @@ src (Avatar maybeUrl) =
             Html.Attributes.src url
 
 
-toMaybeString : Avatar -> Maybe String
 toMaybeString (Avatar maybeUrl) =
     maybeUrl

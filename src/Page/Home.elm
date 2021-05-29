@@ -53,7 +53,6 @@ type FeedTab
     | TagFeed Tag
 
 
-init : Session -> ( Model, Cmd Msg )
 init session =
     let
         feedTab =
@@ -89,7 +88,6 @@ init session =
 -- VIEW
 
 
-view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "Conduit"
     , content =
@@ -143,7 +141,6 @@ view model =
     }
 
 
-viewBanner : Html msg
 viewBanner =
     div [ class "banner" ]
         [ div [ class "container" ]
@@ -157,7 +154,6 @@ viewBanner =
 -- TABS
 
 
-viewTabs : Maybe Cred -> FeedTab -> Html Msg
 viewTabs maybeCred tab =
     case tab of
         YourFeed cred ->
@@ -188,31 +184,22 @@ viewTabs maybeCred tab =
             Feed.viewTabs otherTabs (tagFeed tag) []
 
 
-yourFeed : Cred -> ( String, Msg )
-yourFeed cred =
-    ( "Your Feed", ClickedTab (YourFeed cred) )
+yourFeed cred = ( "Your Feed", ClickedTab (YourFeed cred) )
 
 
-globalFeed : ( String, Msg )
-globalFeed =
-    ( "Global Feed", ClickedTab GlobalFeed )
+globalFeed = ( "Global Feed", ClickedTab GlobalFeed )
 
 
-tagFeed : Tag -> ( String, Msg )
-tagFeed tag =
-    ( "#" ++ Tag.toString tag, ClickedTab (TagFeed tag) )
+tagFeed tag = ( "#" ++ Tag.toString tag, ClickedTab (TagFeed tag) )
 
 
 
 -- TAGS
 
 
-viewTags : List Tag -> Html Msg
-viewTags tags =
-    div [ class "tag-list" ] (List.map viewTag tags)
+viewTags tags = div [ class "tag-list" ] (List.map viewTag tags)
 
 
-viewTag : Tag -> Html Msg
 viewTag tagName =
     a
         [ class "tag-pill tag-default"
@@ -240,7 +227,6 @@ type Msg
     | PassedSlowLoadThreshold
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ClickedTag tag ->
@@ -333,7 +319,6 @@ update msg model =
 -- HTTP
 
 
-fetchFeed : Session -> FeedTab -> Int -> Task Http.Error Feed.Model
 fetchFeed session feedTabs page =
     let
         maybeCred =
@@ -364,12 +349,9 @@ fetchFeed session feedTabs page =
         |> Task.map (Feed.init session)
 
 
-articlesPerPage : Int
-articlesPerPage =
-    10
+articlesPerPage = 10
 
 
-scrollToTop : Task x ()
 scrollToTop =
     Dom.setViewport 0 0
         -- It's not worth showing the user anything special if scrolling fails.
@@ -381,15 +363,11 @@ scrollToTop =
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Session.changes GotSession (Session.navKey model.session)
+subscriptions model = Session.changes GotSession (Session.navKey model.session)
 
 
 
 -- EXPORT
 
 
-toSession : Model -> Session
-toSession model =
-    model.session
+toSession model = model.session

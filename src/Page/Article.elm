@@ -58,7 +58,6 @@ type CommentText
     | Sending String
 
 
-init : Session -> Slug -> ( Model, Cmd Msg )
 init session slug =
     let
         maybeCred =
@@ -85,7 +84,6 @@ init session slug =
 -- VIEW
 
 
-view : Model -> { title : String, content : Html Msg }
 view model =
     case model.article of
         Loaded article ->
@@ -185,7 +183,6 @@ view model =
             { title = "Article", content = Loading.error "article" }
 
 
-viewAddComment : Slug -> CommentText -> Maybe Viewer -> Html Msg
 viewAddComment slug commentText maybeViewer =
     case maybeViewer of
         Just viewer ->
@@ -232,7 +229,6 @@ viewAddComment slug commentText maybeViewer =
                 ]
 
 
-viewButtons : Cred -> Article Full -> Author -> List (Html Msg)
 viewButtons cred article author =
     case author of
         IsFollowing followedAuthor ->
@@ -254,7 +250,6 @@ viewButtons cred article author =
             ]
 
 
-viewComment : Time.Zone -> Slug -> Comment -> Html Msg
 viewComment timeZone slug comment =
     let
         author =
@@ -329,7 +324,6 @@ type Msg
     | PassedSlowLoadThreshold
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ClickedDismissErrors ->
@@ -508,7 +502,6 @@ update msg model =
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model -> Sub Msg
 subscriptions model =
     Session.changes GotSession (Session.navKey model.session)
 
@@ -517,7 +510,6 @@ subscriptions model =
 -- HTTP
 
 
-delete : Slug -> Cred -> Http.Request ()
 delete slug cred =
     Api.delete (Endpoint.article slug) cred Http.emptyBody (Decode.succeed ())
 
@@ -526,7 +518,6 @@ delete slug cred =
 -- EXPORT
 
 
-toSession : Model -> Session
 toSession model =
     model.session
 
@@ -535,7 +526,6 @@ toSession model =
 -- INTERNAL
 
 
-fave : (Slug -> Cred -> Http.Request (Article Preview)) -> Cred -> Slug -> Body -> Cmd Msg
 fave toRequest cred slug body =
     toRequest slug cred
         |> Http.toTask
@@ -543,12 +533,10 @@ fave toRequest cred slug body =
         |> Task.attempt CompletedFavoriteChange
 
 
-withoutComment : CommentId -> List Comment -> List Comment
 withoutComment id list =
     List.filter (\comment -> Comment.id comment /= id) list
 
 
-favoriteButton : Cred -> Article Full -> Html Msg
 favoriteButton cred article =
     let
         { favoritesCount, favorited } =
@@ -570,7 +558,6 @@ favoriteButton cred article =
         Article.favoriteButton cred (ClickedFavorite cred slug body) [] kids
 
 
-deleteButton : Cred -> Article a -> Html Msg
 deleteButton cred article =
     let
         msg =
@@ -580,7 +567,6 @@ deleteButton cred article =
         [ i [ class "ion-trash-a" ] [], text " Delete Article" ]
 
 
-editButton : Article a -> Html Msg
 editButton article =
     a [ class "btn btn-outline-secondary btn-sm", Route.href (Route.EditArticle (Article.slug article)) ]
         [ i [ class "ion-edit" ] [], text " Edit Article" ]

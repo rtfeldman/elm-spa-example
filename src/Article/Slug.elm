@@ -16,12 +16,10 @@ type Slug
 -- CREATE
 
 
-urlParser : Parser (Slug -> a) a
 urlParser =
     Url.Parser.custom "SLUG" (\str -> Just (Slug str))
 
 
-decoder : Decoder Slug
 decoder =
     Decode.map Slug Decode.string
 
@@ -30,6 +28,5 @@ decoder =
 -- TRANSFORM
 
 
-toString : Slug -> String
 toString (Slug str) =
     str

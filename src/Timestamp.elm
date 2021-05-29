@@ -10,7 +10,6 @@ import Time exposing (Month(..))
 -- VIEW
 
 
-view : Time.Zone -> Time.Posix -> Html msg
 view timeZone timestamp =
     span [ class "date" ] [ text (format timeZone timestamp) ]
 
@@ -27,7 +26,6 @@ For more complex date formatting scenarios, here's a nice package:
 <https://package.elm-lang.org/packages/ryannhg/date-format/latest/>
 
 -}
-format : Time.Zone -> Time.Posix -> String
 format zone time =
     let
         month =

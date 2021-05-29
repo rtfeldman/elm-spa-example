@@ -10,7 +10,6 @@ import Process
 import Task exposing (Task)
 
 
-icon : Html msg
 icon =
     Html.img
         [ Asset.src Asset.loading
@@ -21,11 +20,7 @@ icon =
         []
 
 
-error : String -> Html msg
-error str =
-    Html.text ("Error loading " ++ str ++ ".")
+error str = Html.text ("Error loading " ++ str ++ ".")
 
 
-slowThreshold : Task x ()
-slowThreshold =
-    Process.sleep 500
+slowThreshold = Process.sleep 500

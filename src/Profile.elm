@@ -32,21 +32,16 @@ type alias Internals =
 -- INFO
 
 
-bio : Profile -> Maybe String
-bio (Profile info) =
-    info.bio
+bio (Profile info) = info.bio
 
 
-avatar : Profile -> Avatar
-avatar (Profile info) =
-    info.avatar
+avatar (Profile info) = info.avatar
 
 
 
 -- SERIALIZATION
 
 
-decoder : Decoder Profile
 decoder =
     Decode.succeed Internals
         |> required "bio" (Decode.nullable Decode.string)

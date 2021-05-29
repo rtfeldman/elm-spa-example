@@ -37,7 +37,6 @@ type Problem
     | ServerError String
 
 
-init : Session -> ( Model, Cmd msg )
 init session =
     ( { session = session
       , problems = []
@@ -55,7 +54,6 @@ init session =
 -- VIEW
 
 
-view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "Register"
     , content =
@@ -78,7 +76,6 @@ view model =
     }
 
 
-viewForm : Form -> Html Msg
 viewForm form =
     Html.form [ onSubmit SubmittedForm ]
         [ fieldset [ class "form-group" ]
@@ -114,7 +111,6 @@ viewForm form =
         ]
 
 
-viewProblem : Problem -> Html msg
 viewProblem problem =
     let
         errorMessage =
@@ -141,7 +137,6 @@ type Msg
     | GotSession Session
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SubmittedForm ->
@@ -166,11 +161,7 @@ update msg model =
             updateForm (\form -> { form | password = password }) model
 
         CompletedRegister (Err error) ->
-            let
-                serverErrors =
-                    Api.decodeErrors error
-                        |> List.map ServerError
-            in
+            let serverErrors = List.map ServerError (Api.decodeErrors error) in
             ( { model | problems = List.append model.problems serverErrors }
             , Cmd.none
             )
@@ -189,27 +180,21 @@ update msg model =
 {-| Helper function for `update`. Updates the form and returns Cmd.none.
 Useful for recording form fields!
 -}
-updateForm : (Form -> Form) -> Model -> ( Model, Cmd Msg )
-updateForm transform model =
-    ( { model | form = transform model.form }, Cmd.none )
+updateForm transform model = ( { model | form = transform model.form }, Cmd.none )
 
 
 
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Session.changes GotSession (Session.navKey model.session)
+subscriptions model = Session.changes GotSession (Session.navKey model.session)
 
 
 
 -- EXPORT
 
 
-toSession : Model -> Session
-toSession model =
-    model.session
+toSession model = model.session
 
 
 
@@ -231,7 +216,6 @@ type ValidatedField
     | Password
 
 
-fieldsToValidate : List ValidatedField
 fieldsToValidate =
     [ Username
     , Email
@@ -241,21 +225,14 @@ fieldsToValidate =
 
 {-| Trim the form and validate its fields. If there are problems, report them!
 -}
-validate : Form -> Result (List Problem) TrimmedForm
 validate form =
-    let
-        trimmedForm =
-            trimFields form
-    in
+    let trimmedForm = trimFields form in
     case List.concatMap (validateField trimmedForm) fieldsToValidate of
-        [] ->
-            Ok trimmedForm
+        [] -> Ok trimmedForm
 
-        problems ->
-            Err problems
+        problems -> Err problems
 
 
-validateField : TrimmedForm -> ValidatedField -> List Problem
 validateField (Trimmed form) field =
     List.map (InvalidEntry field) <|
         case field of
@@ -287,7 +264,6 @@ validateField (Trimmed form) field =
 {-| Don't trim while the user is typing! That would be super annoying.
 Instead, trim only on submit.
 -}
-trimFields : Form -> TrimmedForm
 trimFields form =
     Trimmed
         { username = String.trim form.username
@@ -300,7 +276,6 @@ trimFields form =
 -- HTTP
 
 
-register : TrimmedForm -> Http.Request Viewer
 register (Trimmed form) =
     let
         user =

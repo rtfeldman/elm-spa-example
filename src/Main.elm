@@ -50,7 +50,6 @@ type Model
 -- MODEL
 
 
-init : Maybe Viewer -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init maybeViewer url navKey =
     changeRouteTo (Route.fromUrl url)
         (Redirect (Session.fromViewer navKey maybeViewer))
@@ -60,7 +59,6 @@ init maybeViewer url navKey =
 -- VIEW
 
 
-view : Model -> Document Msg
 view model =
     let
         viewer =
@@ -124,7 +122,6 @@ type Msg
     | GotSession Session
 
 
-toSession : Model -> Session
 toSession page =
     case page of
         Redirect session ->
@@ -155,7 +152,6 @@ toSession page =
             Editor.toSession editor
 
 
-changeRouteTo : Maybe Route -> Model -> ( Model, Cmd Msg )
 changeRouteTo maybeRoute model =
     let
         session =
@@ -204,7 +200,6 @@ changeRouteTo maybeRoute model =
                 |> updateWith Article GotArticleMsg model
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
         ( ClickedLink urlRequest, _ ) ->
@@ -273,7 +268,6 @@ update msg model =
             ( model, Cmd.none )
 
 
-updateWith : (subModel -> Model) -> (subMsg -> Msg) -> Model -> ( subModel, Cmd subMsg ) -> ( Model, Cmd Msg )
 updateWith toModel toMsg model ( subModel, subCmd ) =
     ( toModel subModel
     , Cmd.map toMsg subCmd
@@ -284,7 +278,6 @@ updateWith toModel toMsg model ( subModel, subCmd ) =
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model -> Sub Msg
 subscriptions model =
     case model of
         NotFound _ ->
@@ -319,7 +312,6 @@ subscriptions model =
 -- MAIN
 
 
-main : Program Value Model Msg
 main =
     Api.application Viewer.decoder
         { init = init

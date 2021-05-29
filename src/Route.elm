@@ -27,7 +27,6 @@ type Route
     | EditArticle Slug
 
 
-parser : Parser (Route -> a) a
 parser =
     oneOf
         [ Parser.map Home Parser.top
@@ -46,17 +45,12 @@ parser =
 -- PUBLIC HELPERS
 
 
-href : Route -> Attribute msg
-href targetRoute =
-    Attr.href (routeToString targetRoute)
+href targetRoute = Attr.href (routeToString targetRoute)
 
 
-replaceUrl : Nav.Key -> Route -> Cmd msg
-replaceUrl key route =
-    Nav.replaceUrl key (routeToString route)
+replaceUrl key route = Nav.replaceUrl key (routeToString route)
 
 
-fromUrl : Url -> Maybe Route
 fromUrl url =
     -- The RealWorld spec treats the fragment like a path.
     -- This makes it *literally* the path, so we can proceed
@@ -69,25 +63,16 @@ fromUrl url =
 -- INTERNAL
 
 
-routeToString : Route -> String
-routeToString page =
-    "#/" ++ String.join "/" (routeToPieces page)
+routeToString page = "#/" ++ String.join "/" (routeToPieces page)
 
 
-routeToPieces : Route -> List String
 routeToPieces page =
     case page of
-        Home ->
-            []
+        Home -> []
+        Root -> []
+        Login -> [ "login" ]
 
-        Root ->
-            []
-
-        Login ->
-            [ "login" ]
-
-        Logout ->
-            [ "logout" ]
+        Logout -> [ "logout" ]
 
         Register ->
             [ "register" ]

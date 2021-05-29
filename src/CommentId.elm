@@ -15,15 +15,11 @@ type CommentId
 -- CREATE
 
 
-decoder : Decoder CommentId
-decoder =
-    Decode.map CommentId Decode.int
+decoder = Decode.map CommentId Decode.int
 
 
 
 -- TRANSFORM
 
 
-toString : CommentId -> String
-toString (CommentId id) =
-    String.fromInt id
+toString (CommentId id) = String.fromInt id

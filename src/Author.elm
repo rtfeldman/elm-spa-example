@@ -18,8 +18,6 @@ help me keep track of which operations are supported.
 
 For example, consider these functions:
 
-requestFollow : UnfollowedAuthor -> Cred -> Http.Request Author
-requestUnfollow : FollowedAuthor -> Cred -> Http.Request Author
 
 These types help the compiler prevent several mistakes:
 
@@ -74,7 +72,6 @@ type UnfollowedAuthor
 
 {-| Return an Author's username.
 -}
-username : Author -> Username
 username author =
     case author of
         IsViewer cred _ ->
@@ -89,7 +86,6 @@ username author =
 
 {-| Return an Author's profile.
 -}
-profile : Author -> Profile
 profile author =
     case author of
         IsViewer _ val ->
@@ -106,7 +102,6 @@ profile author =
 -- FETCH
 
 
-fetch : Username -> Maybe Cred -> Http.Request Author
 fetch uname maybeCred =
     Decode.field "profile" (decoder maybeCred)
         |> Api.get (Endpoint.profiles uname) maybeCred
@@ -116,22 +111,18 @@ fetch uname maybeCred =
 -- FOLLOWING
 
 
-follow : UnfollowedAuthor -> FollowedAuthor
 follow (UnfollowedAuthor uname prof) =
     FollowedAuthor uname prof
 
 
-unfollow : FollowedAuthor -> UnfollowedAuthor
 unfollow (FollowedAuthor uname prof) =
     UnfollowedAuthor uname prof
 
 
-requestFollow : UnfollowedAuthor -> Cred -> Http.Request Author
 requestFollow (UnfollowedAuthor uname _) cred =
     Api.post (Endpoint.follow uname) (Just cred) Http.emptyBody (followDecoder cred)
 
 
-requestUnfollow : FollowedAuthor -> Cred -> Http.Request Author
 requestUnfollow (FollowedAuthor uname _) cred =
     Api.delete (Endpoint.follow uname)
         cred
@@ -139,16 +130,10 @@ requestUnfollow (FollowedAuthor uname _) cred =
         (followDecoder cred)
 
 
-followDecoder : Cred -> Decoder Author
 followDecoder cred =
     Decode.field "profile" (decoder (Just cred))
 
 
-followButton :
-    (Cred -> UnfollowedAuthor -> msg)
-    -> Cred
-    -> UnfollowedAuthor
-    -> Html msg
 followButton toMsg cred ((UnfollowedAuthor uname _) as author) =
     toggleFollowButton "Follow"
         [ "btn-outline-secondary" ]
@@ -156,11 +141,6 @@ followButton toMsg cred ((UnfollowedAuthor uname _) as author) =
         uname
 
 
-unfollowButton :
-    (Cred -> FollowedAuthor -> msg)
-    -> Cred
-    -> FollowedAuthor
-    -> Html msg
 unfollowButton toMsg cred ((FollowedAuthor uname _) as author) =
     toggleFollowButton "Unfollow"
         [ "btn-secondary" ]
@@ -168,7 +148,6 @@ unfollowButton toMsg cred ((FollowedAuthor uname _) as author) =
         uname
 
 
-toggleFollowButton : String -> List String -> msg -> Username -> Html msg
 toggleFollowButton txt extraClasses msgWhenClicked uname =
     let
         classStr =
@@ -187,7 +166,6 @@ toggleFollowButton txt extraClasses msgWhenClicked uname =
 -- SERIALIZATION
 
 
-decoder : Maybe Cred -> Decoder Author
 decoder maybeCred =
     Decode.succeed Tuple.pair
         |> custom Profile.decoder
@@ -195,7 +173,6 @@ decoder maybeCred =
         |> Decode.andThen (decodeFromPair maybeCred)
 
 
-decodeFromPair : Maybe Cred -> ( Profile, Username ) -> Decoder Author
 decodeFromPair maybeCred ( prof, uname ) =
     case maybeCred of
         Nothing ->
@@ -210,13 +187,11 @@ decodeFromPair maybeCred ( prof, uname ) =
                 nonViewerDecoder prof uname
 
 
-nonViewerDecoder : Profile -> Username -> Decoder Author
 nonViewerDecoder prof uname =
     Decode.succeed (authorFromFollowing prof uname)
         |> optional "following" Decode.bool False
 
 
-authorFromFollowing : Profile -> Username -> Bool -> Author
 authorFromFollowing prof uname isFollowing =
     if isFollowing then
         IsFollowing (FollowedAuthor uname prof)
@@ -228,7 +203,6 @@ authorFromFollowing prof uname isFollowing =
 {-| View an author. We basically render their username and a link to their
 profile, and that's it.
 -}
-view : Username -> Html msg
 view uname =
     a [ class "author", Route.href (Route.Profile uname) ]
         [ Username.toHtml uname ]

@@ -63,7 +63,6 @@ type alias Form =
     }
 
 
-init : Session -> ( Model, Cmd msg )
 init session =
     ( { session = session
       , problems = []
@@ -80,7 +79,6 @@ init session =
 -- VIEW
 
 
-view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "Login"
     , content =
@@ -103,7 +101,6 @@ view model =
     }
 
 
-viewProblem : Problem -> Html msg
 viewProblem problem =
     let
         errorMessage =
@@ -117,7 +114,6 @@ viewProblem problem =
     li [] [ text errorMessage ]
 
 
-viewForm : Form -> Html Msg
 viewForm form =
     Html.form [ onSubmit SubmittedForm ]
         [ fieldset [ class "form-group" ]
@@ -156,7 +152,6 @@ type Msg
     | GotSession Session
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SubmittedForm ->
@@ -201,7 +196,6 @@ update msg model =
 {-| Helper function for `update`. Updates the form and returns Cmd.none.
 Useful for recording form fields!
 -}
-updateForm : (Form -> Form) -> Model -> ( Model, Cmd Msg )
 updateForm transform model =
     ( { model | form = transform model.form }, Cmd.none )
 
@@ -210,7 +204,6 @@ updateForm transform model =
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model -> Sub Msg
 subscriptions model =
     Session.changes GotSession (Session.navKey model.session)
 
@@ -233,7 +226,6 @@ type ValidatedField
     | Password
 
 
-fieldsToValidate : List ValidatedField
 fieldsToValidate =
     [ Email
     , Password
@@ -242,7 +234,6 @@ fieldsToValidate =
 
 {-| Trim the form and validate its fields. If there are problems, report them!
 -}
-validate : Form -> Result (List Problem) TrimmedForm
 validate form =
     let
         trimmedForm =
@@ -256,7 +247,6 @@ validate form =
             Err problems
 
 
-validateField : TrimmedForm -> ValidatedField -> List Problem
 validateField (Trimmed form) field =
     List.map (InvalidEntry field) <|
         case field of
@@ -278,7 +268,6 @@ validateField (Trimmed form) field =
 {-| Don't trim while the user is typing! That would be super annoying.
 Instead, trim only on submit.
 -}
-trimFields : Form -> TrimmedForm
 trimFields form =
     Trimmed
         { email = String.trim form.email
@@ -290,7 +279,6 @@ trimFields form =
 -- HTTP
 
 
-login : TrimmedForm -> Http.Request Viewer
 login (Trimmed form) =
     let
         user =
@@ -310,6 +298,5 @@ login (Trimmed form) =
 -- EXPORT
 
 
-toSession : Model -> Session
 toSession model =
     model.session

@@ -57,7 +57,6 @@ type alias Form =
     }
 
 
-initNew : Session -> ( Model, Cmd msg )
 initNew session =
     ( { session = session
       , status =
@@ -72,7 +71,6 @@ initNew session =
     )
 
 
-initEdit : Session -> Slug -> ( Model, Cmd Msg )
 initEdit session slug =
     ( { session = session
       , status = Loading slug
@@ -93,7 +91,6 @@ initEdit session slug =
 -- VIEW
 
 
-view : Model -> { title : String, content : Html Msg }
 view model =
     { title =
         case getSlug model.status of
@@ -112,13 +109,11 @@ view model =
     }
 
 
-viewProblems : List Problem -> Html msg
 viewProblems problems =
     ul [ class "error-messages" ]
         (List.map viewProblem problems)
 
 
-viewProblem : Problem -> Html msg
 viewProblem problem =
     let
         errorMessage =
@@ -132,7 +127,6 @@ viewProblem problem =
     li [] [ text errorMessage ]
 
 
-viewAuthenticated : Cred -> Model -> Html Msg
 viewAuthenticated cred model =
     let
         formHtml =
@@ -172,7 +166,6 @@ viewAuthenticated cred model =
         ]
 
 
-viewForm : Cred -> Form -> Html Msg -> Html Msg
 viewForm cred fields saveButton =
     Html.form [ onSubmit (ClickedSave cred) ]
         [ fieldset []
@@ -218,17 +211,12 @@ viewForm cred fields saveButton =
         ]
 
 
-editArticleSaveButton : List (Attribute msg) -> Html msg
-editArticleSaveButton extraAttrs =
-    saveArticleButton "Update Article" extraAttrs
+editArticleSaveButton extraAttrs = saveArticleButton "Update Article" extraAttrs
 
 
-newArticleSaveButton : List (Attribute msg) -> Html msg
-newArticleSaveButton extraAttrs =
-    saveArticleButton "Publish Article" extraAttrs
+newArticleSaveButton extraAttrs = saveArticleButton "Publish Article" extraAttrs
 
 
-saveArticleButton : String -> List (Attribute msg) -> Html msg
 saveArticleButton caption extraAttrs =
     button (class "btn btn-lg pull-xs-right btn-primary" :: extraAttrs)
         [ text caption ]
@@ -251,7 +239,6 @@ type Msg
     | PassedSlowLoadThreshold
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ClickedSave cred ->
@@ -336,7 +323,6 @@ update msg model =
             ( { model | status = status }, Cmd.none )
 
 
-save : Cred -> Status -> ( Status, Cmd Msg )
 save cred status =
     case status of
         Editing slug _ form ->
@@ -375,7 +361,6 @@ save cred status =
             ( status, Cmd.none )
 
 
-savingError : Http.Error -> Status -> Status
 savingError error status =
     let
         problems =
@@ -401,7 +386,6 @@ This could also log errors to the server if we are trying to record things in
 the form and we don't actually have a form.
 
 -}
-updateForm : (Form -> Form) -> Model -> ( Model, Cmd Msg )
 updateForm transform model =
     let
         newModel =
@@ -434,7 +418,6 @@ updateForm transform model =
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model -> Sub Msg
 subscriptions model =
     Session.changes GotSession (Session.navKey model.session)
 
@@ -457,7 +440,6 @@ type ValidatedField
     | Body
 
 
-fieldsToValidate : List ValidatedField
 fieldsToValidate =
     [ Title
     , Body
@@ -466,7 +448,6 @@ fieldsToValidate =
 
 {-| Trim the form and validate its fields. If there are problems, report them!
 -}
-validate : Form -> Result (List Problem) TrimmedForm
 validate form =
     let
         trimmedForm =
@@ -480,7 +461,6 @@ validate form =
             Err problems
 
 
-validateField : TrimmedForm -> ValidatedField -> List Problem
 validateField (Trimmed form) field =
     List.map (InvalidEntry field) <|
         case field of
@@ -502,7 +482,6 @@ validateField (Trimmed form) field =
 {-| Don't trim while the user is typing! That would be super annoying.
 Instead, trim only on submit.
 -}
-trimFields : Form -> TrimmedForm
 trimFields form =
     Trimmed
         { title = String.trim form.title
@@ -516,7 +495,6 @@ trimFields form =
 -- HTTP
 
 
-create : TrimmedForm -> Cred -> Http.Request (Article Full)
 create (Trimmed form) cred =
     let
         article =
@@ -535,14 +513,12 @@ create (Trimmed form) cred =
         |> Api.post (Endpoint.articles []) (Just cred) body
 
 
-tagsFromString : String -> List String
 tagsFromString str =
     String.split " " str
         |> List.map String.trim
         |> List.filter (not << String.isEmpty)
 
 
-edit : Slug -> TrimmedForm -> Cred -> Http.Request (Article Full)
 edit articleSlug (Trimmed form) cred =
     let
         article =
@@ -564,7 +540,6 @@ edit articleSlug (Trimmed form) cred =
 -- EXPORT
 
 
-toSession : Model -> Session
 toSession model =
     model.session
 
@@ -575,7 +550,6 @@ toSession model =
 
 {-| Used for setting the page's title.
 -}
-getSlug : Status -> Maybe Slug
 getSlug status =
     case status of
         Loading slug ->

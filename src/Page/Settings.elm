@@ -54,7 +54,6 @@ type Problem
     | ServerError String
 
 
-init : Session -> ( Model, Cmd Msg )
 init session =
     ( { session = session
       , problems = []
@@ -68,7 +67,6 @@ init session =
     )
 
 
-formDecoder : Decoder Form
 formDecoder =
     Decode.succeed Form
         |> required "image" (Decode.map (Maybe.withDefault "") (Decode.nullable Decode.string))
@@ -94,7 +92,6 @@ type ValidForm
 -- VIEW
 
 
-view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "Settings"
     , content =
@@ -129,7 +126,6 @@ view model =
     }
 
 
-viewForm : Cred -> Form -> Html Msg
 viewForm cred form =
     Html.form [ onSubmit (SubmittedForm cred form) ]
         [ fieldset []
@@ -187,16 +183,13 @@ viewForm cred form =
         ]
 
 
-viewProblem : Problem -> Html msg
 viewProblem problem =
     let
         errorMessage =
             case problem of
-                InvalidEntry _ message ->
-                    message
+                InvalidEntry _ message -> message
 
-                ServerError message ->
-                    message
+                ServerError message -> message
     in
     li [] [ text errorMessage ]
 
@@ -218,7 +211,6 @@ type Msg
     | PassedSlowLoadThreshold
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         CompletedFormLoad (Ok form) ->
@@ -293,7 +285,6 @@ update msg model =
 {-| Helper function for `update`. Updates the form and returns Cmd.none.
 Useful for recording form fields!
 -}
-updateForm : (Form -> Form) -> Model -> ( Model, Cmd msg )
 updateForm transform model =
     case model.status of
         Loaded form ->
@@ -307,18 +298,14 @@ updateForm transform model =
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Session.changes GotSession (Session.navKey model.session)
+subscriptions model = Session.changes GotSession (Session.navKey model.session)
 
 
 
 -- EXPORT
 
 
-toSession : Model -> Session
-toSession model =
-    model.session
+toSession model = model.session
 
 
 
@@ -343,7 +330,6 @@ type ValidatedField
     | Password
 
 
-fieldsToValidate : List ValidatedField
 fieldsToValidate =
     [ Username
     , Email
@@ -353,7 +339,6 @@ fieldsToValidate =
 
 {-| Trim the form and validate its fields. If there are problems, report them!
 -}
-validate : Form -> Result (List Problem) TrimmedForm
 validate form =
     let
         trimmedForm =
@@ -367,7 +352,6 @@ validate form =
             Err problems
 
 
-validateField : TrimmedForm -> ValidatedField -> List Problem
 validateField (Trimmed form) field =
     List.map (InvalidEntry field) <|
         case field of
@@ -400,7 +384,6 @@ validateField (Trimmed form) field =
 {-| Don't trim while the user is typing! That would be super annoying.
 Instead, trim only on submit.
 -}
-trimFields : Form -> TrimmedForm
 trimFields form =
     Trimmed
         { avatar = String.trim form.avatar
@@ -418,7 +401,6 @@ trimFields form =
 {-| This takes a Valid Form as a reminder that it needs to have been validated
 first.
 -}
-edit : Cred -> TrimmedForm -> Http.Request Viewer
 edit cred (Trimmed form) =
     let
         encodedAvatar =
@@ -452,10 +434,4 @@ edit cred (Trimmed form) =
     Api.settings cred body Viewer.decoder
 
 
-nothingIfEmpty : String -> Maybe String
-nothingIfEmpty str =
-    if String.isEmpty str then
-        Nothing
-
-    else
-        Just str
+nothingIfEmpty str = if String.isEmpty str then Nothing else Just str

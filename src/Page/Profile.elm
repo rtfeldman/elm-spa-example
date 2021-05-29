@@ -55,7 +55,6 @@ type Status a
     | Failed Username
 
 
-init : Session -> Username -> ( Model, Cmd Msg )
 init session username =
     let
         maybeCred =
@@ -81,7 +80,6 @@ init session username =
     )
 
 
-currentUsername : Model -> Username
 currentUsername model =
     case model.author of
         Loading username ->
@@ -97,16 +95,13 @@ currentUsername model =
             username
 
 
-defaultFeedTab : FeedTab
-defaultFeedTab =
-    MyArticles
+defaultFeedTab = MyArticles
 
 
 
 -- HTTP
 
 
-fetchFeed : Session -> FeedTab -> Username -> Int -> Cmd Msg
 fetchFeed session feedTabs username page =
     let
         maybeCred =
@@ -133,16 +128,13 @@ fetchFeed session feedTabs username page =
         |> Task.attempt CompletedFeedLoad
 
 
-articlesPerPage : Int
-articlesPerPage =
-    5
+articlesPerPage = 5
 
 
 
 -- VIEW
 
 
-view : Model -> { title : String, content : Html Msg }
 view model =
     let
         title =
@@ -249,12 +241,10 @@ view model =
 -- PAGE TITLE
 
 
-titleForOther : Username -> String
 titleForOther otherUsername =
     "Profile — " ++ Username.toString otherUsername
 
 
-titleForMe : Maybe Cred -> Username -> String
 titleForMe maybeCred username =
     case maybeCred of
         Just cred ->
@@ -268,21 +258,16 @@ titleForMe maybeCred username =
             defaultTitle
 
 
-myProfileTitle : String
-myProfileTitle =
-    "My Profile"
+myProfileTitle = "My Profile"
 
 
-defaultTitle : String
-defaultTitle =
-    "Profile"
+defaultTitle = "Profile"
 
 
 
 -- TABS
 
 
-viewTabs : FeedTab -> Html Msg
 viewTabs tab =
     case tab of
         MyArticles ->
@@ -292,14 +277,10 @@ viewTabs tab =
             Feed.viewTabs [ myArticles ] favoritedArticles []
 
 
-myArticles : ( String, Msg )
-myArticles =
-    ( "My Articles", ClickedTab MyArticles )
+myArticles = ( "My Articles", ClickedTab MyArticles )
 
 
-favoritedArticles : ( String, Msg )
-favoritedArticles =
-    ( "Favorited Articles", ClickedTab FavoritedArticles )
+favoritedArticles = ( "Favorited Articles", ClickedTab FavoritedArticles )
 
 
 
@@ -321,7 +302,6 @@ type Msg
     | PassedSlowLoadThreshold
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ClickedDismissErrors ->
@@ -424,15 +404,11 @@ update msg model =
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Session.changes GotSession (Session.navKey model.session)
+subscriptions model = Session.changes GotSession (Session.navKey model.session)
 
 
 
 -- EXPORT
 
 
-toSession : Model -> Session
-toSession model =
-    model.session
+toSession model = model.session

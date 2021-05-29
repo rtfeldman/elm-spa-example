@@ -15,6 +15,4 @@ diagnostic info, authentication tokens, etc.)
 -}
 
 
-error : Cmd msg
-error =
-    Cmd.none
+error = Cmd.none

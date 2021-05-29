@@ -9,7 +9,6 @@ import Json.Encode as Encode exposing (Value)
 Having this as a custom type that's separate from String makes certain
 mistakes impossible. Consider this function:
 
-updateEmailAddress : Email -> String -> Http.Request
 updateEmailAddress email password = ...
 
 (The server needs your password to confirm that you should be allowed
@@ -30,16 +29,10 @@ type Email
     = Email String
 
 
-toString : Email -> String
-toString (Email str) =
-    str
+toString (Email str) = str
 
 
-encode : Email -> Value
-encode (Email str) =
-    Encode.string str
+encode (Email str) = Encode.string str
 
 
-decoder : Decoder Email
-decoder =
-    Decode.map Email Decode.string
+decoder = Decode.map Email Decode.string

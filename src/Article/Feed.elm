@@ -61,7 +61,6 @@ type alias Internals =
     }
 
 
-init : Session -> PaginatedList (Article Preview) -> Model
 init session articles =
     Model
         { session = session
@@ -75,7 +74,6 @@ init session articles =
 -- VIEW
 
 
-viewArticles : Time.Zone -> Model -> List (Html Msg)
 viewArticles timeZone (Model { articles, session, errors }) =
     let
         maybeCred =
@@ -88,7 +86,6 @@ viewArticles timeZone (Model { articles, session, errors }) =
     Page.viewErrors ClickedDismissErrors errors :: articlesHtml
 
 
-viewPreview : Maybe Cred -> Time.Zone -> Article Preview -> Html Msg
 viewPreview maybeCred timeZone article =
     let
         slug =
@@ -169,7 +166,6 @@ viewTab attrs ( name, msg ) =
         ]
 
 
-viewPagination : (Int -> msg) -> Int -> Model -> Html msg
 viewPagination toMsg page (Model feed) =
     let
         viewPageLink currentPage =
@@ -187,7 +183,6 @@ viewPagination toMsg page (Model feed) =
         Html.text ""
 
 
-pageLink : (Int -> msg) -> Int -> Bool -> Html msg
 pageLink toMsg targetPage isActive =
     li [ classList [ ( "page-item", True ), ( "active", isActive ) ] ]
         [ a
@@ -201,7 +196,6 @@ pageLink toMsg targetPage isActive =
         ]
 
 
-viewTag : String -> Html msg
 viewTag tagName =
     li [ class "tag-default tag-pill tag-outline" ] [ text tagName ]
 
@@ -240,7 +234,6 @@ update maybeCred msg (Model model) =
             )
 
 
-replaceArticle : Article a -> Article a -> Article a
 replaceArticle newArticle oldArticle =
     if Article.slug newArticle == Article.slug oldArticle then
         newArticle
@@ -253,14 +246,12 @@ replaceArticle newArticle oldArticle =
 -- SERIALIZATION
 
 
-decoder : Maybe Cred -> Int -> Decoder (PaginatedList (Article Preview))
 decoder maybeCred resultsPerPage =
     Decode.succeed PaginatedList.fromList
         |> required "articlesCount" (pageCountDecoder resultsPerPage)
         |> required "articles" (Decode.list (Article.previewDecoder maybeCred))
 
 
-pageCountDecoder : Int -> Decoder Int
 pageCountDecoder resultsPerPage =
     Decode.int
         |> Decode.map (\total -> ceiling (toFloat total / toFloat resultsPerPage))

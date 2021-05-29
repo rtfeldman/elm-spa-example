@@ -23,21 +23,16 @@ type PaginatedList a
 -- INFO
 
 
-values : PaginatedList a -> List a
-values (PaginatedList info) =
-    info.values
+values (PaginatedList info) = info.values
 
 
-total : PaginatedList a -> Int
-total (PaginatedList info) =
-    info.total
+total (PaginatedList info) = info.total
 
 
 
 -- CREATE
 
 
-fromList : Int -> List a -> PaginatedList a
 fromList totalCount list =
     PaginatedList { values = list, total = totalCount }
 
@@ -46,7 +41,6 @@ fromList totalCount list =
 -- TRANSFORM
 
 
-map : (a -> a) -> PaginatedList a -> PaginatedList a
 map transform (PaginatedList info) =
     PaginatedList { info | values = List.map transform info.values }
 
@@ -57,14 +51,8 @@ map transform (PaginatedList info) =
 
 {-| I decided to accept a record here so I don't mess up the argument order of the two Ints.
 -}
-params :
-    { page : Int, resultsPerPage : Int }
-    -> List QueryParameter
 params { page, resultsPerPage } =
-    let
-        offset =
-            (page - 1) * resultsPerPage
-    in
+    let offset = (page - 1) * resultsPerPage in
     [ Url.Builder.string "limit" (String.fromInt resultsPerPage)
     , Url.Builder.string "offset" (String.fromInt offset)
     ]

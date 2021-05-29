@@ -54,7 +54,6 @@ type Problem
     | ServerError String
 
 
-init : Session -> ( Model, Cmd Msg )
 init session =
     ( { session = session
       , problems = []
@@ -68,7 +67,6 @@ init session =
     )
 
 
-formDecoder : Decoder Form
 formDecoder =
     Decode.succeed Form
         |> required "image" (Decode.map (Maybe.withDefault "") (Decode.nullable Decode.string))
@@ -94,7 +92,6 @@ type ValidForm
 -- VIEW
 
 
-view : Model -> { title : String, content : Html Msg }
 view model =
     { title = "Settings"
     , content =
@@ -108,17 +105,13 @@ view model =
                                 , ul [ class "error-messages" ]
                                     (List.map viewProblem model.problems)
                                 , case model.status of
-                                    Loaded form ->
-                                        viewForm cred form
+                                    Loaded form -> viewForm cred form
 
-                                    Loading ->
-                                        text ""
+                                    Loading -> text ""
 
-                                    LoadingSlowly ->
-                                        Loading.icon
+                                    LoadingSlowly -> Loading.icon
 
-                                    Failed ->
-                                        text "Error loading page."
+                                    Failed -> text "Error loading page."
                                 ]
                             ]
                         ]
@@ -129,7 +122,6 @@ view model =
     }
 
 
-viewForm : Cred -> Form -> Html Msg
 viewForm cred form =
     Html.form [ onSubmit (SubmittedForm cred form) ]
         [ fieldset []
@@ -187,16 +179,13 @@ viewForm cred form =
         ]
 
 
-viewProblem : Problem -> Html msg
 viewProblem problem =
     let
         errorMessage =
             case problem of
-                InvalidEntry _ message ->
-                    message
+                InvalidEntry _ message -> message
 
-                ServerError message ->
-                    message
+                ServerError message -> message
     in
     li [] [ text errorMessage ]
 
@@ -218,25 +207,17 @@ type Msg
     | PassedSlowLoadThreshold
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        CompletedFormLoad (Ok form) ->
-            ( { model | status = Loaded form }
-            , Cmd.none
-            )
+        CompletedFormLoad (Ok form) -> ( { model | status = Loaded form }, Cmd.none )
 
-        CompletedFormLoad (Err _) ->
-            ( { model | status = Failed }
-            , Cmd.none
-            )
+        CompletedFormLoad (Err _) -> ( { model | status = Failed }, Cmd.none )
 
         SubmittedForm cred form ->
             case validate form of
                 Ok validForm ->
                     ( { model | status = Loaded form }
-                    , edit cred validForm
-                        |> Http.send CompletedSave
+                    , edit cred validForm |> Http.send CompletedSave
                     )
 
                 Err problems ->
@@ -244,35 +225,24 @@ update msg model =
                     , Cmd.none
                     )
 
-        EnteredEmail email ->
-            updateForm (\form -> { form | email = email }) model
+        EnteredEmail email -> updateForm (\form -> { form | email = email }) model
 
-        EnteredUsername username ->
-            updateForm (\form -> { form | username = username }) model
+        EnteredUsername username -> updateForm (\form -> { form | username = username }) model
 
-        EnteredPassword password ->
-            updateForm (\form -> { form | password = password }) model
+        EnteredPassword password -> updateForm (\form -> { form | password = password }) model
 
-        EnteredBio bio ->
-            updateForm (\form -> { form | bio = bio }) model
+        EnteredBio bio -> updateForm (\form -> { form | bio = bio }) model
 
-        EnteredAvatar avatar ->
-            updateForm (\form -> { form | avatar = avatar }) model
+        EnteredAvatar avatar -> updateForm (\form -> { form | avatar = avatar }) model
 
         CompletedSave (Err error) ->
-            let
-                serverErrors =
-                    Api.decodeErrors error
-                        |> List.map ServerError
-            in
+            let serverErrors = Api.decodeErrors error |> List.map ServerError in
             ( { model | problems = List.append model.problems serverErrors }
             , Cmd.none
             )
 
         CompletedSave (Ok viewer) ->
-            ( model
-            , Viewer.store viewer
-            )
+            ( model, Viewer.store viewer )
 
         GotSession session ->
             ( { model | session = session }
@@ -281,44 +251,33 @@ update msg model =
 
         PassedSlowLoadThreshold ->
             case model.status of
-                Loading ->
-                    ( { model | status = LoadingSlowly }
-                    , Cmd.none
-                    )
+                Loading -> ( { model | status = LoadingSlowly }, Cmd.none )
 
-                _ ->
-                    ( model, Cmd.none )
+                _ -> ( model, Cmd.none )
 
 
 {-| Helper function for `update`. Updates the form and returns Cmd.none.
 Useful for recording form fields!
 -}
-updateForm : (Form -> Form) -> Model -> ( Model, Cmd msg )
 updateForm transform model =
     case model.status of
-        Loaded form ->
-            ( { model | status = Loaded (transform form) }, Cmd.none )
+        Loaded form -> ( { model | status = Loaded (transform form) }, Cmd.none )
 
-        _ ->
-            ( model, Log.error )
+        _ -> ( model, Log.error )
 
 
 
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Session.changes GotSession (Session.navKey model.session)
+subscriptions model = Session.changes GotSession (Session.navKey model.session)
 
 
 
 -- EXPORT
 
 
-toSession : Model -> Session
-toSession model =
-    model.session
+toSession model = model.session
 
 
 
@@ -328,8 +287,7 @@ toSession model =
 {-| Marks that we've trimmed the form's fields, so we don't accidentally send
 it to the server without having trimmed it!
 -}
-type TrimmedForm
-    = Trimmed Form
+type TrimmedForm = Trimmed Form
 
 
 {-| When adding a variant here, add it to `fieldsToValidate` too!
@@ -343,7 +301,6 @@ type ValidatedField
     | Password
 
 
-fieldsToValidate : List ValidatedField
 fieldsToValidate =
     [ Username
     , Email
@@ -353,54 +310,33 @@ fieldsToValidate =
 
 {-| Trim the form and validate its fields. If there are problems, report them!
 -}
-validate : Form -> Result (List Problem) TrimmedForm
 validate form =
-    let
-        trimmedForm =
-            trimFields form
-    in
+    let trimmedForm = trimFields form in
     case List.concatMap (validateField trimmedForm) fieldsToValidate of
-        [] ->
-            Ok trimmedForm
+        [] -> Ok trimmedForm
 
-        problems ->
-            Err problems
+        problems -> Err problems
 
 
-validateField : TrimmedForm -> ValidatedField -> List Problem
 validateField (Trimmed form) field =
     List.map (InvalidEntry field) <|
         case field of
             Username ->
-                if String.isEmpty form.username then
-                    [ "username can't be blank." ]
-
-                else
-                    []
+                if String.isEmpty form.username then [ "username can't be blank." ] else []
 
             Email ->
-                if String.isEmpty form.email then
-                    [ "email can't be blank." ]
-
-                else
-                    []
+                if String.isEmpty form.email then [ "email can't be blank." ] else []
 
             Password ->
-                let
-                    passwordLength =
-                        String.length form.password
-                in
-                if passwordLength > 0 && passwordLength < Viewer.minPasswordChars then
-                    [ "password must be at least " ++ String.fromInt Viewer.minPasswordChars ++ " characters long." ]
-
-                else
-                    []
+                let passwordLength = String.length form.password in
+                if passwordLength > 0 && passwordLength < Viewer.minPasswordChars
+                then [ "password must be at least " ++ String.fromInt Viewer.minPasswordChars ++ " characters long." ]
+                else []
 
 
 {-| Don't trim while the user is typing! That would be super annoying.
 Instead, trim only on submit.
 -}
-trimFields : Form -> TrimmedForm
 trimFields form =
     Trimmed
         { avatar = String.trim form.avatar
@@ -418,16 +354,13 @@ trimFields form =
 {-| This takes a Valid Form as a reminder that it needs to have been validated
 first.
 -}
-edit : Cred -> TrimmedForm -> Http.Request Viewer
 edit cred (Trimmed form) =
     let
         encodedAvatar =
             case form.avatar of
-                "" ->
-                    Encode.null
+                "" -> Encode.null
 
-                avatar ->
-                    Encode.string avatar
+                avatar -> Encode.string avatar
 
         updates =
             [ ( "username", Encode.string form.username )
@@ -439,23 +372,13 @@ edit cred (Trimmed form) =
         encodedUser =
             Encode.object <|
                 case form.password of
-                    "" ->
-                        updates
+                    "" -> updates
 
-                    password ->
-                        ( "password", Encode.string password ) :: updates
+                    password -> ( "password", Encode.string password ) :: updates
 
-        body =
-            Encode.object [ ( "user", encodedUser ) ]
-                |> Http.jsonBody
+        body = Encode.object [ ( "user", encodedUser ) ] |> Http.jsonBody
     in
     Api.settings cred body Viewer.decoder
 
 
-nothingIfEmpty : String -> Maybe String
-nothingIfEmpty str =
-    if String.isEmpty str then
-        Nothing
-
-    else
-        Just str
+nothingIfEmpty str = if String.isEmpty str then Nothing else Just str

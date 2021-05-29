@@ -35,22 +35,18 @@ type alias Internals =
 -- INFO
 
 
-id : Comment -> CommentId
 id (Comment comment) =
     comment.id
 
 
-body : Comment -> String
 body (Comment comment) =
     comment.body
 
 
-createdAt : Comment -> Time.Posix
 createdAt (Comment comment) =
     comment.createdAt
 
 
-author : Comment -> Author
 author (Comment comment) =
     comment.author
 
@@ -59,7 +55,6 @@ author (Comment comment) =
 -- LIST
 
 
-list : Maybe Cred -> Slug -> Http.Request (List Comment)
 list maybeCred articleSlug =
     Decode.field "comments" (Decode.list (decoder maybeCred))
         |> Api.get (Endpoint.comments articleSlug) maybeCred
@@ -69,7 +64,6 @@ list maybeCred articleSlug =
 -- POST
 
 
-post : Slug -> String -> Cred -> Http.Request Comment
 post articleSlug commentBody cred =
     let
         bod =
@@ -80,7 +74,6 @@ post articleSlug commentBody cred =
         |> Api.post (Endpoint.comments articleSlug) (Just cred) bod
 
 
-encodeCommentBody : String -> Value
 encodeCommentBody str =
     Encode.object [ ( "comment", Encode.object [ ( "body", Encode.string str ) ] ) ]
 
@@ -89,7 +82,6 @@ encodeCommentBody str =
 -- DELETE
 
 
-delete : Slug -> CommentId -> Cred -> Http.Request ()
 delete articleSlug commentId cred =
     Api.delete (Endpoint.comment articleSlug commentId) cred Http.emptyBody (Decode.succeed ())
 
@@ -98,7 +90,6 @@ delete articleSlug commentId cred =
 -- SERIALIZATION
 
 
-decoder : Maybe Cred -> Decoder Comment
 decoder maybeCred =
     Decode.succeed Internals
         |> required "id" CommentId.decoder

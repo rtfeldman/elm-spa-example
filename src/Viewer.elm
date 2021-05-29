@@ -19,48 +19,34 @@ import Username exposing (Username)
 -- TYPES
 
 
-type Viewer
-    = Viewer Avatar Cred
+type Viewer = Viewer Avatar Cred
 
 
 
 -- INFO
 
 
-cred : Viewer -> Cred
-cred (Viewer _ val) =
-    val
+cred (Viewer _ val) = val
 
 
-username : Viewer -> Username
-username (Viewer _ val) =
-    Api.username val
+username (Viewer _ val) = Api.username val
 
 
-avatar : Viewer -> Avatar
-avatar (Viewer val _) =
-    val
+avatar (Viewer val _) = val
 
 
 {-| Passwords must be at least this many characters long!
 -}
-minPasswordChars : Int
-minPasswordChars =
-    6
+minPasswordChars = 6
 
 
 
 -- SERIALIZATION
 
 
-decoder : Decoder (Cred -> Viewer)
 decoder =
     Decode.succeed Viewer
         |> custom (Decode.field "image" Avatar.decoder)
 
 
-store : Viewer -> Cmd msg
-store (Viewer avatarVal credVal) =
-    Api.storeCredWith
-        credVal
-        avatarVal
+store (Viewer avatarVal credVal) = Api.storeCredWith credVal avatarVal

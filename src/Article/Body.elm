@@ -23,16 +23,13 @@ type alias MarkdownString =
 -- CONVERSIONS
 
 
-toHtml : Body -> List (Attribute msg) -> Html msg
 toHtml (Body markdown) attributes =
     Markdown.toHtml attributes markdown
 
 
-toMarkdownString : Body -> MarkdownString
 toMarkdownString (Body markdown) =
     markdown
 
 
-decoder : Decoder Body
 decoder =
     Decode.map Body Decode.string

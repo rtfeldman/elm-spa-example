@@ -1,29 +1,5 @@
 module Article.Feed exposing (Model, Msg, decoder, init, update, viewArticles, viewPagination, viewTabs)
 
-import Api exposing (Cred)
-import Article exposing (Article, Preview)
-import Article.Slug as ArticleSlug exposing (Slug)
-import Article.Tag as Tag exposing (Tag)
-import Author
-import Avatar exposing (Avatar)
-import Html exposing (..)
-import Html.Attributes exposing (attribute, class, classList, href, id, placeholder, src)
-import Html.Events exposing (onClick)
-import Http
-import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (required)
-import Page
-import PaginatedList exposing (PaginatedList)
-import Profile
-import Route exposing (Route)
-import Session exposing (Session)
-import Task exposing (Task)
-import Time
-import Timestamp
-import Url exposing (Url)
-import Username exposing (Username)
-
-
 {-| NOTE: This module has its own Model, view, and update. This is not normal!
 If you find yourself doing this often, please watch <https://www.youtube.com/watch?v=DoA4Txr4GUs>
 
@@ -39,8 +15,6 @@ For every other reusable view in this application, this API would be totally
 overkill, so we use simpler APIs instead.
 
 -}
-
-
 
 -- MODEL
 

@@ -3,30 +3,6 @@ module Page.Profile exposing (Model, Msg, init, subscriptions, toSession, update
 {-| An Author's profile.
 -}
 
-import Api exposing (Cred)
-import Api.Endpoint as Endpoint
-import Article exposing (Article, Preview)
-import Article.Feed as Feed
-import Author exposing (Author(..), FollowedAuthor, UnfollowedAuthor)
-import Avatar exposing (Avatar)
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Http
-import Loading
-import Log
-import Page
-import PaginatedList exposing (PaginatedList)
-import Profile exposing (Profile)
-import Route
-import Session exposing (Session)
-import Task exposing (Task)
-import Time
-import Url.Builder
-import Username exposing (Username)
-import Viewer exposing (Viewer)
-
-
-
 -- MODEL
 
 

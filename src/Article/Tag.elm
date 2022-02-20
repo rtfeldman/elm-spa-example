@@ -1,12 +1,5 @@
 module Article.Tag exposing (Tag, list, toString)
 
-import Api exposing (Cred)
-import Api.Endpoint as Endpoint
-import Http
-import Json.Decode as Decode exposing (Decoder)
-
-
-
 -- TYPES
 
 

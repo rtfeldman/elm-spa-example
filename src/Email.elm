@@ -1,9 +1,5 @@
 module Email exposing (Email, decoder, encode, toString)
 
-import Json.Decode as Decode exposing (Decoder)
-import Json.Encode as Encode exposing (Value)
-
-
 {-| An email address.
 
 Having this as a custom type that's separate from String makes certain
@@ -26,6 +22,8 @@ work properly).
 This way, we make it impossible for a bug like that to compile!
 
 -}
+
+
 type Email
     = Email String
 

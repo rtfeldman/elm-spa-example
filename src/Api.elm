@@ -6,19 +6,6 @@ It exposes an opaque Endpoint type which is guaranteed to point to the correct U
 
 -}
 
-import Api.Endpoint as Endpoint exposing (Endpoint)
-import Avatar exposing (Avatar)
-import Browser
-import Browser.Navigation as Nav
-import Http exposing (Body, Expect)
-import Json.Decode as Decode exposing (Decoder, Value, decodeString, field, string)
-import Json.Decode.Pipeline as Pipeline exposing (optional, required)
-import Json.Encode as Encode
-import Url exposing (Url)
-import Username exposing (Username)
-
-
-
 -- CRED
 
 

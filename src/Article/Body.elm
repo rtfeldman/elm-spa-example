@@ -1,11 +1,5 @@
 module Article.Body exposing (Body, MarkdownString, decoder, toHtml, toMarkdownString)
 
-import Html exposing (Attribute, Html)
-import Json.Decode as Decode exposing (Decoder)
-import Markdown
-
-
-
 -- TYPES
 
 

@@ -1,14 +1,9 @@
 module Api.Endpoint exposing (Endpoint, article, articles, comment, comments, favorite, feed, follow, login, profiles, request, tags, user, users)
 
-import Article.Slug as Slug exposing (Slug)
-import CommentId exposing (CommentId)
-import Http
-import Url.Builder exposing (QueryParameter)
-import Username exposing (Username)
-
-
 {-| Http.request, except it takes an Endpoint instead of a Url.
 -}
+
+
 request :
     { body : Http.Body
     , expect : Http.Expect a

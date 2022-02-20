@@ -3,35 +3,6 @@ module Page.Article exposing (Model, Msg, init, subscriptions, toSession, update
 {-| Viewing an individual article.
 -}
 
-import Api exposing (Cred)
-import Api.Endpoint as Endpoint
-import Article exposing (Article, Full, Preview)
-import Article.Body exposing (Body)
-import Article.Comment as Comment exposing (Comment)
-import Article.Slug as Slug exposing (Slug)
-import Author exposing (Author(..), FollowedAuthor, UnfollowedAuthor)
-import Avatar
-import Browser.Navigation as Nav
-import CommentId exposing (CommentId)
-import Html exposing (..)
-import Html.Attributes exposing (attribute, class, disabled, href, id, placeholder, value)
-import Html.Events exposing (onClick, onInput, onSubmit)
-import Http
-import Json.Decode as Decode
-import Loading
-import Log
-import Page
-import Profile exposing (Profile)
-import Route
-import Session exposing (Session)
-import Task exposing (Task)
-import Time
-import Timestamp
-import Username exposing (Username)
-import Viewer exposing (Viewer)
-
-
-
 -- MODEL
 
 

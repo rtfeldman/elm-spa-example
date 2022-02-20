@@ -7,9 +7,6 @@ all of them. One source of truth!
 
 -}
 
-import Html exposing (Attribute, Html)
-import Html.Attributes as Attr
-
 
 type Image
     = Image String

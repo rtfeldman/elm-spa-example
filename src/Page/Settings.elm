@@ -1,28 +1,5 @@
 module Page.Settings exposing (Model, Msg, init, subscriptions, toSession, update, view)
 
-import Api exposing (Cred)
-import Api.Endpoint as Endpoint
-import Avatar
-import Browser.Navigation as Nav
-import Email exposing (Email)
-import Html exposing (Html, button, div, fieldset, h1, input, li, text, textarea, ul)
-import Html.Attributes exposing (attribute, class, placeholder, type_, value)
-import Html.Events exposing (onInput, onSubmit)
-import Http
-import Json.Decode as Decode exposing (Decoder, decodeString, field, list, string)
-import Json.Decode.Pipeline exposing (hardcoded, required)
-import Json.Encode as Encode
-import Loading
-import Log
-import Profile exposing (Profile)
-import Route
-import Session exposing (Session)
-import Task
-import Username as Username exposing (Username)
-import Viewer exposing (Viewer)
-
-
-
 -- MODEL
 
 

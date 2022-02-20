@@ -1,27 +1,5 @@
 module Page.Article.Editor exposing (Model, Msg, initEdit, initNew, subscriptions, toSession, update, view)
 
-import Api exposing (Cred)
-import Api.Endpoint as Endpoint
-import Article exposing (Article, Full)
-import Article.Body exposing (Body)
-import Article.Slug as Slug exposing (Slug)
-import Browser.Navigation as Nav
-import Html exposing (..)
-import Html.Attributes exposing (attribute, class, disabled, href, id, placeholder, type_, value)
-import Html.Events exposing (onInput, onSubmit)
-import Http
-import Json.Decode as Decode
-import Json.Encode as Encode
-import Loading
-import Page
-import Profile exposing (Profile)
-import Route
-import Session exposing (Session)
-import Task exposing (Task)
-import Time
-
-
-
 -- MODEL
 
 

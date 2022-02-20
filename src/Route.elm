@@ -1,16 +1,5 @@
 module Route exposing (Route(..), fromUrl, href, replaceUrl)
 
-import Article.Slug as Slug exposing (Slug)
-import Browser.Navigation as Nav
-import Html exposing (Attribute)
-import Html.Attributes as Attr
-import Profile exposing (Profile)
-import Url exposing (Url)
-import Url.Parser as Parser exposing ((</>), Parser, oneOf, s, string)
-import Username exposing (Username)
-
-
-
 -- ROUTING
 
 

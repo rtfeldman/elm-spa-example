@@ -40,7 +40,6 @@ import Viewer exposing (Viewer)
 type Model
     = Redirect Session
     | NotFound Session
-    | Settings Settings.Model
     | Login Login.Model
     | Register Register.Model
     | Profile Username Profile.Model
@@ -58,11 +57,11 @@ type alias StackModel =
 
 
 type alias StackCurrentModel =
-    Home.Model
+    Settings.Model
 
 
 type alias StackPreviousModel =
-    Spa.PageStack.Model Never () ()
+    Spa.PageStack.Model Never Home.Model (Spa.PageStack.Model Never () ())
 
 
 type alias StackMsg =
@@ -70,11 +69,11 @@ type alias StackMsg =
 
 
 type alias StackCurrentMsg =
-    Home.Msg
+    Settings.Msg
 
 
 type alias StackPreviousMsg =
-    Spa.PageStack.Msg Route () ()
+    Spa.PageStack.Msg Route Home.Msg (Spa.PageStack.Msg Route () ())
 
 
 type alias Stack =
@@ -85,6 +84,7 @@ stack : Stack
 stack =
     Spa.PageStack.setup { defaultView = View.default }
         |> Spa.PageStack.add ( View.map, View.map ) Route.matchHome (Home.page >> Ok)
+        |> Spa.PageStack.add ( View.map, View.map ) Route.matchSettings (Settings.page >> Ok)
 
 
 
@@ -123,9 +123,6 @@ view model =
         NotFound _ ->
             Page.view viewer Page.Other NotFound.view
 
-        Settings settings ->
-            viewPage Page.Other GotSettingsMsg (Settings.view settings)
-
         Login login ->
             viewPage Page.Other GotLoginMsg (Login.view login)
 
@@ -159,7 +156,6 @@ view model =
 type Msg
     = ChangedUrl Url
     | ClickedLink Browser.UrlRequest
-    | GotSettingsMsg Settings.Msg
     | GotLoginMsg Login.Msg
     | GotRegisterMsg Register.Msg
     | GotProfileMsg Profile.Msg
@@ -179,9 +175,6 @@ toSession page =
 
         NotFound session ->
             session
-
-        Settings settings ->
-            Settings.toSession settings
 
         Login login ->
             Login.toSession login
@@ -225,10 +218,6 @@ changeRouteTo maybeRoute model =
         Just (Route.EditArticle slug) ->
             Editor.initEdit session slug
                 |> updateWith (Editor (Just slug)) GotEditorMsg model
-
-        Just Route.Settings ->
-            Settings.init session
-                |> updateWith Settings GotSettingsMsg model
 
         Just Route.Login ->
             Login.init session
@@ -289,10 +278,6 @@ update msg model =
 
         ( ChangedUrl url, _ ) ->
             changeRouteTo (Route.fromUrl url) model
-
-        ( GotSettingsMsg subMsg, Settings settings ) ->
-            Settings.update subMsg settings
-                |> updateWith Settings GotSettingsMsg model
 
         ( GotLoginMsg subMsg, Login login ) ->
             Login.update subMsg login
@@ -355,9 +340,6 @@ subscriptions model =
 
         Redirect _ ->
             Session.changes GotSession (Session.navKey (toSession model))
-
-        Settings settings ->
-            Sub.map GotSettingsMsg (Settings.subscriptions settings)
 
         Login login ->
             Sub.map GotLoginMsg (Login.subscriptions login)

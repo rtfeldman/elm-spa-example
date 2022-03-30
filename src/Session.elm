@@ -7,6 +7,7 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (custom, required)
 import Json.Encode as Encode exposing (Value)
 import Profile exposing (Profile)
+import Route
 import Time
 import Viewer exposing (Viewer)
 
@@ -25,10 +26,12 @@ type Msg
 
 
 update : Msg -> Session -> ( Session, Cmd Msg )
-update msg _ =
+update msg session =
     case msg of
-        GotSession session ->
-            ( session, Cmd.none )
+        GotSession newSession ->
+            ( newSession
+            , Route.replaceUrl (navKey session) Route.Home
+            )
 
 
 subscriptions : Session -> Sub Msg

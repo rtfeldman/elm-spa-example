@@ -1,4 +1,4 @@
-module Route exposing (Route(..), fromUrl, href, matchHome, replaceUrl)
+module Route exposing (Route(..), fromUrl, href, matchHome, matchSettings, replaceUrl)
 
 import Article.Slug as Slug exposing (Slug)
 import Browser.Navigation as Nav
@@ -112,10 +112,20 @@ routeToPieces page =
 -- Route Matchers
 
 
-matchHome : Route -> Maybe ()
-matchHome r =
-    if r == Home then
+matchBasic : Route -> Route -> Maybe ()
+matchBasic route value =
+    if value == route then
         Just ()
 
     else
         Nothing
+
+
+matchHome : Route -> Maybe ()
+matchHome =
+    matchBasic Home
+
+
+matchSettings : Route -> Maybe ()
+matchSettings =
+    matchBasic Settings

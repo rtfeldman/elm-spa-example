@@ -42,7 +42,6 @@ type Model
     | NotFound Session
     | Login Login.Model
     | Register Register.Model
-    | Profile Username Profile.Model
     | Article Article.Model
     | Editor (Maybe Slug) Editor.Model
     | Stack Session StackModel
@@ -57,11 +56,14 @@ type alias StackModel =
 
 
 type alias StackCurrentModel =
-    Settings.Model
+    Profile.Model
 
 
 type alias StackPreviousModel =
-    Spa.PageStack.Model Never Home.Model (Spa.PageStack.Model Never () ())
+    Spa.PageStack.Model
+        Never
+        Settings.Model
+        (Spa.PageStack.Model Never Home.Model (Spa.PageStack.Model Never () ()))
 
 
 type alias StackMsg =
@@ -69,11 +71,14 @@ type alias StackMsg =
 
 
 type alias StackCurrentMsg =
-    Settings.Msg
+    Profile.Msg
 
 
 type alias StackPreviousMsg =
-    Spa.PageStack.Msg Route Home.Msg (Spa.PageStack.Msg Route () ())
+    Spa.PageStack.Msg
+        Route
+        Settings.Msg
+        (Spa.PageStack.Msg Route Home.Msg (Spa.PageStack.Msg Route () ()))
 
 
 type alias Stack =
@@ -85,6 +90,7 @@ stack =
     Spa.PageStack.setup { defaultView = View.default }
         |> Spa.PageStack.add ( View.map, View.map ) Route.matchHome (Home.page >> Ok)
         |> Spa.PageStack.add ( View.map, View.map ) Route.matchSettings (Settings.page >> Ok)
+        |> Spa.PageStack.add ( View.map, View.map ) Route.matchProfile (Profile.page >> Ok)
 
 
 
@@ -129,9 +135,6 @@ view model =
         Register register ->
             viewPage Page.Other GotRegisterMsg (Register.view register)
 
-        Profile username profile ->
-            viewPage (Page.Profile username) GotProfileMsg (Profile.view profile)
-
         Article article ->
             viewPage Page.Other GotArticleMsg (Article.view article)
 
@@ -158,7 +161,6 @@ type Msg
     | ClickedLink Browser.UrlRequest
     | GotLoginMsg Login.Msg
     | GotRegisterMsg Register.Msg
-    | GotProfileMsg Profile.Msg
     | GotArticleMsg Article.Msg
     | GotEditorMsg Editor.Msg
     | GotSession Session
@@ -181,9 +183,6 @@ toSession page =
 
         Register register ->
             Register.toSession register
-
-        Profile _ profile ->
-            Profile.toSession profile
 
         Article article ->
             Article.toSession article
@@ -226,10 +225,6 @@ changeRouteTo maybeRoute model =
         Just Route.Register ->
             Register.init session
                 |> updateWith Register GotRegisterMsg model
-
-        Just (Route.Profile username) ->
-            Profile.init session username
-                |> updateWith (Profile username) GotProfileMsg model
 
         Just (Route.Article slug) ->
             Article.init session slug
@@ -287,10 +282,6 @@ update msg model =
             Register.update subMsg register
                 |> updateWith Register GotRegisterMsg model
 
-        ( GotProfileMsg subMsg, Profile username profile ) ->
-            Profile.update subMsg profile
-                |> updateWith (Profile username) GotProfileMsg model
-
         ( GotArticleMsg subMsg, Article article ) ->
             Article.update subMsg article
                 |> updateWith Article GotArticleMsg model
@@ -346,9 +337,6 @@ subscriptions model =
 
         Register register ->
             Sub.map GotRegisterMsg (Register.subscriptions register)
-
-        Profile _ profile ->
-            Sub.map GotProfileMsg (Profile.subscriptions profile)
 
         Article article ->
             Sub.map GotArticleMsg (Article.subscriptions article)

@@ -1,4 +1,4 @@
-module Route exposing (Route(..), fromUrl, href, matchHome, matchSettings, replaceUrl)
+module Route exposing (Route(..), fromUrl, href, matchHome, matchProfile, matchSettings, replaceUrl)
 
 import Article.Slug as Slug exposing (Slug)
 import Browser.Navigation as Nav
@@ -129,3 +129,13 @@ matchHome =
 matchSettings : Route -> Maybe ()
 matchSettings =
     matchBasic Settings
+
+
+matchProfile : Route -> Maybe Username
+matchProfile route =
+    case route of
+        Profile username ->
+            Just username
+
+        _ ->
+            Nothing

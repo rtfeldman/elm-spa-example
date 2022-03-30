@@ -5,6 +5,7 @@ import Article.Slug exposing (Slug)
 import Avatar exposing (Avatar)
 import Browser exposing (Document)
 import Browser.Navigation as Nav
+import Effect
 import Html exposing (..)
 import Json.Decode as Decode exposing (Value)
 import Page exposing (Page)
@@ -19,10 +20,12 @@ import Page.Register as Register
 import Page.Settings as Settings
 import Route exposing (Route)
 import Session exposing (Session)
+import Spa.PageStack
 import Task
 import Time
 import Url exposing (Url)
 import Username exposing (Username)
+import View exposing (View)
 import Viewer exposing (Viewer)
 
 
@@ -44,6 +47,44 @@ type Model
     | Profile Username Profile.Model
     | Article Article.Model
     | Editor (Maybe Slug) Editor.Model
+    | Stack Session StackModel
+
+
+
+-- Elm SPA pages
+
+
+type alias StackModel =
+    Spa.PageStack.Model Never StackCurrentModel StackPreviousModel
+
+
+type alias StackCurrentModel =
+    ()
+
+
+type alias StackPreviousModel =
+    ()
+
+
+type alias StackMsg =
+    Spa.PageStack.Msg Route StackCurrentMsg StackPreviousMsg
+
+
+type alias StackCurrentMsg =
+    ()
+
+
+type alias StackPreviousMsg =
+    ()
+
+
+type alias Stack =
+    Spa.PageStack.Stack Never Session Never Route (View StackMsg) StackCurrentModel StackPreviousModel StackCurrentMsg StackPreviousMsg
+
+
+stack : Stack
+stack =
+    Spa.PageStack.setup { defaultView = View.default }
 
 
 
@@ -106,6 +147,13 @@ view model =
         Editor (Just _) editor ->
             viewPage Page.Other GotEditorMsg (Editor.view editor)
 
+        Stack session stackmodel ->
+            let
+                page =
+                    stack.view session stackmodel
+            in
+            viewPage page.page StackMsg { title = page.title, content = page.content }
+
 
 
 -- UPDATE
@@ -122,6 +170,8 @@ type Msg
     | GotArticleMsg Article.Msg
     | GotEditorMsg Editor.Msg
     | GotSession Session
+    | StackMsg StackMsg
+    | Noop
 
 
 toSession : Model -> Session
@@ -153,6 +203,9 @@ toSession page =
 
         Editor _ editor ->
             Editor.toSession editor
+
+        Stack session _ ->
+            session
 
 
 changeRouteTo : Maybe Route -> Model -> ( Model, Cmd Msg )
@@ -268,6 +321,11 @@ update msg model =
             , Route.replaceUrl (Session.navKey session) Route.Home
             )
 
+        ( StackMsg stackMsg, Stack session stackModel ) ->
+            stack.update session stackMsg stackModel
+                |> Tuple.mapFirst (Stack session)
+                |> Tuple.mapSecond (Effect.toCmd ( always Noop, StackMsg ))
+
         ( _, _ ) ->
             -- Disregard messages that arrived for the wrong page.
             ( model, Cmd.none )
@@ -313,6 +371,9 @@ subscriptions model =
 
         Editor _ editor ->
             Sub.map GotEditorMsg (Editor.subscriptions editor)
+
+        Stack session stackmodel ->
+            Sub.map StackMsg (stack.subscriptions session stackmodel)
 
 
 

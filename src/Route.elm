@@ -1,4 +1,4 @@
-module Route exposing (Route(..), fromUrl, href, replaceUrl)
+module Route exposing (Route(..), fromUrl, href, matchHome, replaceUrl)
 
 import Article.Slug as Slug exposing (Slug)
 import Browser.Navigation as Nav
@@ -106,3 +106,16 @@ routeToPieces page =
 
         EditArticle slug ->
             [ "editor", Slug.toString slug ]
+
+
+
+-- Route Matchers
+
+
+matchHome : Route -> Maybe ()
+matchHome r =
+    if r == Home then
+        Just ()
+
+    else
+        Nothing

@@ -40,7 +40,6 @@ import Viewer exposing (Viewer)
 type Model
     = Redirect Session
     | NotFound Session
-    | Home Home.Model
     | Settings Settings.Model
     | Login Login.Model
     | Register Register.Model
@@ -59,11 +58,11 @@ type alias StackModel =
 
 
 type alias StackCurrentModel =
-    ()
+    Home.Model
 
 
 type alias StackPreviousModel =
-    ()
+    Spa.PageStack.Model Never () ()
 
 
 type alias StackMsg =
@@ -71,11 +70,11 @@ type alias StackMsg =
 
 
 type alias StackCurrentMsg =
-    ()
+    Home.Msg
 
 
 type alias StackPreviousMsg =
-    ()
+    Spa.PageStack.Msg Route () ()
 
 
 type alias Stack =
@@ -85,6 +84,7 @@ type alias Stack =
 stack : Stack
 stack =
     Spa.PageStack.setup { defaultView = View.default }
+        |> Spa.PageStack.add ( View.map, View.map ) Route.matchHome (Home.page >> Ok)
 
 
 
@@ -126,9 +126,6 @@ view model =
         Settings settings ->
             viewPage Page.Other GotSettingsMsg (Settings.view settings)
 
-        Home home ->
-            viewPage Page.Home GotHomeMsg (Home.view home)
-
         Login login ->
             viewPage Page.Other GotLoginMsg (Login.view login)
 
@@ -162,7 +159,6 @@ view model =
 type Msg
     = ChangedUrl Url
     | ClickedLink Browser.UrlRequest
-    | GotHomeMsg Home.Msg
     | GotSettingsMsg Settings.Msg
     | GotLoginMsg Login.Msg
     | GotRegisterMsg Register.Msg
@@ -183,9 +179,6 @@ toSession page =
 
         NotFound session ->
             session
-
-        Home home ->
-            Home.toSession home
 
         Settings settings ->
             Settings.toSession settings
@@ -237,10 +230,6 @@ changeRouteTo maybeRoute model =
             Settings.init session
                 |> updateWith Settings GotSettingsMsg model
 
-        Just Route.Home ->
-            Home.init session
-                |> updateWith Home GotHomeMsg model
-
         Just Route.Login ->
             Login.init session
                 |> updateWith Login GotLoginMsg model
@@ -256,6 +245,18 @@ changeRouteTo maybeRoute model =
         Just (Route.Article slug) ->
             Article.init session slug
                 |> updateWith Article GotArticleMsg model
+
+        Just route ->
+            let
+                ( newStack, effect ) =
+                    case model of
+                        Stack _ stackModel ->
+                            stack.update session (Spa.PageStack.routeChange route) stackModel
+
+                        _ ->
+                            stack.init session route
+            in
+            ( Stack session newStack, Effect.toCmd ( always Noop, StackMsg ) effect )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -300,10 +301,6 @@ update msg model =
         ( GotRegisterMsg subMsg, Register register ) ->
             Register.update subMsg register
                 |> updateWith Register GotRegisterMsg model
-
-        ( GotHomeMsg subMsg, Home home ) ->
-            Home.update subMsg home
-                |> updateWith Home GotHomeMsg model
 
         ( GotProfileMsg subMsg, Profile username profile ) ->
             Profile.update subMsg profile
@@ -361,9 +358,6 @@ subscriptions model =
 
         Settings settings ->
             Sub.map GotSettingsMsg (Settings.subscriptions settings)
-
-        Home home ->
-            Sub.map GotHomeMsg (Home.subscriptions home)
 
         Login login ->
             Sub.map GotLoginMsg (Login.subscriptions login)

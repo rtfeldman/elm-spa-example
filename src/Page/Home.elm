@@ -1,4 +1,4 @@
-module Page.Home exposing (Model, Msg, init, subscriptions, toSession, update, view)
+module Page.Home exposing (Model, Msg, page)
 
 {-| The homepage. You can get here via either the / or /#/ routes.
 -}
@@ -9,6 +9,7 @@ import Article exposing (Article, Preview)
 import Article.Feed as Feed
 import Article.Tag as Tag exposing (Tag)
 import Browser.Dom as Dom
+import Effect exposing (Effect)
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, classList, href, id, placeholder)
 import Html.Events exposing (onClick)
@@ -18,10 +19,21 @@ import Log
 import Page
 import PaginatedList exposing (PaginatedList)
 import Session exposing (Session)
+import Spa.Page
 import Task exposing (Task)
 import Time
 import Url.Builder
 import Username exposing (Username)
+import View exposing (View)
+
+
+page session =
+    Spa.Page.element
+        { init = init session
+        , update = update session
+        , subscriptions = subscriptions
+        , view = view session
+        }
 
 
 
@@ -29,8 +41,7 @@ import Username exposing (Username)
 
 
 type alias Model =
-    { session : Session
-    , timeZone : Time.Zone
+    { timeZone : Time.Zone
     , feedTab : FeedTab
     , feedPage : Int
 
@@ -53,8 +64,8 @@ type FeedTab
     | TagFeed Tag
 
 
-init : Session -> ( Model, Cmd Msg )
-init session =
+init : Session -> () -> ( Model, Effect Session.Msg Msg )
+init session _ =
     let
         feedTab =
             case Session.cred session of
@@ -67,20 +78,20 @@ init session =
         loadTags =
             Http.toTask Tag.list
     in
-    ( { session = session
-      , timeZone = Time.utc
+    ( { timeZone = Time.utc
       , feedTab = feedTab
       , feedPage = 1
       , tags = Loading
       , feed = Loading
       }
-    , Cmd.batch
+    , Effect.batch
         [ fetchFeed session feedTab 1
-            |> Task.attempt CompletedFeedLoad
+            |> Effect.attempt CompletedFeedLoad
         , Tag.list
             |> Http.send CompletedTagsLoad
-        , Task.perform GotTimeZone Time.here
-        , Task.perform (\_ -> PassedSlowLoadThreshold) Loading.slowThreshold
+            |> Effect.fromCmd
+        , Effect.perform GotTimeZone Time.here
+        , Effect.perform (\_ -> PassedSlowLoadThreshold) Loading.slowThreshold
         ]
     )
 
@@ -89,9 +100,10 @@ init session =
 -- VIEW
 
 
-view : Model -> { title : String, content : Html Msg }
-view model =
+view : Session -> Model -> View Msg
+view session model =
     { title = "Conduit"
+    , page = Page.Home
     , content =
         div [ class "home-page" ]
             [ viewBanner
@@ -103,7 +115,7 @@ view model =
                                 [ div [ class "feed-toggle" ] <|
                                     List.concat
                                         [ [ viewTabs
-                                                (Session.cred model.session)
+                                                (Session.cred session)
                                                 model.feedTab
                                           ]
                                         , Feed.viewArticles model.timeZone feed
@@ -236,12 +248,11 @@ type Msg
     | CompletedTagsLoad (Result Http.Error (List Tag))
     | GotTimeZone Time.Zone
     | GotFeedMsg Feed.Msg
-    | GotSession Session
     | PassedSlowLoadThreshold
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Session -> Msg -> Model -> ( Model, Effect Session.Msg Msg )
+update session msg model =
     case msg of
         ClickedTag tag ->
             let
@@ -249,35 +260,35 @@ update msg model =
                     TagFeed tag
             in
             ( { model | feedTab = feedTab }
-            , fetchFeed model.session feedTab 1
-                |> Task.attempt CompletedFeedLoad
+            , fetchFeed session feedTab 1
+                |> Effect.attempt CompletedFeedLoad
             )
 
         ClickedTab tab ->
             ( { model | feedTab = tab }
-            , fetchFeed model.session tab 1
-                |> Task.attempt CompletedFeedLoad
+            , fetchFeed session tab 1
+                |> Effect.attempt CompletedFeedLoad
             )
 
-        ClickedFeedPage page ->
-            ( { model | feedPage = page }
-            , fetchFeed model.session model.feedTab page
+        ClickedFeedPage feedPage ->
+            ( { model | feedPage = feedPage }
+            , fetchFeed session model.feedTab feedPage
                 |> Task.andThen (\feed -> Task.map (\_ -> feed) scrollToTop)
-                |> Task.attempt CompletedFeedLoad
+                |> Effect.attempt CompletedFeedLoad
             )
 
         CompletedFeedLoad (Ok feed) ->
-            ( { model | feed = Loaded feed }, Cmd.none )
+            ( { model | feed = Loaded feed }, Effect.none )
 
         CompletedFeedLoad (Err error) ->
-            ( { model | feed = Failed }, Cmd.none )
+            ( { model | feed = Failed }, Effect.none )
 
         CompletedTagsLoad (Ok tags) ->
-            ( { model | tags = Loaded tags }, Cmd.none )
+            ( { model | tags = Loaded tags }, Effect.none )
 
         CompletedTagsLoad (Err error) ->
             ( { model | tags = Failed }
-            , Log.error
+            , Log.error |> Effect.fromCmd
             )
 
         GotFeedMsg subMsg ->
@@ -285,26 +296,23 @@ update msg model =
                 Loaded feed ->
                     let
                         ( newFeed, subCmd ) =
-                            Feed.update (Session.cred model.session) subMsg feed
+                            Feed.update (Session.cred session) subMsg feed
                     in
                     ( { model | feed = Loaded newFeed }
-                    , Cmd.map GotFeedMsg subCmd
+                    , Cmd.map GotFeedMsg subCmd |> Effect.fromCmd
                     )
 
                 Loading ->
-                    ( model, Log.error )
+                    ( model, Log.error |> Effect.fromCmd )
 
                 LoadingSlowly ->
-                    ( model, Log.error )
+                    ( model, Log.error |> Effect.fromCmd )
 
                 Failed ->
-                    ( model, Log.error )
+                    ( model, Log.error |> Effect.fromCmd )
 
         GotTimeZone tz ->
-            ( { model | timeZone = tz }, Cmd.none )
-
-        GotSession session ->
-            ( { model | session = session }, Cmd.none )
+            ( { model | timeZone = tz }, Effect.none )
 
         PassedSlowLoadThreshold ->
             let
@@ -326,7 +334,7 @@ update msg model =
                         other ->
                             other
             in
-            ( { model | feed = feed, tags = tags }, Cmd.none )
+            ( { model | feed = feed, tags = tags }, Effect.none )
 
 
 
@@ -334,7 +342,7 @@ update msg model =
 
 
 fetchFeed : Session -> FeedTab -> Int -> Task Http.Error Feed.Model
-fetchFeed session feedTabs page =
+fetchFeed session feedTabs feedPage =
     let
         maybeCred =
             Session.cred session
@@ -343,7 +351,7 @@ fetchFeed session feedTabs page =
             Feed.decoder maybeCred articlesPerPage
 
         params =
-            PaginatedList.params { page = page, resultsPerPage = articlesPerPage }
+            PaginatedList.params { page = feedPage, resultsPerPage = articlesPerPage }
 
         request =
             case feedTabs of
@@ -382,14 +390,5 @@ scrollToTop =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
-    Session.changes GotSession (Session.navKey model.session)
-
-
-
--- EXPORT
-
-
-toSession : Model -> Session
-toSession model =
-    model.session
+subscriptions _ =
+    Sub.none

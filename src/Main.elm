@@ -79,7 +79,7 @@ type alias StackPreviousMsg =
 
 
 type alias Stack =
-    Spa.PageStack.Stack Never Session Never Route (View StackMsg) StackCurrentModel StackPreviousModel StackCurrentMsg StackPreviousMsg
+    Spa.PageStack.Stack Never Session Session.Msg Route (View StackMsg) StackCurrentModel StackPreviousModel StackCurrentMsg StackPreviousMsg
 
 
 stack : Stack
@@ -171,6 +171,7 @@ type Msg
     | GotEditorMsg Editor.Msg
     | GotSession Session
     | StackMsg StackMsg
+    | SessionMsg Session.Msg
     | Noop
 
 
@@ -326,6 +327,13 @@ update msg model =
                 |> Tuple.mapFirst (Stack session)
                 |> Tuple.mapSecond (Effect.toCmd ( always Noop, StackMsg ))
 
+        ( SessionMsg sessionMsg, Stack session stackModel ) ->
+            let
+                ( newSession, cmd ) =
+                    Session.update sessionMsg session
+            in
+            ( Stack newSession stackModel, Cmd.map SessionMsg cmd )
+
         ( _, _ ) ->
             -- Disregard messages that arrived for the wrong page.
             ( model, Cmd.none )
@@ -373,7 +381,10 @@ subscriptions model =
             Sub.map GotEditorMsg (Editor.subscriptions editor)
 
         Stack session stackmodel ->
-            Sub.map StackMsg (stack.subscriptions session stackmodel)
+            Sub.batch
+                [ Sub.map StackMsg (stack.subscriptions session stackmodel)
+                , Sub.map SessionMsg (Session.subscriptions session)
+                ]
 
 
 

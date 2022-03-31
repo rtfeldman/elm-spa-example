@@ -1,4 +1,4 @@
-module Session exposing (Session, changes, cred, fromViewer, navKey, viewer)
+module Session exposing (Msg, Session, changes, cred, fromViewer, navKey, subscriptions, update, viewer)
 
 import Api exposing (Cred)
 import Avatar exposing (Avatar)
@@ -18,6 +18,22 @@ import Viewer exposing (Viewer)
 type Session
     = LoggedIn Nav.Key Viewer
     | Guest Nav.Key
+
+
+type Msg
+    = GotSession Session
+
+
+update : Msg -> Session -> ( Session, Cmd Msg )
+update msg _ =
+    case msg of
+        GotSession session ->
+            ( session, Cmd.none )
+
+
+subscriptions : Session -> Sub Msg
+subscriptions session =
+    changes GotSession (navKey session)
 
 
 

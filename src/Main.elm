@@ -40,7 +40,6 @@ import Viewer exposing (Viewer)
 type Model
     = Redirect Session
     | NotFound Session
-    | Article Article.Model
     | Editor (Maybe Slug) Editor.Model
     | Stack Session StackModel
 
@@ -54,23 +53,27 @@ type alias StackModel =
 
 
 type alias StackCurrentModel =
-    Register.Model
+    Article.Model
 
 
 type alias StackPreviousModel =
     Spa.PageStack.Model
         Never
-        Login.Model
+        Register.Model
         (Spa.PageStack.Model
             Never
-            Profile.Model
+            Login.Model
             (Spa.PageStack.Model
                 Never
-                Settings.Model
+                Profile.Model
                 (Spa.PageStack.Model
                     Never
-                    Home.Model
-                    (Spa.PageStack.Model Never () ())
+                    Settings.Model
+                    (Spa.PageStack.Model
+                        Never
+                        Home.Model
+                        (Spa.PageStack.Model Never () ())
+                    )
                 )
             )
         )
@@ -81,20 +84,24 @@ type alias StackMsg =
 
 
 type alias StackCurrentMsg =
-    Register.Msg
+    Article.Msg
 
 
 type alias StackPreviousMsg =
     Spa.PageStack.Msg
         Route
-        Login.Msg
+        Register.Msg
         (Spa.PageStack.Msg
             Route
-            Profile.Msg
+            Login.Msg
             (Spa.PageStack.Msg
                 Route
-                Settings.Msg
-                (Spa.PageStack.Msg Route Home.Msg (Spa.PageStack.Msg Route () ()))
+                Profile.Msg
+                (Spa.PageStack.Msg
+                    Route
+                    Settings.Msg
+                    (Spa.PageStack.Msg Route Home.Msg (Spa.PageStack.Msg Route () ()))
+                )
             )
         )
 
@@ -111,6 +118,7 @@ stack =
         |> Spa.PageStack.add ( View.map, View.map ) Route.matchProfile (Profile.page >> Ok)
         |> Spa.PageStack.add ( View.map, View.map ) Route.matchLogin (Login.page >> Ok)
         |> Spa.PageStack.add ( View.map, View.map ) Route.matchRegister (Register.page >> Ok)
+        |> Spa.PageStack.add ( View.map, View.map ) Route.matchArticle (Article.page >> Ok)
 
 
 
@@ -149,9 +157,6 @@ view model =
         NotFound _ ->
             Page.view viewer Page.Other NotFound.view
 
-        Article article ->
-            viewPage Page.Other GotArticleMsg (Article.view article)
-
         Editor Nothing editor ->
             viewPage Page.NewArticle GotEditorMsg (Editor.view editor)
 
@@ -173,7 +178,6 @@ view model =
 type Msg
     = ChangedUrl Url
     | ClickedLink Browser.UrlRequest
-    | GotArticleMsg Article.Msg
     | GotEditorMsg Editor.Msg
     | GotSession Session
     | StackMsg StackMsg
@@ -189,9 +193,6 @@ toSession page =
 
         NotFound session ->
             session
-
-        Article article ->
-            Article.toSession article
 
         Editor _ editor ->
             Editor.toSession editor
@@ -223,10 +224,6 @@ changeRouteTo maybeRoute model =
         Just (Route.EditArticle slug) ->
             Editor.initEdit session slug
                 |> updateWith (Editor (Just slug)) GotEditorMsg model
-
-        Just (Route.Article slug) ->
-            Article.init session slug
-                |> updateWith Article GotArticleMsg model
 
         Just route ->
             let
@@ -271,10 +268,6 @@ update msg model =
 
         ( ChangedUrl url, _ ) ->
             changeRouteTo (Route.fromUrl url) model
-
-        ( GotArticleMsg subMsg, Article article ) ->
-            Article.update subMsg article
-                |> updateWith Article GotArticleMsg model
 
         ( GotEditorMsg subMsg, Editor slug editor ) ->
             Editor.update subMsg editor
@@ -321,9 +314,6 @@ subscriptions model =
 
         Redirect _ ->
             Session.changes GotSession (Session.navKey (toSession model))
-
-        Article article ->
-            Sub.map GotArticleMsg (Article.subscriptions article)
 
         Editor _ editor ->
             Sub.map GotEditorMsg (Editor.subscriptions editor)

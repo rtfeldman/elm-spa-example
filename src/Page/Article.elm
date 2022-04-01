@@ -1,4 +1,4 @@
-module Page.Article exposing (Model, Msg, init, subscriptions, toSession, update, view)
+module Page.Article exposing (Model, Msg, page)
 
 {-| Viewing an individual article.
 -}
@@ -13,6 +13,7 @@ import Author exposing (Author(..), FollowedAuthor, UnfollowedAuthor)
 import Avatar
 import Browser.Navigation as Nav
 import CommentId exposing (CommentId)
+import Effect exposing (Effect)
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, disabled, href, id, placeholder, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
@@ -24,11 +25,22 @@ import Page
 import Profile exposing (Profile)
 import Route
 import Session exposing (Session)
+import Spa.Page
 import Task exposing (Task)
 import Time
 import Timestamp
 import Username exposing (Username)
+import View exposing (View)
 import Viewer exposing (Viewer)
+
+
+page session =
+    Spa.Page.element
+        { init = init session
+        , update = update session
+        , subscriptions = subscriptions
+        , view = view session
+        }
 
 
 
@@ -36,8 +48,7 @@ import Viewer exposing (Viewer)
 
 
 type alias Model =
-    { session : Session
-    , timeZone : Time.Zone
+    { timeZone : Time.Zone
     , errors : List String
 
     -- Loaded independently from server
@@ -58,25 +69,26 @@ type CommentText
     | Sending String
 
 
-init : Session -> Slug -> ( Model, Cmd Msg )
+init : Session -> Slug -> ( Model, Effect Session.Msg Msg )
 init session slug =
     let
         maybeCred =
             Session.cred session
     in
-    ( { session = session
-      , timeZone = Time.utc
+    ( { timeZone = Time.utc
       , errors = []
       , comments = Loading
       , article = Loading
       }
-    , Cmd.batch
+    , Effect.batch
         [ Article.fetch maybeCred slug
             |> Http.send CompletedLoadArticle
+            |> Effect.fromCmd
         , Comment.list maybeCred slug
             |> Http.send CompletedLoadComments
-        , Task.perform GotTimeZone Time.here
-        , Task.perform (\_ -> PassedSlowLoadThreshold) Loading.slowThreshold
+            |> Effect.fromCmd
+        , Effect.perform GotTimeZone Time.here
+        , Effect.perform (\_ -> PassedSlowLoadThreshold) Loading.slowThreshold
         ]
     )
 
@@ -85,8 +97,8 @@ init session slug =
 -- VIEW
 
 
-view : Model -> { title : String, content : Html Msg }
-view model =
+view : Session -> Model -> View Msg
+view session model =
     case model.article of
         Loaded article ->
             let
@@ -106,7 +118,7 @@ view model =
                     Author.profile author
 
                 buttons =
-                    case Session.cred model.session of
+                    case Session.cred session of
                         Just cred ->
                             viewButtons cred article author
 
@@ -114,6 +126,7 @@ view model =
                             []
             in
             { title = title
+            , page = Page.Other
             , content =
                 div [ class "article-page" ]
                     [ div [ class "banner" ]
@@ -165,7 +178,7 @@ view model =
                                         -- see the existing comments! Otherwise you
                                         -- may be about to repeat something that's
                                         -- already been said.
-                                        viewAddComment slug commentText (Session.viewer model.session)
+                                        viewAddComment slug commentText (Session.viewer session)
                                             :: List.map (viewComment model.timeZone slug) comments
 
                                     Failed ->
@@ -176,13 +189,13 @@ view model =
             }
 
         Loading ->
-            { title = "Article", content = text "" }
+            { title = "Article", page = Page.Other, content = text "" }
 
         LoadingSlowly ->
-            { title = "Article", content = Loading.icon }
+            { title = "Article", page = Page.Other, content = Loading.icon }
 
         Failed ->
-            { title = "Article", content = Loading.error "article" }
+            { title = "Article", page = Page.Other, content = Loading.error "article" }
 
 
 viewAddComment : Slug -> CommentText -> Maybe Viewer -> Html Msg
@@ -325,15 +338,14 @@ type Msg
     | CompletedFollowChange (Result Http.Error Author)
     | CompletedPostComment (Result Http.Error Comment)
     | GotTimeZone Time.Zone
-    | GotSession Session
     | PassedSlowLoadThreshold
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Session -> Msg -> Model -> ( Model, Effect Session.Msg Msg )
+update session msg model =
     case msg of
         ClickedDismissErrors ->
-            ( { model | errors = [] }, Cmd.none )
+            ( { model | errors = [] }, Effect.none )
 
         ClickedFavorite cred slug body ->
             ( model, fave Article.favorite cred slug body )
@@ -342,50 +354,52 @@ update msg model =
             ( model, fave Article.unfavorite cred slug body )
 
         CompletedLoadArticle (Ok article) ->
-            ( { model | article = Loaded article }, Cmd.none )
+            ( { model | article = Loaded article }, Effect.none )
 
         CompletedLoadArticle (Err error) ->
             ( { model | article = Failed }
-            , Log.error
+            , Log.error |> Effect.fromCmd
             )
 
         CompletedLoadComments (Ok comments) ->
-            ( { model | comments = Loaded ( Editing "", comments ) }, Cmd.none )
+            ( { model | comments = Loaded ( Editing "", comments ) }, Effect.none )
 
         CompletedLoadComments (Err error) ->
-            ( { model | article = Failed }, Log.error )
+            ( { model | article = Failed }, Log.error |> Effect.fromCmd )
 
         CompletedFavoriteChange (Ok newArticle) ->
-            ( { model | article = Loaded newArticle }, Cmd.none )
+            ( { model | article = Loaded newArticle }, Effect.none )
 
         CompletedFavoriteChange (Err error) ->
             ( { model | errors = Api.addServerError model.errors }
-            , Log.error
+            , Log.error |> Effect.fromCmd
             )
 
         ClickedUnfollow cred followedAuthor ->
             ( model
             , Author.requestUnfollow followedAuthor cred
                 |> Http.send CompletedFollowChange
+                |> Effect.fromCmd
             )
 
         ClickedFollow cred unfollowedAuthor ->
             ( model
             , Author.requestFollow unfollowedAuthor cred
                 |> Http.send CompletedFollowChange
+                |> Effect.fromCmd
             )
 
         CompletedFollowChange (Ok newAuthor) ->
             case model.article of
                 Loaded article ->
-                    ( { model | article = Loaded (Article.mapAuthor (\_ -> newAuthor) article) }, Cmd.none )
+                    ( { model | article = Loaded (Article.mapAuthor (\_ -> newAuthor) article) }, Effect.none )
 
                 _ ->
-                    ( model, Log.error )
+                    ( model, Log.error |> Effect.fromCmd )
 
         CompletedFollowChange (Err error) ->
             ( { model | errors = Api.addServerError model.errors }
-            , Log.error
+            , Log.error |> Effect.fromCmd
             )
 
         EnteredCommentText str ->
@@ -395,11 +409,11 @@ update msg model =
                     -- successfully, and when the comment is not currently
                     -- being submitted.
                     ( { model | comments = Loaded ( Editing str, comments ) }
-                    , Cmd.none
+                    , Effect.none
                     )
 
                 _ ->
-                    ( model, Log.error )
+                    ( model, Log.error |> Effect.fromCmd )
 
         ClickedPostComment cred slug ->
             case model.comments of
@@ -407,34 +421,35 @@ update msg model =
                     -- No posting empty comments!
                     -- We don't use Log.error here because this isn't an error,
                     -- it just doesn't do anything.
-                    ( model, Cmd.none )
+                    ( model, Effect.none )
 
                 Loaded ( Editing str, comments ) ->
                     ( { model | comments = Loaded ( Sending str, comments ) }
                     , cred
                         |> Comment.post slug str
                         |> Http.send CompletedPostComment
+                        |> Effect.fromCmd
                     )
 
                 _ ->
                     -- Either we have no comment to post, or there's already
                     -- one in the process of being posted, or we don't have
                     -- a valid article, in which case how did we post this?
-                    ( model, Log.error )
+                    ( model, Log.error |> Effect.fromCmd )
 
         CompletedPostComment (Ok comment) ->
             case model.comments of
                 Loaded ( _, comments ) ->
                     ( { model | comments = Loaded ( Editing "", comment :: comments ) }
-                    , Cmd.none
+                    , Effect.none
                     )
 
                 _ ->
-                    ( model, Log.error )
+                    ( model, Log.error |> Effect.fromCmd )
 
         CompletedPostComment (Err error) ->
             ( { model | errors = Api.addServerError model.errors }
-            , Log.error
+            , Log.error |> Effect.fromCmd
             )
 
         ClickedDeleteComment cred slug id ->
@@ -442,44 +457,41 @@ update msg model =
             , cred
                 |> Comment.delete slug id
                 |> Http.send (CompletedDeleteComment id)
+                |> Effect.fromCmd
             )
 
         CompletedDeleteComment id (Ok ()) ->
             case model.comments of
                 Loaded ( commentText, comments ) ->
                     ( { model | comments = Loaded ( commentText, withoutComment id comments ) }
-                    , Cmd.none
+                    , Effect.none
                     )
 
                 _ ->
-                    ( model, Log.error )
+                    ( model, Log.error |> Effect.fromCmd )
 
         CompletedDeleteComment id (Err error) ->
             ( { model | errors = Api.addServerError model.errors }
-            , Log.error
+            , Log.error |> Effect.fromCmd
             )
 
         ClickedDeleteArticle cred slug ->
             ( model
             , delete slug cred
                 |> Http.send CompletedDeleteArticle
+                |> Effect.fromCmd
             )
 
         CompletedDeleteArticle (Ok ()) ->
-            ( model, Route.replaceUrl (Session.navKey model.session) Route.Home )
+            ( model, Route.replaceUrl (Session.navKey session) Route.Home |> Effect.fromCmd )
 
         CompletedDeleteArticle (Err error) ->
             ( { model | errors = Api.addServerError model.errors }
-            , Log.error
+            , Log.error |> Effect.fromCmd
             )
 
         GotTimeZone tz ->
-            ( { model | timeZone = tz }, Cmd.none )
-
-        GotSession session ->
-            ( { model | session = session }
-            , Route.replaceUrl (Session.navKey session) Route.Home
-            )
+            ( { model | timeZone = tz }, Effect.none )
 
         PassedSlowLoadThreshold ->
             let
@@ -501,7 +513,7 @@ update msg model =
                         other ->
                             other
             in
-            ( { model | article = article, comments = comments }, Cmd.none )
+            ( { model | article = article, comments = comments }, Effect.none )
 
 
 
@@ -509,8 +521,8 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
-    Session.changes GotSession (Session.navKey model.session)
+subscriptions _ =
+    Sub.none
 
 
 
@@ -523,24 +535,15 @@ delete slug cred =
 
 
 
--- EXPORT
-
-
-toSession : Model -> Session
-toSession model =
-    model.session
-
-
-
 -- INTERNAL
 
 
-fave : (Slug -> Cred -> Http.Request (Article Preview)) -> Cred -> Slug -> Body -> Cmd Msg
+fave : (Slug -> Cred -> Http.Request (Article Preview)) -> Cred -> Slug -> Body -> Effect Session.Msg Msg
 fave toRequest cred slug body =
     toRequest slug cred
         |> Http.toTask
         |> Task.map (Article.fromPreview body)
-        |> Task.attempt CompletedFavoriteChange
+        |> Effect.attempt CompletedFavoriteChange
 
 
 withoutComment : CommentId -> List Comment -> List Comment

@@ -142,7 +142,7 @@ view session model =
                                         ]
                                     ]
                                     buttons
-                            , Page.viewErrors ClickedDismissErrors model.errors
+                            , View.viewErrors ClickedDismissErrors model.errors
                             ]
                         ]
                     , div [ class "container page" ]

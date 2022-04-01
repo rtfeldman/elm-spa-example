@@ -208,7 +208,7 @@ view session model =
                                 text ""
                 in
                 div [ class "profile-page" ]
-                    [ Page.viewErrors ClickedDismissErrors model.errors
+                    [ View.viewErrors ClickedDismissErrors model.errors
                     , div [ class "user-info" ]
                         [ div [ class "container" ]
                             [ div [ class "row" ]

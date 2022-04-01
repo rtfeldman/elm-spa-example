@@ -1,4 +1,4 @@
-module Route exposing (Route(..), fromUrl, href, matchArticle, matchEditor, matchHome, matchLogin, matchProfile, matchRegister, matchSettings, replaceUrl)
+module Route exposing (Route(..), fromUrl, href, matchArticle, matchEditor, matchHome, matchLogin, matchLogout, matchProfile, matchRegister, matchSettings, replaceUrl, toString)
 
 import Article.Slug as Slug exposing (Slug)
 import Browser.Navigation as Nav
@@ -63,6 +63,11 @@ fromUrl url =
     -- with parsing as if it had been a normal path all along.
     { url | path = Maybe.withDefault "" url.fragment, fragment = Nothing }
         |> Parser.parse parser
+
+
+toString : Route -> String
+toString =
+    routeToString
 
 
 
@@ -172,3 +177,8 @@ matchEditor route =
 
         _ ->
             Nothing
+
+
+matchLogout : Route -> Maybe ()
+matchLogout =
+    matchBasic Logout

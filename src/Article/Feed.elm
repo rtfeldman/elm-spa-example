@@ -22,6 +22,7 @@ import Time
 import Timestamp
 import Url exposing (Url)
 import Username exposing (Username)
+import View
 
 
 {-| NOTE: This module has its own Model, view, and update. This is not normal!
@@ -85,7 +86,7 @@ viewArticles timeZone (Model { articles, session, errors }) =
             PaginatedList.values articles
                 |> List.map (viewPreview maybeCred timeZone)
     in
-    Page.viewErrors ClickedDismissErrors errors :: articlesHtml
+    View.viewErrors ClickedDismissErrors errors :: articlesHtml
 
 
 viewPreview : Maybe Cred -> Time.Zone -> Article Preview -> Html Msg

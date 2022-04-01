@@ -40,7 +40,6 @@ import Viewer exposing (Viewer)
 type Model
     = Redirect Session
     | NotFound Session
-    | Editor (Maybe Slug) Editor.Model
     | Stack Session StackModel
 
 
@@ -53,26 +52,30 @@ type alias StackModel =
 
 
 type alias StackCurrentModel =
-    Article.Model
+    Editor.Model
 
 
 type alias StackPreviousModel =
     Spa.PageStack.Model
         Never
-        Register.Model
+        Article.Model
         (Spa.PageStack.Model
             Never
-            Login.Model
+            Register.Model
             (Spa.PageStack.Model
                 Never
-                Profile.Model
+                Login.Model
                 (Spa.PageStack.Model
                     Never
-                    Settings.Model
+                    Profile.Model
                     (Spa.PageStack.Model
                         Never
-                        Home.Model
-                        (Spa.PageStack.Model Never () ())
+                        Settings.Model
+                        (Spa.PageStack.Model
+                            Never
+                            Home.Model
+                            (Spa.PageStack.Model Never () ())
+                        )
                     )
                 )
             )
@@ -84,23 +87,27 @@ type alias StackMsg =
 
 
 type alias StackCurrentMsg =
-    Article.Msg
+    Editor.Msg
 
 
 type alias StackPreviousMsg =
     Spa.PageStack.Msg
         Route
-        Register.Msg
+        Article.Msg
         (Spa.PageStack.Msg
             Route
-            Login.Msg
+            Register.Msg
             (Spa.PageStack.Msg
                 Route
-                Profile.Msg
+                Login.Msg
                 (Spa.PageStack.Msg
                     Route
-                    Settings.Msg
-                    (Spa.PageStack.Msg Route Home.Msg (Spa.PageStack.Msg Route () ()))
+                    Profile.Msg
+                    (Spa.PageStack.Msg
+                        Route
+                        Settings.Msg
+                        (Spa.PageStack.Msg Route Home.Msg (Spa.PageStack.Msg Route () ()))
+                    )
                 )
             )
         )
@@ -119,6 +126,7 @@ stack =
         |> Spa.PageStack.add ( View.map, View.map ) Route.matchLogin (Login.page >> Ok)
         |> Spa.PageStack.add ( View.map, View.map ) Route.matchRegister (Register.page >> Ok)
         |> Spa.PageStack.add ( View.map, View.map ) Route.matchArticle (Article.page >> Ok)
+        |> Spa.PageStack.add ( View.map, View.map ) Route.matchEditor (Editor.page >> Ok)
 
 
 
@@ -157,12 +165,6 @@ view model =
         NotFound _ ->
             Page.view viewer Page.Other NotFound.view
 
-        Editor Nothing editor ->
-            viewPage Page.NewArticle GotEditorMsg (Editor.view editor)
-
-        Editor (Just _) editor ->
-            viewPage Page.Other GotEditorMsg (Editor.view editor)
-
         Stack session stackmodel ->
             let
                 page =
@@ -178,7 +180,6 @@ view model =
 type Msg
     = ChangedUrl Url
     | ClickedLink Browser.UrlRequest
-    | GotEditorMsg Editor.Msg
     | GotSession Session
     | StackMsg StackMsg
     | SessionMsg Session.Msg
@@ -193,9 +194,6 @@ toSession page =
 
         NotFound session ->
             session
-
-        Editor _ editor ->
-            Editor.toSession editor
 
         Stack session _ ->
             session
@@ -216,14 +214,6 @@ changeRouteTo maybeRoute model =
 
         Just Route.Logout ->
             ( model, Api.logout )
-
-        Just Route.NewArticle ->
-            Editor.initNew session
-                |> updateWith (Editor Nothing) GotEditorMsg model
-
-        Just (Route.EditArticle slug) ->
-            Editor.initEdit session slug
-                |> updateWith (Editor (Just slug)) GotEditorMsg model
 
         Just route ->
             let
@@ -269,10 +259,6 @@ update msg model =
         ( ChangedUrl url, _ ) ->
             changeRouteTo (Route.fromUrl url) model
 
-        ( GotEditorMsg subMsg, Editor slug editor ) ->
-            Editor.update subMsg editor
-                |> updateWith (Editor slug) GotEditorMsg model
-
         ( GotSession session, Redirect _ ) ->
             ( Redirect session
             , Route.replaceUrl (Session.navKey session) Route.Home
@@ -314,9 +300,6 @@ subscriptions model =
 
         Redirect _ ->
             Session.changes GotSession (Session.navKey (toSession model))
-
-        Editor _ editor ->
-            Sub.map GotEditorMsg (Editor.subscriptions editor)
 
         Stack session stackmodel ->
             Sub.batch

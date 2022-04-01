@@ -1,4 +1,4 @@
-module Route exposing (Route(..), fromUrl, href, matchHome, matchLogin, matchProfile, matchSettings, replaceUrl)
+module Route exposing (Route(..), fromUrl, href, matchHome, matchLogin, matchProfile, matchRegister, matchSettings, replaceUrl)
 
 import Article.Slug as Slug exposing (Slug)
 import Browser.Navigation as Nav
@@ -144,3 +144,8 @@ matchProfile route =
 
         _ ->
             Nothing
+
+
+matchRegister : Route -> Maybe ()
+matchRegister =
+    matchBasic Register

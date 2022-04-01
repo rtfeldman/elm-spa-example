@@ -40,7 +40,6 @@ import Viewer exposing (Viewer)
 type Model
     = Redirect Session
     | NotFound Session
-    | Login Login.Model
     | Register Register.Model
     | Article Article.Model
     | Editor (Maybe Slug) Editor.Model
@@ -56,14 +55,22 @@ type alias StackModel =
 
 
 type alias StackCurrentModel =
-    Profile.Model
+    Login.Model
 
 
 type alias StackPreviousModel =
     Spa.PageStack.Model
         Never
-        Settings.Model
-        (Spa.PageStack.Model Never Home.Model (Spa.PageStack.Model Never () ()))
+        Profile.Model
+        (Spa.PageStack.Model
+            Never
+            Settings.Model
+            (Spa.PageStack.Model
+                Never
+                Home.Model
+                (Spa.PageStack.Model Never () ())
+            )
+        )
 
 
 type alias StackMsg =
@@ -71,14 +78,18 @@ type alias StackMsg =
 
 
 type alias StackCurrentMsg =
-    Profile.Msg
+    Login.Msg
 
 
 type alias StackPreviousMsg =
     Spa.PageStack.Msg
         Route
-        Settings.Msg
-        (Spa.PageStack.Msg Route Home.Msg (Spa.PageStack.Msg Route () ()))
+        Profile.Msg
+        (Spa.PageStack.Msg
+            Route
+            Settings.Msg
+            (Spa.PageStack.Msg Route Home.Msg (Spa.PageStack.Msg Route () ()))
+        )
 
 
 type alias Stack =
@@ -91,6 +102,7 @@ stack =
         |> Spa.PageStack.add ( View.map, View.map ) Route.matchHome (Home.page >> Ok)
         |> Spa.PageStack.add ( View.map, View.map ) Route.matchSettings (Settings.page >> Ok)
         |> Spa.PageStack.add ( View.map, View.map ) Route.matchProfile (Profile.page >> Ok)
+        |> Spa.PageStack.add ( View.map, View.map ) Route.matchLogin (Login.page >> Ok)
 
 
 
@@ -129,9 +141,6 @@ view model =
         NotFound _ ->
             Page.view viewer Page.Other NotFound.view
 
-        Login login ->
-            viewPage Page.Other GotLoginMsg (Login.view login)
-
         Register register ->
             viewPage Page.Other GotRegisterMsg (Register.view register)
 
@@ -159,7 +168,6 @@ view model =
 type Msg
     = ChangedUrl Url
     | ClickedLink Browser.UrlRequest
-    | GotLoginMsg Login.Msg
     | GotRegisterMsg Register.Msg
     | GotArticleMsg Article.Msg
     | GotEditorMsg Editor.Msg
@@ -177,9 +185,6 @@ toSession page =
 
         NotFound session ->
             session
-
-        Login login ->
-            Login.toSession login
 
         Register register ->
             Register.toSession register
@@ -217,10 +222,6 @@ changeRouteTo maybeRoute model =
         Just (Route.EditArticle slug) ->
             Editor.initEdit session slug
                 |> updateWith (Editor (Just slug)) GotEditorMsg model
-
-        Just Route.Login ->
-            Login.init session
-                |> updateWith Login GotLoginMsg model
 
         Just Route.Register ->
             Register.init session
@@ -273,10 +274,6 @@ update msg model =
 
         ( ChangedUrl url, _ ) ->
             changeRouteTo (Route.fromUrl url) model
-
-        ( GotLoginMsg subMsg, Login login ) ->
-            Login.update subMsg login
-                |> updateWith Login GotLoginMsg model
 
         ( GotRegisterMsg subMsg, Register register ) ->
             Register.update subMsg register
@@ -331,9 +328,6 @@ subscriptions model =
 
         Redirect _ ->
             Session.changes GotSession (Session.navKey (toSession model))
-
-        Login login ->
-            Sub.map GotLoginMsg (Login.subscriptions login)
 
         Register register ->
             Sub.map GotRegisterMsg (Register.subscriptions register)

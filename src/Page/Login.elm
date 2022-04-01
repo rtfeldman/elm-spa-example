@@ -1,10 +1,11 @@
-module Page.Login exposing (Model, Msg, init, subscriptions, toSession, update, view)
+module Page.Login exposing (Model, Msg, page)
 
 {-| The login page.
 -}
 
 import Api exposing (Cred)
 import Browser.Navigation as Nav
+import Effect exposing (Effect)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -12,9 +13,21 @@ import Http
 import Json.Decode as Decode exposing (Decoder, decodeString, field, string)
 import Json.Decode.Pipeline exposing (optional)
 import Json.Encode as Encode
+import Page
 import Route exposing (Route)
 import Session exposing (Session)
+import Spa.Page
+import View exposing (View)
 import Viewer exposing (Viewer)
+
+
+page session =
+    Spa.Page.element
+        { init = init session
+        , update = update
+        , subscriptions = subscriptions
+        , view = view
+        }
 
 
 
@@ -22,8 +35,7 @@ import Viewer exposing (Viewer)
 
 
 type alias Model =
-    { session : Session
-    , problems : List Problem
+    { problems : List Problem
     , form : Form
     }
 
@@ -63,16 +75,15 @@ type alias Form =
     }
 
 
-init : Session -> ( Model, Cmd msg )
-init session =
-    ( { session = session
-      , problems = []
+init : Session -> () -> ( Model, Effect Session.Msg msg )
+init session _ =
+    ( { problems = []
       , form =
             { email = ""
             , password = ""
             }
       }
-    , Cmd.none
+    , Effect.none
     )
 
 
@@ -80,9 +91,10 @@ init session =
 -- VIEW
 
 
-view : Model -> { title : String, content : Html Msg }
+view : Model -> View Msg
 view model =
     { title = "Login"
+    , page = Page.Login
     , content =
         div [ class "cred-page" ]
             [ div [ class "container page" ]
@@ -153,10 +165,9 @@ type Msg
     | EnteredEmail String
     | EnteredPassword String
     | CompletedLogin (Result Http.Error Viewer)
-    | GotSession Session
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Effect Session.Msg Msg )
 update msg model =
     case msg of
         SubmittedForm ->
@@ -164,11 +175,12 @@ update msg model =
                 Ok validForm ->
                     ( { model | problems = [] }
                     , Http.send CompletedLogin (login validForm)
+                        |> Effect.fromCmd
                     )
 
                 Err problems ->
                     ( { model | problems = problems }
-                    , Cmd.none
+                    , Effect.none
                     )
 
         EnteredEmail email ->
@@ -184,26 +196,22 @@ update msg model =
                         |> List.map ServerError
             in
             ( { model | problems = List.append model.problems serverErrors }
-            , Cmd.none
+            , Effect.none
             )
 
         CompletedLogin (Ok viewer) ->
             ( model
             , Viewer.store viewer
-            )
-
-        GotSession session ->
-            ( { model | session = session }
-            , Route.replaceUrl (Session.navKey session) Route.Home
+                |> Effect.fromCmd
             )
 
 
 {-| Helper function for `update`. Updates the form and returns Cmd.none.
 Useful for recording form fields!
 -}
-updateForm : (Form -> Form) -> Model -> ( Model, Cmd Msg )
+updateForm : (Form -> Form) -> Model -> ( Model, Effect Session.Msg Msg )
 updateForm transform model =
-    ( { model | form = transform model.form }, Cmd.none )
+    ( { model | form = transform model.form }, Effect.none )
 
 
 
@@ -211,8 +219,8 @@ updateForm transform model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
-    Session.changes GotSession (Session.navKey model.session)
+subscriptions _ =
+    Sub.none
 
 
 
@@ -304,12 +312,3 @@ login (Trimmed form) =
                 |> Http.jsonBody
     in
     Api.login body Viewer.decoder
-
-
-
--- EXPORT
-
-
-toSession : Model -> Session
-toSession model =
-    model.session

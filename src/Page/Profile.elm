@@ -1,4 +1,4 @@
-module Page.Profile exposing (Model, Msg, init, subscriptions, toSession, update, view)
+module Page.Profile exposing (Model, Msg, page)
 
 {-| An Author's profile.
 -}
@@ -9,6 +9,7 @@ import Article exposing (Article, Preview)
 import Article.Feed as Feed
 import Author exposing (Author(..), FollowedAuthor, UnfollowedAuthor)
 import Avatar exposing (Avatar)
+import Effect exposing (Effect)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
@@ -19,11 +20,22 @@ import PaginatedList exposing (PaginatedList)
 import Profile exposing (Profile)
 import Route
 import Session exposing (Session)
+import Spa.Page
 import Task exposing (Task)
 import Time
 import Url.Builder
 import Username exposing (Username)
+import View exposing (View)
 import Viewer exposing (Viewer)
+
+
+page session =
+    Spa.Page.element
+        { init = init session
+        , update = update session
+        , subscriptions = subscriptions
+        , view = view session
+        }
 
 
 
@@ -31,11 +43,11 @@ import Viewer exposing (Viewer)
 
 
 type alias Model =
-    { session : Session
-    , timeZone : Time.Zone
+    { timeZone : Time.Zone
     , errors : List String
     , feedTab : FeedTab
     , feedPage : Int
+    , username : Username
 
     -- Loaded independently from server
     , author : Status Author
@@ -55,28 +67,28 @@ type Status a
     | Failed Username
 
 
-init : Session -> Username -> ( Model, Cmd Msg )
+init : Session -> Username -> ( Model, Effect Session.Msg Msg )
 init session username =
     let
         maybeCred =
             Session.cred session
     in
-    ( { session = session
-      , timeZone = Time.utc
+    ( { timeZone = Time.utc
       , errors = []
       , feedTab = defaultFeedTab
       , feedPage = 1
+      , username = username
       , author = Loading username
       , feed = Loading username
       }
-    , Cmd.batch
+    , Effect.batch
         [ Author.fetch username maybeCred
             |> Http.toTask
             |> Task.mapError (Tuple.pair username)
-            |> Task.attempt CompletedAuthorLoad
+            |> Effect.attempt CompletedAuthorLoad
         , fetchFeed session defaultFeedTab username 1
-        , Task.perform GotTimeZone Time.here
-        , Task.perform (\_ -> PassedSlowLoadThreshold) Loading.slowThreshold
+        , Effect.perform GotTimeZone Time.here
+        , Effect.perform (\_ -> PassedSlowLoadThreshold) Loading.slowThreshold
         ]
     )
 
@@ -106,8 +118,8 @@ defaultFeedTab =
 -- HTTP
 
 
-fetchFeed : Session -> FeedTab -> Username -> Int -> Cmd Msg
-fetchFeed session feedTabs username page =
+fetchFeed : Session -> FeedTab -> Username -> Int -> Effect Session.Msg Msg
+fetchFeed session feedTabs username feedPage =
     let
         maybeCred =
             Session.cred session
@@ -121,7 +133,7 @@ fetchFeed session feedTabs username page =
                     Url.Builder.string "favorited" (Username.toString username)
 
         params =
-            firstParam :: PaginatedList.params { page = page, resultsPerPage = articlesPerPage }
+            firstParam :: PaginatedList.params { page = feedPage, resultsPerPage = articlesPerPage }
 
         expect =
             Feed.decoder maybeCred articlesPerPage
@@ -130,7 +142,7 @@ fetchFeed session feedTabs username page =
         |> Http.toTask
         |> Task.map (Feed.init session)
         |> Task.mapError (Tuple.pair username)
-        |> Task.attempt CompletedFeedLoad
+        |> Effect.attempt CompletedFeedLoad
 
 
 articlesPerPage : Int
@@ -142,8 +154,8 @@ articlesPerPage =
 -- VIEW
 
 
-view : Model -> { title : String, content : Html Msg }
-view model =
+view : Session -> Model -> View Msg
+view session model =
     let
         title =
             case model.author of
@@ -157,15 +169,16 @@ view model =
                     titleForOther (Author.username author)
 
                 Loading username ->
-                    titleForMe (Session.cred model.session) username
+                    titleForMe (Session.cred session) username
 
                 LoadingSlowly username ->
-                    titleForMe (Session.cred model.session) username
+                    titleForMe (Session.cred session) username
 
                 Failed username ->
-                    titleForMe (Session.cred model.session) username
+                    titleForMe (Session.cred session) username
     in
     { title = title
+    , page = Page.Profile model.username
     , content =
         case model.author of
             Loaded author ->
@@ -177,7 +190,7 @@ view model =
                         Author.username author
 
                     followButton =
-                        case Session.cred model.session of
+                        case Session.cred session of
                             Just cred ->
                                 case author of
                                     IsViewer _ _ ->
@@ -195,7 +208,7 @@ view model =
                                 text ""
                 in
                 div [ class "profile-page" ]
-                    [ Page.viewErrors ClickedDismissErrors model.errors
+                    [ View.viewErrors ClickedDismissErrors model.errors
                     , div [ class "user-info" ]
                         [ div [ class "container" ]
                             [ div [ class "row" ]
@@ -317,64 +330,65 @@ type Msg
     | CompletedFeedLoad (Result ( Username, Http.Error ) Feed.Model)
     | GotTimeZone Time.Zone
     | GotFeedMsg Feed.Msg
-    | GotSession Session
     | PassedSlowLoadThreshold
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Session -> Msg -> Model -> ( Model, Effect Session.Msg Msg )
+update session msg model =
     case msg of
         ClickedDismissErrors ->
-            ( { model | errors = [] }, Cmd.none )
+            ( { model | errors = [] }, Effect.none )
 
         ClickedUnfollow cred followedAuthor ->
             ( model
             , Author.requestUnfollow followedAuthor cred
                 |> Http.send CompletedFollowChange
+                |> Effect.fromCmd
             )
 
         ClickedFollow cred unfollowedAuthor ->
             ( model
             , Author.requestFollow unfollowedAuthor cred
                 |> Http.send CompletedFollowChange
+                |> Effect.fromCmd
             )
 
         ClickedTab tab ->
             ( { model | feedTab = tab }
-            , fetchFeed model.session tab (currentUsername model) 1
+            , fetchFeed session tab (currentUsername model) 1
             )
 
-        ClickedFeedPage page ->
-            ( { model | feedPage = page }
-            , fetchFeed model.session model.feedTab (currentUsername model) page
+        ClickedFeedPage feedPage ->
+            ( { model | feedPage = feedPage }
+            , fetchFeed session model.feedTab (currentUsername model) feedPage
             )
 
         CompletedFollowChange (Ok newAuthor) ->
             ( { model | author = Loaded newAuthor }
-            , Cmd.none
+            , Effect.none
             )
 
         CompletedFollowChange (Err error) ->
             ( model
-            , Log.error
+            , Log.error |> Effect.fromCmd
             )
 
         CompletedAuthorLoad (Ok author) ->
-            ( { model | author = Loaded author }, Cmd.none )
+            ( { model | author = Loaded author }, Effect.none )
 
         CompletedAuthorLoad (Err ( username, err )) ->
             ( { model | author = Failed username }
-            , Log.error
+            , Log.error |> Effect.fromCmd
             )
 
         CompletedFeedLoad (Ok feed) ->
             ( { model | feed = Loaded feed }
-            , Cmd.none
+            , Effect.none
             )
 
         CompletedFeedLoad (Err ( username, err )) ->
             ( { model | feed = Failed username }
-            , Log.error
+            , Log.error |> Effect.fromCmd
             )
 
         GotFeedMsg subMsg ->
@@ -382,28 +396,24 @@ update msg model =
                 Loaded feed ->
                     let
                         ( newFeed, subCmd ) =
-                            Feed.update (Session.cred model.session) subMsg feed
+                            Feed.update (Session.cred session) subMsg feed
                     in
                     ( { model | feed = Loaded newFeed }
                     , Cmd.map GotFeedMsg subCmd
+                        |> Effect.fromCmd
                     )
 
                 Loading _ ->
-                    ( model, Log.error )
+                    ( model, Log.error |> Effect.fromCmd )
 
                 LoadingSlowly _ ->
-                    ( model, Log.error )
+                    ( model, Log.error |> Effect.fromCmd )
 
                 Failed _ ->
-                    ( model, Log.error )
+                    ( model, Log.error |> Effect.fromCmd )
 
         GotTimeZone tz ->
-            ( { model | timeZone = tz }, Cmd.none )
-
-        GotSession session ->
-            ( { model | session = session }
-            , Route.replaceUrl (Session.navKey session) Route.Home
-            )
+            ( { model | timeZone = tz }, Effect.none )
 
         PassedSlowLoadThreshold ->
             let
@@ -417,7 +427,7 @@ update msg model =
                         other ->
                             other
             in
-            ( { model | feed = feed }, Cmd.none )
+            ( { model | feed = feed }, Effect.none )
 
 
 
@@ -425,14 +435,5 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
-    Session.changes GotSession (Session.navKey model.session)
-
-
-
--- EXPORT
-
-
-toSession : Model -> Session
-toSession model =
-    model.session
+subscriptions _ =
+    Sub.none

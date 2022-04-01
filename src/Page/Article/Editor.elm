@@ -1,4 +1,4 @@
-module Page.Article.Editor exposing (Model, Msg, initEdit, initNew, subscriptions, toSession, update, view)
+module Page.Article.Editor exposing (Model, Msg, page)
 
 import Api exposing (Cred)
 import Api.Endpoint as Endpoint
@@ -6,6 +6,7 @@ import Article exposing (Article, Full)
 import Article.Body exposing (Body)
 import Article.Slug as Slug exposing (Slug)
 import Browser.Navigation as Nav
+import Effect exposing (Effect)
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, disabled, href, id, placeholder, type_, value)
 import Html.Events exposing (onInput, onSubmit)
@@ -17,8 +18,19 @@ import Page
 import Profile exposing (Profile)
 import Route
 import Session exposing (Session)
+import Spa.Page
 import Task exposing (Task)
 import Time
+import View exposing (View)
+
+
+page session =
+    Spa.Page.element
+        { init = init session
+        , update = update session
+        , subscriptions = subscriptions
+        , view = view session
+        }
 
 
 
@@ -26,8 +38,7 @@ import Time
 
 
 type alias Model =
-    { session : Session
-    , status : Status
+    { status : Status
     }
 
 
@@ -57,10 +68,19 @@ type alias Form =
     }
 
 
-initNew : Session -> ( Model, Cmd msg )
+init : Session -> Maybe Slug -> ( Model, Effect Session.Msg Msg )
+init session slug =
+    case slug of
+        Just s ->
+            initEdit session s
+
+        Nothing ->
+            initNew session
+
+
+initNew : Session -> ( Model, Effect Session.Msg Msg )
 initNew session =
-    ( { session = session
-      , status =
+    ( { status =
             EditingNew []
                 { title = ""
                 , body = ""
@@ -68,23 +88,22 @@ initNew session =
                 , tags = ""
                 }
       }
-    , Cmd.none
+    , Effect.none
     )
 
 
-initEdit : Session -> Slug -> ( Model, Cmd Msg )
+initEdit : Session -> Slug -> ( Model, Effect Session.Msg Msg )
 initEdit session slug =
-    ( { session = session
-      , status = Loading slug
+    ( { status = Loading slug
       }
-    , Cmd.batch
+    , Effect.batch
         [ Article.fetch (Session.cred session) slug
             |> Http.toTask
             -- If init fails, store the slug that failed in the msg, so we can
             -- at least have it later to display the page's title properly!
             |> Task.mapError (\httpError -> ( slug, httpError ))
-            |> Task.attempt CompletedArticleLoad
-        , Task.perform (\_ -> PassedSlowLoadThreshold) Loading.slowThreshold
+            |> Effect.attempt CompletedArticleLoad
+        , Effect.perform (\_ -> PassedSlowLoadThreshold) Loading.slowThreshold
         ]
     )
 
@@ -93,8 +112,8 @@ initEdit session slug =
 -- VIEW
 
 
-view : Model -> { title : String, content : Html Msg }
-view model =
+view : Session -> Model -> View Msg
+view session model =
     { title =
         case getSlug model.status of
             Just slug ->
@@ -102,8 +121,15 @@ view model =
 
             Nothing ->
                 "New Article"
+    , page =
+        case getSlug model.status of
+            Just slug ->
+                Page.Other
+
+            Nothing ->
+                Page.NewArticle
     , content =
-        case Session.cred model.session of
+        case Session.cred session of
             Just cred ->
                 viewAuthenticated cred model
 
@@ -247,12 +273,11 @@ type Msg
     | CompletedCreate (Result Http.Error (Article Full))
     | CompletedEdit (Result Http.Error (Article Full))
     | CompletedArticleLoad (Result ( Slug, Http.Error ) (Article Full))
-    | GotSession Session
     | PassedSlowLoadThreshold
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Session -> Msg -> Model -> ( Model, Effect Session.Msg Msg )
+update session msg model =
     case msg of
         ClickedSave cred ->
             model.status
@@ -274,28 +299,30 @@ update msg model =
         CompletedCreate (Ok article) ->
             ( model
             , Route.Article (Article.slug article)
-                |> Route.replaceUrl (Session.navKey model.session)
+                |> Route.replaceUrl (Session.navKey session)
+                |> Effect.fromCmd
             )
 
         CompletedCreate (Err error) ->
             ( { model | status = savingError error model.status }
-            , Cmd.none
+            , Effect.none
             )
 
         CompletedEdit (Ok article) ->
             ( model
             , Route.Article (Article.slug article)
-                |> Route.replaceUrl (Session.navKey model.session)
+                |> Route.replaceUrl (Session.navKey session)
+                |> Effect.fromCmd
             )
 
         CompletedEdit (Err error) ->
             ( { model | status = savingError error model.status }
-            , Cmd.none
+            , Effect.none
             )
 
         CompletedArticleLoad (Err ( slug, error )) ->
             ( { model | status = LoadingFailed slug }
-            , Cmd.none
+            , Effect.none
             )
 
         CompletedArticleLoad (Ok article) ->
@@ -313,12 +340,7 @@ update msg model =
                         }
             in
             ( { model | status = status }
-            , Cmd.none
-            )
-
-        GotSession session ->
-            ( { model | session = session }
-            , Route.replaceUrl (Session.navKey session) Route.Home
+            , Effect.none
             )
 
         PassedSlowLoadThreshold ->
@@ -333,10 +355,10 @@ update msg model =
                         other ->
                             other
             in
-            ( { model | status = status }, Cmd.none )
+            ( { model | status = status }, Effect.none )
 
 
-save : Cred -> Status -> ( Status, Cmd Msg )
+save : Cred -> Status -> ( Status, Effect Session.Msg Msg )
 save cred status =
     case status of
         Editing slug _ form ->
@@ -345,11 +367,12 @@ save cred status =
                     ( Saving slug form
                     , edit slug validForm cred
                         |> Http.send CompletedEdit
+                        |> Effect.fromCmd
                     )
 
                 Err problems ->
                     ( Editing slug problems form
-                    , Cmd.none
+                    , Effect.none
                     )
 
         EditingNew _ form ->
@@ -358,11 +381,12 @@ save cred status =
                     ( Creating form
                     , create validForm cred
                         |> Http.send CompletedCreate
+                        |> Effect.fromCmd
                     )
 
                 Err problems ->
                     ( EditingNew problems form
-                    , Cmd.none
+                    , Effect.none
                     )
 
         _ ->
@@ -372,7 +396,7 @@ save cred status =
             --
             -- If we had an error logging service, we would send
             -- something to it here!
-            ( status, Cmd.none )
+            ( status, Effect.none )
 
 
 savingError : Http.Error -> Status -> Status
@@ -393,7 +417,7 @@ savingError error status =
 
 
 {-| Helper function for `update`. Updates the form, if there is one,
-and returns Cmd.none.
+and returns Effect.none.
 
 Useful for recording form fields!
 
@@ -401,7 +425,7 @@ This could also log errors to the server if we are trying to record things in
 the form and we don't actually have a form.
 
 -}
-updateForm : (Form -> Form) -> Model -> ( Model, Cmd Msg )
+updateForm : (Form -> Form) -> Model -> ( Model, Effect Session.Msg Msg )
 updateForm transform model =
     let
         newModel =
@@ -427,7 +451,7 @@ updateForm transform model =
                 Creating form ->
                     { model | status = Creating (transform form) }
     in
-    ( newModel, Cmd.none )
+    ( newModel, Effect.none )
 
 
 
@@ -435,8 +459,8 @@ updateForm transform model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
-    Session.changes GotSession (Session.navKey model.session)
+subscriptions _ =
+    Sub.none
 
 
 
@@ -558,15 +582,6 @@ edit articleSlug (Trimmed form) cred =
     in
     Decode.field "article" (Article.fullDecoder (Just cred))
         |> Api.put (Endpoint.article articleSlug) cred body
-
-
-
--- EXPORT
-
-
-toSession : Model -> Session
-toSession model =
-    model.session
 
 
 

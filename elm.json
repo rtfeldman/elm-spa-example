@@ -1,7 +1,8 @@
 {
     "type": "application",
     "source-directories": [
-        "src"
+        "src",
+        "../elm-spa/src"
     ],
     "elm-version": "0.19.1",
     "dependencies": {
@@ -15,6 +16,7 @@
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
             "elm-explorations/markdown": "1.0.0",
+            "orus-io/elm-spa": "2.0.0",
             "rtfeldman/elm-iso8601-date-strings": "1.1.0"
         },
         "indirect": {

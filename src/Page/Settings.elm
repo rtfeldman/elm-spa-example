@@ -1,9 +1,10 @@
-module Page.Settings exposing (Model, Msg, init, subscriptions, toSession, update, view)
+module Page.Settings exposing (Model, Msg, page)
 
 import Api exposing (Cred)
 import Api.Endpoint as Endpoint
 import Avatar
 import Browser.Navigation as Nav
+import Effect exposing (Effect)
 import Email exposing (Email)
 import Html exposing (Html, button, div, fieldset, h1, input, li, text, textarea, ul)
 import Html.Attributes exposing (attribute, class, placeholder, type_, value)
@@ -14,12 +15,24 @@ import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Loading
 import Log
+import Page
 import Profile exposing (Profile)
 import Route
 import Session exposing (Session)
+import Spa.Page
 import Task
 import Username as Username exposing (Username)
+import View exposing (View)
 import Viewer exposing (Viewer)
+
+
+page session =
+    Spa.Page.element
+        { init = init session
+        , update = update
+        , subscriptions = subscriptions
+        , view = view session
+        }
 
 
 
@@ -27,8 +40,7 @@ import Viewer exposing (Viewer)
 
 
 type alias Model =
-    { session : Session
-    , problems : List Problem
+    { problems : List Problem
     , status : Status
     }
 
@@ -54,16 +66,16 @@ type Problem
     | ServerError String
 
 
-init : Session -> ( Model, Cmd Msg )
-init session =
-    ( { session = session
-      , problems = []
+init : Session -> () -> ( Model, Effect Session.Msg Msg )
+init session _ =
+    ( { problems = []
       , status = Loading
       }
-    , Cmd.batch
+    , Effect.batch
         [ Api.get Endpoint.user (Session.cred session) (Decode.field "user" formDecoder)
             |> Http.send CompletedFormLoad
-        , Task.perform (\_ -> PassedSlowLoadThreshold) Loading.slowThreshold
+            |> Effect.fromCmd
+        , Effect.perform (\_ -> PassedSlowLoadThreshold) Loading.slowThreshold
         ]
     )
 
@@ -94,11 +106,12 @@ type ValidForm
 -- VIEW
 
 
-view : Model -> { title : String, content : Html Msg }
-view model =
+view : Session -> Model -> View Msg
+view session model =
     { title = "Settings"
+    , page = Page.Settings
     , content =
-        case Session.cred model.session of
+        case Session.cred session of
             Just cred ->
                 div [ class "settings-page" ]
                     [ div [ class "container page" ]
@@ -214,21 +227,20 @@ type Msg
     | EnteredAvatar String
     | CompletedFormLoad (Result Http.Error Form)
     | CompletedSave (Result Http.Error Viewer)
-    | GotSession Session
     | PassedSlowLoadThreshold
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Effect Session.Msg Msg )
 update msg model =
     case msg of
         CompletedFormLoad (Ok form) ->
             ( { model | status = Loaded form }
-            , Cmd.none
+            , Effect.none
             )
 
         CompletedFormLoad (Err _) ->
             ( { model | status = Failed }
-            , Cmd.none
+            , Effect.none
             )
 
         SubmittedForm cred form ->
@@ -237,11 +249,12 @@ update msg model =
                     ( { model | status = Loaded form }
                     , edit cred validForm
                         |> Http.send CompletedSave
+                        |> Effect.fromCmd
                     )
 
                 Err problems ->
                     ( { model | problems = problems }
-                    , Cmd.none
+                    , Effect.none
                     )
 
         EnteredEmail email ->
@@ -266,41 +279,37 @@ update msg model =
                         |> List.map ServerError
             in
             ( { model | problems = List.append model.problems serverErrors }
-            , Cmd.none
+            , Effect.none
             )
 
         CompletedSave (Ok viewer) ->
             ( model
             , Viewer.store viewer
-            )
-
-        GotSession session ->
-            ( { model | session = session }
-            , Route.replaceUrl (Session.navKey session) Route.Home
+                |> Effect.fromCmd
             )
 
         PassedSlowLoadThreshold ->
             case model.status of
                 Loading ->
                     ( { model | status = LoadingSlowly }
-                    , Cmd.none
+                    , Effect.none
                     )
 
                 _ ->
-                    ( model, Cmd.none )
+                    ( model, Effect.none )
 
 
 {-| Helper function for `update`. Updates the form and returns Cmd.none.
 Useful for recording form fields!
 -}
-updateForm : (Form -> Form) -> Model -> ( Model, Cmd msg )
+updateForm : (Form -> Form) -> Model -> ( Model, Effect Session.Msg msg )
 updateForm transform model =
     case model.status of
         Loaded form ->
-            ( { model | status = Loaded (transform form) }, Cmd.none )
+            ( { model | status = Loaded (transform form) }, Effect.none )
 
         _ ->
-            ( model, Log.error )
+            ( model, Log.error |> Effect.fromCmd )
 
 
 
@@ -309,16 +318,7 @@ updateForm transform model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Session.changes GotSession (Session.navKey model.session)
-
-
-
--- EXPORT
-
-
-toSession : Model -> Session
-toSession model =
-    model.session
+    Sub.none
 
 
 

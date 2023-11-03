@@ -1,0 +1,15 @@
+{
+  "name": "elm-spa-example",
+  "private": true,
+  "version": "1.0.0",
+  "devDependencies": {
+    "elm-review": "^2.10.3",
+    "elm-test": "^0.19.1-revision12",
+    "elm-tooling": "^1.15.0"
+  },
+  "scripts": {
+    "postinstall": "elm-tooling install",
+    "test": "elm-test && elm-review"
+  },
+  "license": "ISC"
+}

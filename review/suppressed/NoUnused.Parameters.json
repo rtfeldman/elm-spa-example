@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "automatically created by": "elm-review suppress",
+  "learn more": "elm-review suppress --help",
+  "suppressions": [
+    { "count": 1, "filePath": "src/Article/Feed.elm" },
+    { "count": 1, "filePath": "src/Main.elm" },
+    { "count": 1, "filePath": "src/Page/Article/Editor.elm" }
+  ]
+}

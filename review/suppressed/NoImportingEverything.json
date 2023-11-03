@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "automatically created by": "elm-review suppress",
+  "learn more": "elm-review suppress --help",
+  "suppressions": [
+    { "count": 3, "filePath": "src/Page/Login.elm" },
+    { "count": 3, "filePath": "src/Page/Register.elm" },
+    { "count": 2, "filePath": "src/Page/Profile.elm" },
+    { "count": 1, "filePath": "src/Article/Feed.elm" },
+    { "count": 1, "filePath": "src/Main.elm" },
+    { "count": 1, "filePath": "src/Page/Article.elm" },
+    { "count": 1, "filePath": "src/Page/Article/Editor.elm" },
+    { "count": 1, "filePath": "src/Page/Home.elm" },
+    { "count": 1, "filePath": "tests/RoutingTests.elm" }
+  ]
+}

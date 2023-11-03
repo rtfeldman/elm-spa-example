@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "automatically created by": "elm-review suppress",
+  "learn more": "elm-review suppress --help",
+  "suppressions": [
+    { "count": 20, "filePath": "src/Page/Article.elm" },
+    { "count": 11, "filePath": "src/Page/Article/Editor.elm" },
+    { "count": 11, "filePath": "src/Page/Home.elm" },
+    { "count": 10, "filePath": "src/Article/Feed.elm" },
+    { "count": 10, "filePath": "src/Page/Profile.elm" },
+    { "count": 8, "filePath": "src/Page/Settings.elm" },
+    { "count": 5, "filePath": "src/Page/Login.elm" },
+    { "count": 5, "filePath": "src/Page/Register.elm" },
+    { "count": 3, "filePath": "src/Api.elm" },
+    { "count": 3, "filePath": "src/Main.elm" },
+    { "count": 3, "filePath": "src/Page.elm" },
+    { "count": 3, "filePath": "src/Timestamp.elm" },
+    { "count": 2, "filePath": "src/Author.elm" },
+    { "count": 1, "filePath": "src/Article/Comment.elm" },
+    { "count": 1, "filePath": "src/PaginatedList.elm" },
+    { "count": 1, "filePath": "tests/RoutingTests.elm" }
+  ]
+}

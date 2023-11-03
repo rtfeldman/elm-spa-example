@@ -1,13 +1,12 @@
-module Main exposing (main)
+module Main exposing (Model, Msg, main)
 
-import Api exposing (Cred)
+import Api
 import Article.Slug exposing (Slug)
-import Avatar exposing (Avatar)
 import Browser exposing (Document)
 import Browser.Navigation as Nav
 import Html exposing (..)
-import Json.Decode as Decode exposing (Value)
-import Page exposing (Page)
+import Json.Decode exposing (Value)
+import Page
 import Page.Article as Article
 import Page.Article.Editor as Editor
 import Page.Blank as Blank
@@ -19,8 +18,6 @@ import Page.Register as Register
 import Page.Settings as Settings
 import Route exposing (Route)
 import Session exposing (Session)
-import Task
-import Time
 import Url exposing (Url)
 import Username exposing (Username)
 import Viewer exposing (Viewer)
@@ -268,7 +265,7 @@ update msg model =
             , Route.replaceUrl (Session.navKey session) Route.Home
             )
 
-        ( _, _ ) ->
+        _ ->
             -- Disregard messages that arrived for the wrong page.
             ( model, Cmd.none )
 

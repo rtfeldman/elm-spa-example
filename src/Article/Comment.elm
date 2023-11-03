@@ -2,16 +2,14 @@ module Article.Comment exposing (Comment, author, body, createdAt, delete, id, l
 
 import Api exposing (Cred)
 import Api.Endpoint as Endpoint
-import Article exposing (Article)
-import Article.Slug as Slug exposing (Slug)
+import Article.Slug exposing (Slug)
 import Author exposing (Author)
 import CommentId exposing (CommentId)
 import Http
 import Iso8601
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (custom, required)
+import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode exposing (Value)
-import Profile exposing (Profile)
 import Time
 
 

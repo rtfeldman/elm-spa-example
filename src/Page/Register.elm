@@ -1,15 +1,12 @@
-module Page.Register exposing (Model, Msg, init, subscriptions, toSession, update, view)
+module Page.Register exposing (Form, Model, Msg, Problem, init, subscriptions, toSession, update, view)
 
-import Api exposing (Cred)
-import Browser.Navigation as Nav
+import Api
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
-import Json.Decode as Decode exposing (Decoder, decodeString, field, string)
-import Json.Decode.Pipeline exposing (optional)
 import Json.Encode as Encode
-import Route exposing (Route)
+import Route
 import Session exposing (Session)
 import Viewer exposing (Viewer)
 

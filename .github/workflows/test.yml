@@ -1,0 +1,65 @@
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on: [push, pull_request]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  test:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v3
+      with:
+        node-version: lts/*
+
+    # Re-use node_modules between runs until package-lock.json changes.
+    - name: Cache node_modules
+      id: internal-cache-node_modules
+      uses: actions/cache@v3
+      with:
+        path: node_modules
+        key: internal-node_modules-ubuntu-latest.x-${{ hashFiles('package-lock.json') }}
+
+    # Re-use ~/.elm between runs until elm.json, elm-tooling.json or
+    # review/elm.json changes. The Elm compiler saves downloaded Elm packages
+    # to ~/.elm, and elm-tooling saves downloaded tool executables there.
+    - name: Cache ~/.elm
+      uses: actions/cache@v3
+      with:
+        path: ~/.elm
+        key: elm-${{ hashFiles('elm.json', 'elm-tooling.json', 'review/elm.json') }}
+
+    - name: Install npm dependencies
+      if: steps.cache-node_modules.outputs.cache-hit != 'true'
+      env:
+        # If you have a `"postinstall": "elm-tooling install"` script in your
+        # package.json, this turns it into a no-op. We’ll run it in the next
+        # step because of the caching. If elm-tooling.json changes but
+        # package-lock.json does not, the postinstall script needs running
+        # but this step won’t.
+        NO_ELM_TOOLING_INSTALL: 1
+      run: npm ci
+
+    # Install tools from elm-tooling.json, unless we restored them from
+    # cache. package-lock.json and elm-tooling.json can change independently,
+    # so we need to install separately based on what was restored from cache.
+    # This is run even if we restored ~/.elm from cache to be 100% sure
+    # node_modules/.bin/ contains links to all your tools. `elm-tooling
+    # install` runs very fast when there’s nothing new to download so
+    # skipping the step doesn’t save much time.
+    - name: elm-tooling install
+      run: npx --no-install elm-tooling install
+
+    - name: Run tests
+      run: npx elm-test
+
+    - name: Run elm-review
+      run: npx elm-review --offline
